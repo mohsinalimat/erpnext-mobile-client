@@ -26,7 +26,10 @@ class SoftCard extends StatelessWidget {
             offset: Offset(0, 8),
           ),
         ],
-        border: Border.all(color: const Color(0xFF181818)),
+        border: Border.all(
+          color: const Color(0xFF2A2A2A),
+          width: 1.35,
+        ),
       ),
       padding: padding,
       child: child,
@@ -82,6 +85,13 @@ class StatusPill extends StatelessWidget {
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: status == DispatchStatus.accepted ||
+                  status == DispatchStatus.draft
+              ? Colors.transparent
+              : const Color(0x33000000),
+          width: 1,
+        ),
       ),
       child: Text(
         label,
