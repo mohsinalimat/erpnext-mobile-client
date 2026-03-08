@@ -145,53 +145,39 @@ class ActionDock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> buttons = [
+      ...leading,
+      center,
+      ...trailing,
+    ];
+
     return Padding(
       padding: const EdgeInsets.only(top: 6, bottom: 0),
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-            decoration: BoxDecoration(
-              color: const Color(0xFF090909),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: const Color(0xFF2A2A2A), width: 1.35),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x24000000),
-                  blurRadius: 18,
-                  offset: Offset(0, 10),
-                ),
-              ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFF090909),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: const Color(0xFF2A2A2A), width: 1.35),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x24000000),
+              blurRadius: 18,
+              offset: Offset(0, 10),
             ),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 108,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: leading,
-                  ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: buttons
+              .map(
+                (button) => SizedBox(
+                  width: 58,
+                  child: Center(child: button),
                 ),
-                const Spacer(),
-                const SizedBox(width: 68),
-                const Spacer(),
-                SizedBox(
-                  width: 108,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: trailing,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Positioned(
-            top: -8,
-            child: center,
-          ),
-        ],
+              )
+              .toList(),
+        ),
       ),
     );
   }
@@ -225,8 +211,8 @@ class DockButton extends StatelessWidget {
       child: AnimatedContainer(
         duration: AppMotion.medium,
         curve: AppMotion.smooth,
-        height: primary ? 62 : 46,
-        width: primary ? 62 : 46,
+        height: primary ? 58 : 50,
+        width: primary ? 58 : 50,
         decoration: BoxDecoration(
           color: background,
           shape: BoxShape.circle,
@@ -238,13 +224,13 @@ class DockButton extends StatelessWidget {
               ? const [
                   BoxShadow(
                     color: Color(0x33000000),
-                    blurRadius: 16,
-                    offset: Offset(0, 6),
+                    blurRadius: 14,
+                    offset: Offset(0, 4),
                   ),
                 ]
               : null,
         ),
-        child: Icon(icon, color: foreground, size: primary ? 26 : 20),
+        child: Icon(icon, color: foreground, size: primary ? 24 : 22),
       ),
     );
   }
