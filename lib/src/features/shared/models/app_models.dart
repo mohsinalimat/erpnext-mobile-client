@@ -7,6 +7,9 @@ enum DispatchStatus {
   draft,
   pending,
   accepted,
+  partial,
+  rejected,
+  cancelled,
 }
 
 class SupplierItem {
@@ -99,6 +102,12 @@ DispatchStatus parseDispatchStatus(String raw) {
   switch (raw.trim().toLowerCase()) {
     case 'accepted':
       return DispatchStatus.accepted;
+    case 'partial':
+      return DispatchStatus.partial;
+    case 'rejected':
+      return DispatchStatus.rejected;
+    case 'cancelled':
+      return DispatchStatus.cancelled;
     case 'draft':
       return DispatchStatus.draft;
     default:

@@ -55,12 +55,24 @@ class StatusPill extends StatelessWidget {
         background = const Color(0xFF161616);
       case DispatchStatus.pending:
         label = 'Kutilmoqda';
-        color = const Color(0xFFFFFFFF);
-        background = const Color(0xFF1F1F1F);
+        color = const Color(0xFF1A1A1A);
+        background = const Color(0xFFFFD54F);
       case DispatchStatus.accepted:
         label = 'Qabul qilindi';
-        color = const Color(0xFF000000);
-        background = const Color(0xFFFFFFFF);
+        color = const Color(0xFFFFFFFF);
+        background = const Color(0xFF1F8B4C);
+      case DispatchStatus.partial:
+        label = 'Qisman qabul';
+        color = const Color(0xFFFFFFFF);
+        background = const Color(0xFF2A6FDB);
+      case DispatchStatus.rejected:
+        label = 'Rad etildi';
+        color = const Color(0xFFFFFFFF);
+        background = const Color(0xFFC53B30);
+      case DispatchStatus.cancelled:
+        label = 'Bekor qilindi';
+        color = const Color(0xFFFFFFFF);
+        background = const Color(0xFF6B7280);
     }
 
     return AnimatedContainer(

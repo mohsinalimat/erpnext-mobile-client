@@ -19,9 +19,24 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String homeRoute = role == UserRole.supplier
+        ? AppRoutes.supplierHome
+        : AppRoutes.werkaHome;
+
     return AppShell(
       title: 'Profile',
       subtitle: 'Account va session boshqaruvi.',
+      actions: [
+        AppShellIconAction(
+          icon: Icons.home_outlined,
+          onTap: () {
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              homeRoute,
+              (route) => false,
+            );
+          },
+        ),
+      ],
       child: Column(
         children: [
           SoftCard(
