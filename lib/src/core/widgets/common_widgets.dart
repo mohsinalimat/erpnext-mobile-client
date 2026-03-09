@@ -170,6 +170,16 @@ class ActionDock extends StatelessWidget implements BottomInsetWidget {
     if (width <= 430) {
       return 88;
     }
+    return 10;
+  }
+
+  double _panelHeightForWidth(double width) {
+    if (width <= 375) {
+      return 80;
+    }
+    if (width <= 430) {
+      return 88;
+    }
     return 56;
   }
 
@@ -188,7 +198,7 @@ class ActionDock extends StatelessWidget implements BottomInsetWidget {
     ];
 
     return Container(
-      height: bottomInsetForWidth(width),
+      height: _panelHeightForWidth(width),
       decoration: BoxDecoration(
         color: AppTheme.cardBackground(context),
       ),
