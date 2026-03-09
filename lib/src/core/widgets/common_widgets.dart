@@ -164,15 +164,13 @@ class ActionDock extends StatelessWidget implements BottomInsetWidget {
 
   @override
   double bottomInsetForWidth(double width) {
-    return 10;
-  }
-
-  double _panelHeightForWidth(double width) {
-    return 10;
-  }
-
-  double _visibleBandHeight() {
-    return 10;
+    if (width <= 375) {
+      return 74;
+    }
+    if (width <= 430) {
+      return 80;
+    }
+    return 84;
   }
 
   @override
@@ -189,47 +187,30 @@ class ActionDock extends StatelessWidget implements BottomInsetWidget {
       ...trailing,
     ];
 
-    return SizedBox(
-      height: _panelHeightForWidth(width),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              height: _visibleBandHeight(),
-              color: AppTheme.cardBackground(context),
-            ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: switch (deviceClass) {
-              _DockDeviceClass.small => -22,
-              _DockDeviceClass.medium => -24,
-              _DockDeviceClass.large => -28,
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: buttons
-                  .map(
-                    (button) => Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: switch (deviceClass) {
-                          _DockDeviceClass.small => 1,
-                          _DockDeviceClass.medium => 2,
-                          _DockDeviceClass.large => 3,
-                        },
-                      ),
-                      child: button,
-                    ),
-                  )
-                  .toList(),
-            ),
-          ),
-        ],
+    return Container(
+      height: bottomInsetForWidth(width),
+      decoration: BoxDecoration(
+        color: AppTheme.cardBackground(context),
+      ),
+      child: Align(
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: buttons
+              .map(
+                (button) => Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: switch (deviceClass) {
+                      _DockDeviceClass.small => 1,
+                      _DockDeviceClass.medium => 2,
+                      _DockDeviceClass.large => 3,
+                    },
+                  ),
+                  child: button,
+                ),
+              )
+              .toList(),
+        ),
       ),
     );
   }
