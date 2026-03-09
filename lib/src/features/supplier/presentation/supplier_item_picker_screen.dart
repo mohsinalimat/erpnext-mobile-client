@@ -16,7 +16,7 @@ class SupplierItemPickerScreen extends StatefulWidget {
 
 class _SupplierItemPickerScreenState extends State<SupplierItemPickerScreen> {
   final TextEditingController controller = TextEditingController();
-  late final Future<List<SupplierItem>> itemsFuture;
+  late Future<List<SupplierItem>> itemsFuture;
 
   @override
   void initState() {
@@ -28,6 +28,14 @@ class _SupplierItemPickerScreenState extends State<SupplierItemPickerScreen> {
   void dispose() {
     controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _reload() async {
+    final future = MobileApi.instance.supplierItems();
+    setState(() {
+      itemsFuture = future;
+    });
+    await future;
   }
 
   @override
@@ -87,41 +95,46 @@ class _SupplierItemPickerScreenState extends State<SupplierItemPickerScreen> {
                     ),
                   );
                 }
-                return ListView.separated(
-                  itemCount: filtered.length,
-                  separatorBuilder: (_, __) => const Divider(
-                    height: 1,
-                    color: Color(0xFF1F1F1F),
-                  ),
-                  itemBuilder: (context, index) {
-                    final SupplierItem item = filtered[index];
-                    return Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(18),
-                        onTap: () => Navigator.of(context)
-                            .pushNamed(AppRoutes.supplierQty, arguments: item),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 16,
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  item.name.isEmpty ? item.code : item.name,
-                                  style: Theme.of(context).textTheme.titleLarge,
+                return RefreshIndicator.adaptive(
+                  onRefresh: _reload,
+                  child: ListView.separated(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: filtered.length,
+                    separatorBuilder: (_, __) => const Divider(
+                      height: 1,
+                      color: Color(0xFF1F1F1F),
+                    ),
+                    itemBuilder: (context, index) {
+                      final SupplierItem item = filtered[index];
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(18),
+                          onTap: () => Navigator.of(context)
+                              .pushNamed(AppRoutes.supplierQty, arguments: item),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 16,
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    item.name.isEmpty ? item.code : item.name,
+                                    style:
+                                        Theme.of(context).textTheme.titleLarge,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              const Icon(Icons.arrow_forward_rounded),
-                            ],
+                                const SizedBox(width: 12),
+                                const Icon(Icons.arrow_forward_rounded),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 );
               },
             ),

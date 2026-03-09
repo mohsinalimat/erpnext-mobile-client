@@ -1,5 +1,6 @@
 import '../core/theme/app_theme.dart';
 import '../core/app_preview.dart';
+import '../core/session/app_session.dart';
 import '../core/theme/theme_controller.dart';
 import 'app_router.dart';
 import 'package:device_preview/device_preview.dart';
@@ -26,7 +27,7 @@ class ErpnextStockMobileApp extends StatelessWidget {
             overscroll: false,
           ),
           onGenerateRoute: AppRouter.onGenerateRoute,
-          initialRoute: AppRoutes.login,
+          initialRoute: AppSession.instance.initialRoute,
         );
       },
     );

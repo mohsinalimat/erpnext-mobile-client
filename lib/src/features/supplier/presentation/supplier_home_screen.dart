@@ -7,8 +7,29 @@ import '../../shared/models/app_models.dart';
 import 'widgets/supplier_dock.dart';
 import 'package:flutter/material.dart';
 
-class SupplierHomeScreen extends StatelessWidget {
+class SupplierHomeScreen extends StatefulWidget {
   const SupplierHomeScreen({super.key});
+
+  @override
+  State<SupplierHomeScreen> createState() => _SupplierHomeScreenState();
+}
+
+class _SupplierHomeScreenState extends State<SupplierHomeScreen> {
+  late Future<List<DispatchRecord>> _historyFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _historyFuture = MobileApi.instance.supplierHistory();
+  }
+
+  Future<void> _reload() async {
+    final future = MobileApi.instance.supplierHistory();
+    setState(() {
+      _historyFuture = future;
+    });
+    await future;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +39,7 @@ class SupplierHomeScreen extends StatelessWidget {
       subtitle: 'Jo‘natish va statuslarni shu yerdan boshqarasiz.',
       bottom: const SupplierDock(activeTab: SupplierDockTab.home),
       child: FutureBuilder<List<DispatchRecord>>(
-        future: MobileApi.instance.supplierHistory(),
+        future: _historyFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());
@@ -52,9 +73,12 @@ class SupplierHomeScreen extends StatelessWidget {
               .toSet()
               .length;
 
-          return ListView(
-            padding: EdgeInsets.zero,
-            children: [
+          return RefreshIndicator.adaptive(
+            onRefresh: _reload,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              children: [
               SmoothAppear(
                 child: _EnterpriseHero(
                   pendingCount: pendingCount,
@@ -278,7 +302,9 @@ class SupplierHomeScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-            ],
+                const SizedBox(height: 12),
+              ],
+            ),
           );
         },
       ),

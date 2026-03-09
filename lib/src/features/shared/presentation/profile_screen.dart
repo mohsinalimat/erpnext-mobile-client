@@ -49,6 +49,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
+  Future<void> _refreshProfile() async {
+    final updated = await MobileApi.instance.profile();
+    final file = await ProfileAvatarCache.ensureCached(updated);
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      nicknameController.text = updated.displayName;
+      cachedAvatar = file;
+      errorMessage = null;
+    });
+  }
+
   Future<void> _saveNickname() async {
     final nickname = nicknameController.text.trim();
     setState(() {
@@ -178,10 +191,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       bottom: role == UserRole.supplier
           ? const SupplierDock(activeTab: SupplierDockTab.profile)
           : const WerkaDock(activeTab: WerkaDockTab.profile),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Column(
-          children: [
+      child: RefreshIndicator.adaptive(
+        onRefresh: _refreshProfile,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Column(
+            children: [
             SoftCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -398,7 +414,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: const Text('Logout'),
               ),
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );

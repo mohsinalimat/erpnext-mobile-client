@@ -6,8 +6,31 @@ import '../../shared/models/app_models.dart';
 import 'widgets/supplier_dock.dart';
 import 'package:flutter/material.dart';
 
-class SupplierNotificationsScreen extends StatelessWidget {
+class SupplierNotificationsScreen extends StatefulWidget {
   const SupplierNotificationsScreen({super.key});
+
+  @override
+  State<SupplierNotificationsScreen> createState() =>
+      _SupplierNotificationsScreenState();
+}
+
+class _SupplierNotificationsScreenState
+    extends State<SupplierNotificationsScreen> {
+  late Future<List<DispatchRecord>> _itemsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _itemsFuture = MobileApi.instance.supplierHistory();
+  }
+
+  Future<void> _reload() async {
+    final future = MobileApi.instance.supplierHistory();
+    setState(() {
+      _itemsFuture = future;
+    });
+    await future;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +39,7 @@ class SupplierNotificationsScreen extends StatelessWidget {
       subtitle: 'Werka mahsulotni oldimi yoki yo‘qmi, shu yerda ko‘rasiz.',
       bottom: const SupplierDock(activeTab: SupplierDockTab.notifications),
       child: FutureBuilder<List<DispatchRecord>>(
-        future: MobileApi.instance.supplierHistory(),
+        future: _itemsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());
@@ -38,53 +61,57 @@ class SupplierNotificationsScreen extends StatelessWidget {
             );
           }
 
-          return ListView.separated(
-            itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final record = items[index];
-              return SmoothAppear(
-                delay: Duration(milliseconds: 40 + (index * 45)),
-                child: SoftCard(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        height: 44,
-                        width: 44,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF111111),
-                          shape: BoxShape.circle,
+          return RefreshIndicator.adaptive(
+            onRefresh: _reload,
+            child: ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: items.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final record = items[index];
+                return SmoothAppear(
+                  delay: Duration(milliseconds: 40 + (index * 45)),
+                  child: SoftCard(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          height: 44,
+                          width: 44,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF111111),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            notificationIcon(record.status),
+                            color: notificationColor(record.status),
+                          ),
                         ),
-                        child: Icon(
-                          notificationIcon(record.status),
-                          color: notificationColor(record.status),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                notificationTitle(record),
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                notificationBody(record),
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              const SizedBox(height: 10),
+                              StatusPill(status: record.status),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              notificationTitle(record),
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              notificationBody(record),
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                            const SizedBox(height: 10),
-                            StatusPill(status: record.status),
-                          ],
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           );
         },
       ),

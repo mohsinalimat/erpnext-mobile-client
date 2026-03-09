@@ -36,7 +36,7 @@ class MobileApi {
     final String token = json['token'] as String? ?? '';
     final SessionProfile profile =
         SessionProfile.fromJson(json['profile'] as Map<String, dynamic>);
-    AppSession.instance.setSession(token: token, profile: profile);
+    await AppSession.instance.setSession(token: token, profile: profile);
     return profile;
   }
 
@@ -48,7 +48,7 @@ class MobileApi {
         headers: _headers(token),
       );
     }
-    AppSession.instance.clear();
+    await AppSession.instance.clear();
   }
 
   Future<SessionProfile> profile() async {
@@ -62,7 +62,7 @@ class MobileApi {
     final SessionProfile profile = SessionProfile.fromJson(
       jsonDecode(response.body) as Map<String, dynamic>,
     );
-    AppSession.instance.updateProfile(profile);
+    await AppSession.instance.updateProfile(profile);
     return profile;
   }
 
@@ -78,7 +78,7 @@ class MobileApi {
     final SessionProfile profile = SessionProfile.fromJson(
       jsonDecode(response.body) as Map<String, dynamic>,
     );
-    AppSession.instance.updateProfile(profile);
+    await AppSession.instance.updateProfile(profile);
     return profile;
   }
 
@@ -107,7 +107,7 @@ class MobileApi {
     final SessionProfile profile = SessionProfile.fromJson(
       jsonDecode(response.body) as Map<String, dynamic>,
     );
-    AppSession.instance.updateProfile(profile);
+    await AppSession.instance.updateProfile(profile);
     return profile;
   }
 

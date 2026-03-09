@@ -6,8 +6,29 @@ import '../../../core/widgets/common_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'package:flutter/material.dart';
 
-class WerkaHomeScreen extends StatelessWidget {
+class WerkaHomeScreen extends StatefulWidget {
   const WerkaHomeScreen({super.key});
+
+  @override
+  State<WerkaHomeScreen> createState() => _WerkaHomeScreenState();
+}
+
+class _WerkaHomeScreenState extends State<WerkaHomeScreen> {
+  late Future<List<DispatchRecord>> _pendingFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _pendingFuture = MobileApi.instance.werkaPending();
+  }
+
+  Future<void> _reload() async {
+    final future = MobileApi.instance.werkaPending();
+    setState(() {
+      _pendingFuture = future;
+    });
+    await future;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +45,7 @@ class WerkaHomeScreen extends StatelessWidget {
         children: [
           Expanded(
             child: FutureBuilder<List<DispatchRecord>>(
-              future: MobileApi.instance.werkaPending(),
+              future: _pendingFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState != ConnectionState.done) {
                   return const Center(child: CircularProgressIndicator());
@@ -39,31 +60,35 @@ class WerkaHomeScreen extends StatelessWidget {
 
                 final items = snapshot.data ?? <DispatchRecord>[];
 
-                return Column(
-                  children: [
-                    SmoothAppear(
-                      child: SoftCard(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                '${items.length} ta pending bildirishnoma',
-                                style: Theme.of(context).textTheme.titleLarge,
+                return RefreshIndicator.adaptive(
+                  onRefresh: _reload,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      SmoothAppear(
+                        child: SoftCard(
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '${items.length} ta pending bildirishnoma',
+                                  style: Theme.of(context).textTheme.titleLarge,
+                                ),
                               ),
-                            ),
-                            const Icon(Icons.inventory_2_outlined),
-                          ],
+                              const Icon(Icons.inventory_2_outlined),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: ListView.separated(
-                        itemCount: items.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final DispatchRecord record = items[index];
-                          return SmoothAppear(
+                      const SizedBox(height: 16),
+                      ...items.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final DispatchRecord record = entry.value;
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            bottom: index == items.length - 1 ? 0 : 12,
+                          ),
+                          child: SmoothAppear(
                             delay: Duration(milliseconds: 70 + (index * 80)),
                             offset: const Offset(0, 18),
                             child: PressableScale(
@@ -106,11 +131,11 @@ class WerkaHomeScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
                 );
               },
             ),

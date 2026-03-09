@@ -103,6 +103,17 @@ class SessionProfile {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'role': role == UserRole.werka ? 'werka' : 'supplier',
+      'display_name': displayName,
+      'legal_name': legalName,
+      'ref': ref,
+      'phone': phone,
+      'avatar_url': avatarUrl,
+    };
+  }
+
   SessionProfile copyWith({
     UserRole? role,
     String? displayName,
