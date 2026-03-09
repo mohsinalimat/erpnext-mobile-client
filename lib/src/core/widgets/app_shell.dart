@@ -28,13 +28,25 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
+    final theme = Theme.of(context);
     final width = MediaQuery.sizeOf(context).width;
-    final _DockDeviceClass deviceClass = width <= 375
+    final deviceClass = width <= 375
         ? _DockDeviceClass.small
         : width <= 430
             ? _DockDeviceClass.medium
             : _DockDeviceClass.large;
+
+    final double dockOffset = switch (deviceClass) {
+      _DockDeviceClass.small => 0,
+      _DockDeviceClass.medium => 7,
+      _DockDeviceClass.large => 12,
+    };
+
+    final double bottomInset = switch (deviceClass) {
+      _DockDeviceClass.small => bottom != null ? 94 : 20,
+      _DockDeviceClass.medium => bottom != null ? 104 : 20,
+      _DockDeviceClass.large => bottom != null ? 112 : 20,
+    };
 
     return Scaffold(
       body: DecoratedBox(
@@ -77,8 +89,10 @@ class AppShell extends StatelessWidget {
                                 ),
                               );
                             },
-                            child: Text(title,
-                                style: theme.textTheme.headlineMedium),
+                            child: Text(
+                              title,
+                              style: theme.textTheme.headlineMedium,
+                            ),
                           ),
                           if (subtitle.trim().isNotEmpty) ...[
                             const SizedBox(height: 6),
@@ -89,8 +103,10 @@ class AppShell extends StatelessWidget {
                               builder: (context, value, child) {
                                 return Opacity(opacity: value, child: child);
                               },
-                              child: Text(subtitle,
-                                  style: theme.textTheme.bodyMedium),
+                              child: Text(
+                                subtitle,
+                                style: theme.textTheme.bodyMedium,
+                              ),
                             ),
                           ],
                         ],
@@ -101,36 +117,28 @@ class AppShell extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.fromLTRB(
-                    20,
-                    0,
-                    24,
-                    bottom != null ? 0 : 20,
-                  ),
-                  child: child,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.fromLTRB(20, 0, 24, bottomInset),
+                        child: child,
+                      ),
+                    ),
+                    if (bottom != null)
+                      Positioned(
+                        left: 20,
+                        right: 24,
+                        bottom: dockOffset,
+                        child: Container(
+                          color: theme.scaffoldBackgroundColor,
+                          child: bottom!,
+                        ),
+                      ),
+                  ],
                 ),
               ),
-              if (bottom != null)
-                Container(
-                  width: double.infinity,
-                  color: theme.scaffoldBackgroundColor,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 24, 0),
-                    child: Transform.translate(
-                      offset: Offset(
-                        0,
-                        switch (deviceClass) {
-                          _DockDeviceClass.small => -2,
-                          _DockDeviceClass.medium => 7,
-                          _DockDeviceClass.large => 12,
-                        },
-                      ),
-                      child: bottom,
-                    ),
-                  ),
-                ),
             ],
           ),
         ),
