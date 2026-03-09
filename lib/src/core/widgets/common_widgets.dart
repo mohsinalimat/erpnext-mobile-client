@@ -221,8 +221,8 @@ class DockButton extends StatelessWidget {
       child: AnimatedContainer(
         duration: AppMotion.medium,
         curve: AppMotion.smooth,
-        height: primary ? 54 : 48,
-        width: primary ? 54 : 48,
+        height: primary ? 60 : 54,
+        width: primary ? 60 : 54,
         decoration: BoxDecoration(
           color: background,
           shape: BoxShape.circle,
@@ -240,7 +240,7 @@ class DockButton extends StatelessWidget {
                 ]
               : null,
         ),
-        child: Icon(icon, color: foreground, size: primary ? 24 : 23),
+        child: Icon(icon, color: foreground, size: primary ? 27 : 25),
       ),
     );
   }
