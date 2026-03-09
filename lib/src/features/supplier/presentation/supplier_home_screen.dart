@@ -33,7 +33,6 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final compact = MediaQuery.sizeOf(context).width <= 375;
     return AppShell(
       title: 'Supplier',
       subtitle: 'Jo‘natish va statuslarni shu yerdan boshqarasiz.',
@@ -59,19 +58,13 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen> {
           final acceptedCount = history
               .where((item) => item.status == DispatchStatus.accepted)
               .length;
-          final partialCount = history
-              .where((item) => item.status == DispatchStatus.partial)
-              .length;
-          final rejectedCount = history
-              .where((item) => item.status == DispatchStatus.rejected)
-              .length;
-          final totalQty =
-              history.fold<double>(0, (sum, item) => sum + item.sentQty);
-          final uniqueItems = history
+          final itemCount = history
               .map((item) =>
                   item.itemCode.trim().isEmpty ? item.itemName : item.itemCode)
               .toSet()
               .length;
+          final totalQty =
+              history.fold<double>(0, (sum, item) => sum + item.sentQty);
 
           return RefreshIndicator.adaptive(
             onRefresh: _reload,
@@ -80,72 +73,44 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen> {
               padding: EdgeInsets.zero,
               children: [
                 SmoothAppear(
-                  child: _EnterpriseHero(
-                    pendingCount: pendingCount,
-                    acceptedCount: acceptedCount,
+                  child: _SummaryCard(
                     totalQty: totalQty,
-                    uniqueItems: uniqueItems,
-                  ),
-                ),
-                const SizedBox(height: 18),
-                SmoothAppear(
-                  delay: const Duration(milliseconds: 80),
-                  child: _MetricGrid(
                     pendingCount: pendingCount,
                     acceptedCount: acceptedCount,
-                    partialCount: partialCount,
-                    uniqueItems: uniqueItems,
-                    compact: compact,
+                    itemCount: itemCount,
                   ),
                 ),
-                const SizedBox(height: 18),
-                SmoothAppear(
-                  delay: const Duration(milliseconds: 130),
-                  child: SoftCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Status Mix',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Jarayonlarning real taqsimoti.',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        const SizedBox(height: 18),
-                        _StatusMixBar(
-                          pending: pendingCount,
-                          accepted: acceptedCount,
-                          partial: partialCount,
-                          rejected: rejectedCount,
-                        ),
-                      ],
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Recent',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 18),
-                Text(
-                  'Recent Activity',
-                  style: Theme.of(context).textTheme.titleLarge,
+                    Text(
+                      '${history.length} ta',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 if (history.isEmpty)
                   const SoftCard(
                     child: Text('Hali jo‘natishlar yo‘q.'),
                   )
-                else if (compact)
+                else
                   SoftCard(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                     child: Column(
                       children: history.asMap().entries.map((entry) {
                         final index = entry.key;
                         final record = entry.value;
                         return SmoothAppear(
-                          delay: Duration(milliseconds: 180 + (index * 45)),
-                          offset: const Offset(0, 16),
+                          delay: Duration(milliseconds: 60 + (index * 35)),
+                          offset: const Offset(0, 12),
                           child: Column(
                             children: [
                               Padding(
@@ -184,7 +149,7 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen> {
                                         ],
                                       ),
                                     ),
-                                    const SizedBox(width: 10),
+                                    const SizedBox(width: 12),
                                     StatusPill(status: record.status),
                                   ],
                                 ),
@@ -199,116 +164,6 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen> {
                         );
                       }).toList(),
                     ),
-                  )
-                else
-                  SoftCard(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                flex: 4,
-                                child: Text(
-                                  'Mahsulot',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ),
-                              Expanded(
-                                flex: 2,
-                                child: Text(
-                                  'Miqdor',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                              Expanded(
-                                flex: 3,
-                                child: Text(
-                                  'Holat',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                  textAlign: TextAlign.end,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Divider(
-                          height: 1,
-                          color: AppTheme.dockDivider(context),
-                        ),
-                        ...history.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final record = entry.value;
-                          return SmoothAppear(
-                            delay: Duration(milliseconds: 180 + (index * 45)),
-                            offset: const Offset(0, 16),
-                            child: Column(
-                              children: [
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 14),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 4,
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              record.itemName.isEmpty
-                                                  ? record.itemCode
-                                                  : record.itemName,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .titleMedium,
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              record.createdLabel,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 2,
-                                        child: Text(
-                                          '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
-                                          textAlign: TextAlign.center,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyMedium,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 3,
-                                        child: Align(
-                                          alignment: Alignment.centerRight,
-                                          child:
-                                              StatusPill(status: record.status),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                if (index != history.length - 1)
-                                  Divider(
-                                    height: 1,
-                                    color: AppTheme.dockDivider(context),
-                                  ),
-                              ],
-                            ),
-                          );
-                        }),
-                      ],
-                    ),
                   ),
                 const SizedBox(height: 12),
               ],
@@ -320,109 +175,48 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen> {
   }
 }
 
-class _EnterpriseHero extends StatelessWidget {
-  const _EnterpriseHero({
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard({
+    required this.totalQty,
     required this.pendingCount,
     required this.acceptedCount,
-    required this.totalQty,
-    required this.uniqueItems,
+    required this.itemCount,
   });
 
+  final double totalQty;
   final int pendingCount;
   final int acceptedCount;
-  final double totalQty;
-  final int uniqueItems;
+  final int itemCount;
 
   @override
   Widget build(BuildContext context) {
-    final compact = MediaQuery.sizeOf(context).width <= 375;
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: AppTheme.cardBorder(context), width: 1.35),
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.isDark(context)
-                ? const Color(0xFF080808)
-                : const Color(0xFFFFFFFF),
-            AppTheme.isDark(context)
-                ? const Color(0xFF121212)
-                : const Color(0xFFFFFFFF),
-            AppTheme.isDark(context)
-                ? const Color(0xFF0A0A0A)
-                : const Color(0xFFFFFFFF),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
+    return SoftCard(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
-            spacing: 10,
-            runSpacing: 8,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppTheme.actionSurface(context),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: AppTheme.cardBorder(context)),
-                ),
-                child: Text(
-                  'Operations Overview',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface,
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
-              ),
-              Text('Live', style: Theme.of(context).textTheme.bodySmall),
-            ],
+          Text(
+            'Overview',
+            style: Theme.of(context).textTheme.bodySmall,
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 12),
           Text(
             totalQty.toStringAsFixed(0),
-            style: Theme.of(context)
-                .textTheme
-                .displaySmall
-                ?.copyWith(fontSize: 40),
+            style: Theme.of(context).textTheme.displaySmall,
           ),
           const SizedBox(height: 6),
           Text(
             'Jami jo‘natilgan birlik',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
           Wrap(
-            spacing: 12,
-            runSpacing: 12,
+            spacing: 10,
+            runSpacing: 10,
             children: [
-              SizedBox(
-                width: compact ? 110 : 78,
-                child: _HeroStat(
-                  label: 'Jarayonda',
-                  value: pendingCount.toString(),
-                ),
-              ),
-              SizedBox(
-                width: compact ? 110 : 78,
-                child: _HeroStat(
-                  label: 'Yopilgan',
-                  value: acceptedCount.toString(),
-                ),
-              ),
-              SizedBox(
-                width: compact ? 110 : 78,
-                child: _HeroStat(
-                  label: 'SKU',
-                  value: uniqueItems.toString(),
-                ),
-              ),
+              _StatChip(label: 'Pending', value: pendingCount.toString()),
+              _StatChip(label: 'Accepted', value: acceptedCount.toString()),
+              _StatChip(label: 'Items', value: itemCount.toString()),
             ],
           ),
         ],
@@ -431,8 +225,8 @@ class _EnterpriseHero extends StatelessWidget {
   }
 }
 
-class _HeroStat extends StatelessWidget {
-  const _HeroStat({
+class _StatChip extends StatelessWidget {
+  const _StatChip({
     required this.label,
     required this.value,
   });
@@ -443,241 +237,26 @@ class _HeroStat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: AppTheme.actionSurface(context),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppTheme.cardBorder(context)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(label, style: Theme.of(context).textTheme.bodySmall),
-          const SizedBox(height: 8),
-          Text(value, style: Theme.of(context).textTheme.titleLarge),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(width: 10),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
         ],
       ),
-    );
-  }
-}
-
-class _MetricGrid extends StatelessWidget {
-  const _MetricGrid({
-    required this.pendingCount,
-    required this.acceptedCount,
-    required this.partialCount,
-    required this.uniqueItems,
-    required this.compact,
-  });
-
-  final int pendingCount;
-  final int acceptedCount;
-  final int partialCount;
-  final int uniqueItems;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      childAspectRatio: compact ? 1.1 : 1.55,
-      children: [
-        _EnterpriseMetricTile(
-          label: 'Pending Queue',
-          value: pendingCount.toString(),
-          accent: const Color(0xFFFFD54F),
-        ),
-        _EnterpriseMetricTile(
-          label: 'Accepted',
-          value: acceptedCount.toString(),
-          accent: const Color(0xFF5BB450),
-        ),
-        _EnterpriseMetricTile(
-          label: 'Partial',
-          value: partialCount.toString(),
-          accent: const Color(0xFF2A6FDB),
-        ),
-        _EnterpriseMetricTile(
-          label: 'Unique Items',
-          value: uniqueItems.toString(),
-          accent: const Color(0xFFA78BFA),
-        ),
-      ],
-    );
-  }
-}
-
-class _EnterpriseMetricTile extends StatelessWidget {
-  const _EnterpriseMetricTile({
-    required this.label,
-    required this.value,
-    required this.accent,
-  });
-
-  final String label;
-  final String value;
-  final Color accent;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.cardBackground(context),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppTheme.cardBorder(context), width: 1.2),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 4,
-            width: 42,
-            decoration: BoxDecoration(
-              color: accent,
-              borderRadius: BorderRadius.circular(999),
-            ),
-          ),
-          const Spacer(),
-          Text(label, style: Theme.of(context).textTheme.bodySmall),
-          const SizedBox(height: 6),
-          Text(value, style: Theme.of(context).textTheme.headlineMedium),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatusMixBar extends StatelessWidget {
-  const _StatusMixBar({
-    required this.pending,
-    required this.accepted,
-    required this.partial,
-    required this.rejected,
-  });
-
-  final int pending;
-  final int accepted;
-  final int partial;
-  final int rejected;
-
-  @override
-  Widget build(BuildContext context) {
-    final total = pending + accepted + partial + rejected;
-    final safeTotal = total == 0 ? 1 : total;
-
-    Widget segment(Color color, int value) {
-      return Expanded(
-        flex: value == 0 ? 1 : value,
-        child: Container(
-          height: 16,
-          decoration: BoxDecoration(
-            color: value == 0
-                ? (AppTheme.isDark(context)
-                    ? const Color(0xFF101010)
-                    : const Color(0xFFE9E7E0))
-                : color,
-            borderRadius: BorderRadius.circular(999),
-          ),
-        ),
-      );
-    }
-
-    return Column(
-      children: [
-        Row(
-          children: [
-            segment(const Color(0xFFFFD54F), pending),
-            const SizedBox(width: 6),
-            segment(const Color(0xFF5BB450), accepted),
-            const SizedBox(width: 6),
-            segment(const Color(0xFF2A6FDB), partial),
-            const SizedBox(width: 6),
-            segment(const Color(0xFFC53B30), rejected),
-          ],
-        ),
-        const SizedBox(height: 14),
-        Row(
-          children: [
-            Expanded(
-              child: _MixLegend(
-                label: 'Pending',
-                value: '$pending / $safeTotal',
-                color: const Color(0xFFFFD54F),
-              ),
-            ),
-            Expanded(
-              child: _MixLegend(
-                label: 'Accepted',
-                value: '$accepted / $safeTotal',
-                color: const Color(0xFF5BB450),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: _MixLegend(
-                label: 'Partial',
-                value: '$partial / $safeTotal',
-                color: const Color(0xFF2A6FDB),
-              ),
-            ),
-            Expanded(
-              child: _MixLegend(
-                label: 'Rejected',
-                value: '$rejected / $safeTotal',
-                color: const Color(0xFFC53B30),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _MixLegend extends StatelessWidget {
-  const _MixLegend({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  final String label;
-  final String value;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          height: 10,
-          width: 10,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: Theme.of(context).textTheme.bodySmall),
-              const SizedBox(height: 2),
-              Text(value, style: Theme.of(context).textTheme.bodyMedium),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }
