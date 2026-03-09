@@ -3,12 +3,6 @@ import '../theme/app_theme.dart';
 import 'common_widgets.dart';
 import 'package:flutter/material.dart';
 
-enum _DockDeviceClass {
-  small,
-  medium,
-  large,
-}
-
 class AppShell extends StatelessWidget {
   const AppShell({
     super.key,
