@@ -1,5 +1,6 @@
 import '../../../core/api/mobile_api.dart';
 import '../../../core/session/app_session.dart';
+import '../../../core/theme/theme_controller.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../data/profile_avatar_cache.dart';
@@ -322,6 +323,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                    'Theme',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: ThemeController.instance.isDark
+                              ? null
+                              : () => ThemeController.instance
+                                  .setThemeMode(ThemeMode.dark),
+                          child: const Text('Qora'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: !ThemeController.instance.isDark
+                              ? null
+                              : () => ThemeController.instance
+                                  .setThemeMode(ThemeMode.light),
+                          child: const Text('Oq'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
                   Text(
                     'Asl ism',
                     style: Theme.of(context).textTheme.titleLarge,

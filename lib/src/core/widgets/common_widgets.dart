@@ -17,7 +17,7 @@ class SoftCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.card,
+        color: AppTheme.cardBackground(context),
         borderRadius: BorderRadius.circular(24),
         boxShadow: const [
           BoxShadow(
@@ -27,7 +27,7 @@ class SoftCard extends StatelessWidget {
           ),
         ],
         border: Border.all(
-          color: const Color(0xFF2A2A2A),
+          color: AppTheme.cardBorder(context),
           width: 1.35,
         ),
       ),
@@ -160,7 +160,7 @@ class ActionDock extends StatelessWidget {
             height: 1.2,
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
+              color: AppTheme.dockDivider(context),
               borderRadius: BorderRadius.circular(999),
             ),
           ),
@@ -198,11 +198,13 @@ class DockButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color background = primary
-        ? Colors.white
+        ? AppTheme.primaryButton(context)
         : active
-            ? const Color(0xFF181818)
-            : const Color(0xFF101010);
-    final Color foreground = primary ? Colors.black : Colors.white;
+            ? AppTheme.dockActive(context)
+            : AppTheme.dockInactive(context);
+    final Color foreground = primary
+        ? AppTheme.primaryButtonForeground(context)
+        : Theme.of(context).colorScheme.onSurface;
 
     return GestureDetector(
       onTap: onTap,
@@ -215,7 +217,7 @@ class DockButton extends StatelessWidget {
           color: background,
           shape: BoxShape.circle,
           border: Border.all(
-            color: primary ? Colors.white : const Color(0xFF2A2A2A),
+            color: primary ? background : AppTheme.cardBorder(context),
             width: primary ? 2 : 1.2,
           ),
           boxShadow: primary

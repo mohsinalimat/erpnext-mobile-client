@@ -1,4 +1,5 @@
 import '../theme/app_motion.dart';
+import '../theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class AppShell extends StatelessWidget {
@@ -25,9 +26,12 @@ class AppShell extends StatelessWidget {
 
     return Scaffold(
       body: DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF000000), Color(0xFF070707)],
+            colors: [
+              AppTheme.shellStart(context),
+              AppTheme.shellEnd(context),
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -125,11 +129,14 @@ class AppShellIconAction extends StatelessWidget {
         height: 48,
         width: 48,
         decoration: BoxDecoration(
-          color: const Color(0xFF0B0B0B),
+          color: AppTheme.actionSurface(context),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF1D1D1D)),
+          border: Border.all(color: AppTheme.cardBorder(context)),
         ),
-        child: Icon(icon, color: Colors.white),
+        child: Icon(
+          icon,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
       ),
     );
   }
