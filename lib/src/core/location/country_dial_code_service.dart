@@ -10,27 +10,42 @@ class CountryDialCodeService {
   static final CountryDialCodeService instance = CountryDialCodeService._();
   static const String _promptedKey = 'country_dial_code_prompted';
   static const String _cachedKey = 'country_dial_code_cached';
+  static const String _cachedSourceKey = 'country_dial_code_cached_source';
+
+  static const String _sourceLocation = 'location';
+  static const String _sourceLocale = 'locale';
 
   Future<String?> suggestedPrefix() async {
     final prefs = await SharedPreferences.getInstance();
     final cached = prefs.getString(_cachedKey)?.trim() ?? '';
+    final cachedSource = prefs.getString(_cachedSourceKey)?.trim() ?? '';
     if (cached.isNotEmpty) {
+      final permission = await Geolocator.checkPermission();
+      final hasLocationPermission =
+          permission == LocationPermission.whileInUse ||
+              permission == LocationPermission.always;
+      if (hasLocationPermission && cachedSource != _sourceLocation) {
+        final refreshed = await _resolveAndPersist(
+          prefs,
+          allowLocation: true,
+        );
+        if (refreshed != null && refreshed.isNotEmpty) {
+          return refreshed;
+        }
+      }
       return cached;
     }
 
     final bool alreadyPrompted = prefs.getBool(_promptedKey) ?? false;
-    String? prefix;
     if (!alreadyPrompted) {
       await prefs.setBool(_promptedKey, true);
-      prefix = await _resolveFromLocation();
+      final prefix = await _resolveAndPersist(prefs, allowLocation: true);
+      if (prefix != null && prefix.isNotEmpty) {
+        return prefix;
+      }
     }
 
-    prefix ??=
-        _resolveFromCountryCode(PlatformDispatcher.instance.locale.countryCode);
-    if (prefix != null && prefix.isNotEmpty) {
-      await prefs.setString(_cachedKey, prefix);
-    }
-    return prefix;
+    return _resolveAndPersist(prefs, allowLocation: false);
   }
 
   Future<String?> cachedPrefix() async {
@@ -42,11 +57,27 @@ class CountryDialCodeService {
   Future<String?> refreshFromLocation() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_promptedKey, true);
-    String? prefix = await _resolveFromLocation();
+    return _resolveAndPersist(prefs, allowLocation: true);
+  }
+
+  Future<String?> _resolveAndPersist(
+    SharedPreferences prefs, {
+    required bool allowLocation,
+  }) async {
+    String? prefix;
+    String? source;
+    if (allowLocation) {
+      prefix = await _resolveFromLocation();
+      if (prefix != null && prefix.isNotEmpty) {
+        source = _sourceLocation;
+      }
+    }
     prefix ??=
         _resolveFromCountryCode(PlatformDispatcher.instance.locale.countryCode);
     if (prefix != null && prefix.isNotEmpty) {
+      source ??= _sourceLocale;
       await prefs.setString(_cachedKey, prefix);
+      await prefs.setString(_cachedSourceKey, source);
     }
     return prefix;
   }
@@ -67,7 +98,13 @@ class CountryDialCodeService {
         return null;
       }
 
-      final position = await Geolocator.getCurrentPosition(
+      Position? position;
+      try {
+        position = await Geolocator.getLastKnownPosition();
+      } catch (_) {
+        position = null;
+      }
+      position ??= await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.low,
         ),
@@ -79,7 +116,13 @@ class CountryDialCodeService {
       if (placemarks.isEmpty) {
         return null;
       }
-      return _resolveFromCountryCode(placemarks.first.isoCountryCode);
+      for (final placemark in placemarks) {
+        final prefix = _resolveFromCountryCode(placemark.isoCountryCode);
+        if (prefix != null && prefix.isNotEmpty) {
+          return prefix;
+        }
+      }
+      return null;
     } catch (_) {
       return null;
     }

@@ -20,6 +20,7 @@ class SecurityController extends ChangeNotifier with WidgetsBindingObserver {
   bool _locked = false;
   bool _wasBackgrounded = false;
   bool _authInProgress = false;
+  bool _suspendResumeLock = false;
 
   bool get loaded => _loaded;
   bool get locked => _loaded && _locked && hasPinForCurrentUser;
@@ -142,6 +143,9 @@ class SecurityController extends ChangeNotifier with WidgetsBindingObserver {
     if (!_loaded) {
       return;
     }
+    if (_authInProgress) {
+      return;
+    }
     if (state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {
@@ -149,6 +153,11 @@ class SecurityController extends ChangeNotifier with WidgetsBindingObserver {
       return;
     }
     if (state == AppLifecycleState.resumed) {
+      if (_suspendResumeLock) {
+        _suspendResumeLock = false;
+        _wasBackgrounded = false;
+        return;
+      }
       if (_wasBackgrounded && hasPinForCurrentUser) {
         _locked = true;
         notifyListeners();
@@ -191,11 +200,15 @@ class SecurityController extends ChangeNotifier with WidgetsBindingObserver {
     }
     _authInProgress = true;
     try {
-      return await _localAuth.authenticate(
+      final ok = await _localAuth.authenticate(
         localizedReason: reason,
         biometricOnly: true,
         persistAcrossBackgrounding: true,
       );
+      if (ok) {
+        _suspendResumeLock = true;
+      }
+      return ok;
     } catch (_) {
       return false;
     } finally {
