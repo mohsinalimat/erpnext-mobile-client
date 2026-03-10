@@ -2,6 +2,7 @@ import '../../../core/api/mobile_api.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../shared/models/app_models.dart';
+import 'widgets/admin_dock.dart';
 import 'package:flutter/material.dart';
 
 class AdminSettingsScreen extends StatefulWidget {
@@ -53,6 +54,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   Future<void> _save() async {
     setState(() => saving = true);
     try {
+      final current = await MobileApi.instance.adminSettings();
       final updated = await MobileApi.instance.updateAdminSettings(
         AdminSettings(
           erpUrl: erpUrl.text.trim(),
@@ -62,8 +64,8 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
           defaultUom: uom.text.trim(),
           werkaPhone: werkaPhone.text.trim(),
           werkaName: werkaName.text.trim(),
-          adminPhone: '',
-          adminName: '',
+          adminPhone: current.adminPhone,
+          adminName: current.adminName,
         ),
       );
       _fill(updated);
@@ -83,6 +85,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
       ),
       title: 'Admin Settings',
       subtitle: 'Minimal sozlamalar.',
+      bottom: const AdminDock(activeTab: AdminDockTab.settings),
       child: FutureBuilder<AdminSettings>(
         future: _future,
         builder: (context, snapshot) {

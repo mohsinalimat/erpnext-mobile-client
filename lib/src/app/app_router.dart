@@ -2,6 +2,7 @@ import '../features/auth/presentation/login_screen.dart';
 import '../features/admin/presentation/admin_home_screen.dart';
 import '../features/admin/presentation/admin_settings_screen.dart';
 import '../features/admin/presentation/admin_suppliers_screen.dart';
+import '../features/admin/presentation/admin_werka_screen.dart';
 import '../features/shared/models/app_models.dart';
 import '../features/shared/presentation/profile_screen.dart';
 import '../features/supplier/presentation/supplier_confirm_screen.dart';
@@ -33,6 +34,7 @@ class AppRoutes {
   static const String adminHome = '/admin-home';
   static const String adminSettings = '/admin-settings';
   static const String adminSuppliers = '/admin-suppliers';
+  static const String adminWerka = '/admin-werka';
 }
 
 class AppRouter {
@@ -42,6 +44,9 @@ class AppRouter {
     AppRoutes.supplierRecent,
     AppRoutes.werkaHome,
     AppRoutes.adminHome,
+    AppRoutes.adminSettings,
+    AppRoutes.adminSuppliers,
+    AppRoutes.adminWerka,
     AppRoutes.profile,
   };
 
@@ -83,6 +88,8 @@ class AppRouter {
         return _buildRoute(settings, const AdminSettingsScreen());
       case AppRoutes.adminSuppliers:
         return _buildRoute(settings, const AdminSuppliersScreen());
+      case AppRoutes.adminWerka:
+        return _buildRoute(settings, const AdminWerkaScreen());
       default:
         return _buildRoute(settings, const LoginScreen());
     }

@@ -2,6 +2,7 @@ import '../../../core/api/mobile_api.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../shared/models/app_models.dart';
+import 'widgets/admin_dock.dart';
 import 'package:flutter/material.dart';
 
 class AdminSuppliersScreen extends StatefulWidget {
@@ -13,11 +14,44 @@ class AdminSuppliersScreen extends StatefulWidget {
 
 class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
   late Future<List<AdminSupplier>> _future;
+  final name = TextEditingController();
+  final phone = TextEditingController();
+  bool saving = false;
 
   @override
   void initState() {
     super.initState();
     _future = MobileApi.instance.adminSuppliers();
+  }
+
+  @override
+  void dispose() {
+    name.dispose();
+    phone.dispose();
+    super.dispose();
+  }
+
+  Future<void> _reload() async {
+    final future = MobileApi.instance.adminSuppliers();
+    setState(() {
+      _future = future;
+    });
+    await future;
+  }
+
+  Future<void> _create() async {
+    setState(() => saving = true);
+    try {
+      await MobileApi.instance.adminCreateSupplier(
+        name: name.text.trim(),
+        phone: phone.text.trim(),
+      );
+      name.clear();
+      phone.clear();
+      await _reload();
+    } finally {
+      if (mounted) setState(() => saving = false);
+    }
   }
 
   @override
@@ -28,7 +62,8 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
         onTap: () => Navigator.of(context).maybePop(),
       ),
       title: 'Suppliers',
-      subtitle: 'Code ro‘yxati.',
+      subtitle: 'Qo‘shish va code ro‘yxati.',
+      bottom: const AdminDock(activeTab: AdminDockTab.suppliers),
       child: FutureBuilder<List<AdminSupplier>>(
         future: _future,
         builder: (context, snapshot) {
@@ -45,10 +80,39 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
           final items = snapshot.data ?? const <AdminSupplier>[];
           return ListView.separated(
             padding: EdgeInsets.zero,
-            itemCount: items.length,
+            itemCount: items.length + 1,
             separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
-              final item = items[index];
+              if (index == 0) {
+                return SoftCard(
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: name,
+                        decoration:
+                            const InputDecoration(labelText: 'Supplier name'),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: phone,
+                        decoration:
+                            const InputDecoration(labelText: 'Supplier phone'),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton(
+                          onPressed: saving ? null : _create,
+                          child: Text(
+                            saving ? 'Qo‘shilmoqda...' : 'Supplier qo‘shish',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              final item = items[index - 1];
               return SoftCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

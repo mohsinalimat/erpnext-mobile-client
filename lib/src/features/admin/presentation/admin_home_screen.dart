@@ -1,6 +1,7 @@
 import '../../../app/app_router.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
+import 'widgets/admin_dock.dart';
 import 'package:flutter/material.dart';
 
 class AdminHomeScreen extends StatelessWidget {
@@ -11,12 +12,7 @@ class AdminHomeScreen extends StatelessWidget {
     return AppShell(
       title: 'Admin',
       subtitle: 'Minimal boshqaruv paneli.',
-      actions: [
-        AppShellIconAction(
-          icon: Icons.person_outline_rounded,
-          onTap: () => Navigator.of(context).pushNamed(AppRoutes.profile),
-        ),
-      ],
+      bottom: const AdminDock(activeTab: AdminDockTab.home),
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
@@ -28,8 +24,14 @@ class AdminHomeScreen extends StatelessWidget {
           const SizedBox(height: 12),
           _AdminActionTile(
             title: 'Suppliers',
-            subtitle: 'Supplier va code ro‘yxati',
+            subtitle: 'Supplier qo‘shish va code ro‘yxati',
             onTap: () => Navigator.of(context).pushNamed(AppRoutes.adminSuppliers),
+          ),
+          const SizedBox(height: 12),
+          _AdminActionTile(
+            title: 'Werka',
+            subtitle: 'Omborchi phone va name',
+            onTap: () => Navigator.of(context).pushNamed(AppRoutes.adminWerka),
           ),
         ],
       ),

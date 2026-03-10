@@ -3,6 +3,7 @@ import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'supplier_confirm_screen.dart';
+import 'widgets/supplier_dock.dart';
 import 'package:flutter/material.dart';
 
 class SupplierQtyScreen extends StatefulWidget {
@@ -31,6 +32,7 @@ class _SupplierQtyScreenState extends State<SupplierQtyScreen> {
     return AppShell(
       title: 'Miqdor',
       subtitle: '${widget.item.code} uchun jo‘natilayotgan miqdorni kiriting.',
+      bottom: const SupplierDock(activeTab: null, centerActive: true),
       child: Column(
         children: [
           SoftCard(

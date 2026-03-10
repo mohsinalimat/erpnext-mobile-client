@@ -270,6 +270,28 @@ class MobileApi {
         .toList();
   }
 
+  Future<AdminSupplier> adminCreateSupplier({
+    required String name,
+    required String phone,
+  }) async {
+    final response = await _sendAuthorized(
+      () => http.post(
+        Uri.parse('$baseUrl/v1/mobile/admin/suppliers'),
+        headers: _headers(requireToken())..['Content-Type'] = 'application/json',
+        body: jsonEncode({
+          'name': name,
+          'phone': phone,
+        }),
+      ),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Admin supplier create failed');
+    }
+    return AdminSupplier.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
+
   Map<String, String> _headers(String token) {
     return {
       'Authorization': 'Bearer $token',

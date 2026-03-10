@@ -3,6 +3,7 @@ import '../../../core/api/mobile_api.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../shared/models/app_models.dart';
+import 'widgets/supplier_dock.dart';
 import 'package:flutter/material.dart';
 
 class SupplierConfirmArgs {
@@ -28,6 +29,7 @@ class SupplierConfirmScreen extends StatelessWidget {
     return AppShell(
       title: 'Tasdiqlash',
       subtitle: 'Yuborishdan oldin ma’lumotlarni yana bir ko‘rib chiqing.',
+      bottom: const SupplierDock(activeTab: null, centerActive: true),
       child: Column(
         children: [
           SoftCard(

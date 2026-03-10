@@ -2,6 +2,7 @@ import '../../../app/app_router.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../shared/models/app_models.dart';
+import 'widgets/supplier_dock.dart';
 import 'package:flutter/material.dart';
 
 class SupplierSuccessScreen extends StatelessWidget {
@@ -17,6 +18,7 @@ class SupplierSuccessScreen extends StatelessWidget {
     return AppShell(
       title: 'Saqlandi',
       subtitle: 'Draft Purchase Receipt yaratildi va werka navbatiga tushdi.',
+      bottom: const SupplierDock(activeTab: null, centerActive: true),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
