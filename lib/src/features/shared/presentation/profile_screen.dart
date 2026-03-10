@@ -630,23 +630,14 @@ class _ThemeIconToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _ThemeIconButton(
-          asset: 'assets/icons/contrast-2-fill.svg',
-          active: isDark,
-          onTap: () => ThemeController.instance.setThemeMode(ThemeMode.dark),
-        ),
-        const SizedBox(width: 8),
-        _ThemeIconButton(
-          asset: isDark
-              ? 'assets/icons/sun-line.svg'
-              : 'assets/icons/sun-fill.svg',
-          active: !isDark,
-          onTap: () => ThemeController.instance.setThemeMode(ThemeMode.light),
-        ),
-      ],
+    return _ThemeIconButton(
+      asset: isDark
+          ? 'assets/icons/contrast-2-fill.svg'
+          : 'assets/icons/sun-fill.svg',
+      isDark: isDark,
+      onTap: () => ThemeController.instance.setThemeMode(
+        isDark ? ThemeMode.light : ThemeMode.dark,
+      ),
     );
   }
 }
@@ -654,39 +645,42 @@ class _ThemeIconToggle extends StatelessWidget {
 class _ThemeIconButton extends StatelessWidget {
   const _ThemeIconButton({
     required this.asset,
-    required this.active,
+    required this.isDark,
     required this.onTap,
   });
 
   final String asset;
-  final bool active;
+  final bool isDark;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: active ? null : onTap,
-      child: Container(
+      borderRadius: BorderRadius.circular(999),
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeInOutCubic,
         height: 44,
         width: 44,
         decoration: BoxDecoration(
-          color: active
-              ? AppTheme.primaryButton(context)
-              : AppTheme.actionSurface(context),
-          borderRadius: BorderRadius.circular(16),
+          color: AppTheme.actionSurface(context),
+          shape: BoxShape.circle,
           border: Border.all(color: AppTheme.cardBorder(context)),
         ),
         alignment: Alignment.center,
-        child: SvgPicture.asset(
-          asset,
-          width: 22,
-          height: 22,
-          colorFilter: ColorFilter.mode(
-            active
-                ? AppTheme.primaryButtonForeground(context)
-                : Theme.of(context).colorScheme.onSurface,
-            BlendMode.srcIn,
+        child: AnimatedRotation(
+          duration: const Duration(milliseconds: 320),
+          curve: Curves.easeInOutCubic,
+          turns: isDark ? 0.5 : 0,
+          child: SvgPicture.asset(
+            asset,
+            width: 22,
+            height: 22,
+            colorFilter: ColorFilter.mode(
+              Theme.of(context).colorScheme.onSurface,
+              BlendMode.srcIn,
+            ),
           ),
         ),
       ),
