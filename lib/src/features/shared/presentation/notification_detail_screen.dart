@@ -134,6 +134,17 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
           final canConfirm = role == UserRole.werka &&
               (record.status == DispatchStatus.pending ||
                   record.status == DispatchStatus.draft);
+          final supplierAcknowledged = detail.comments.any(
+            (item) =>
+                item.authorLabel.startsWith('Supplier') &&
+                item.body.toLowerCase().contains('tasdiqlayman'),
+          );
+          final canAcknowledge = role == UserRole.supplier &&
+              !supplierAcknowledged &&
+              (record.status == DispatchStatus.partial ||
+                  record.status == DispatchStatus.rejected ||
+                  record.status == DispatchStatus.cancelled ||
+                  record.note.trim().isNotEmpty);
           final canComment = record.note.trim().isNotEmpty ||
               record.status == DispatchStatus.partial ||
               record.status == DispatchStatus.rejected ||
@@ -227,6 +238,80 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
                         arguments: record,
                       ),
                       child: const Text('Qabul qilishga o‘tish'),
+                    ),
+                  ),
+                ],
+                if (canAcknowledge) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: _sending
+                          ? null
+                          : () async {
+                              final messenger = ScaffoldMessenger.of(context);
+                              final bool? confirmed = await showDialog<bool>(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text('Tasdiqlash'),
+                                    content: const Text(
+                                      'Haqiqatan ham shu holatni tasdiqlaysizmi?',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(false),
+                                        child: const Text('Yo‘q'),
+                                      ),
+                                      FilledButton(
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(true),
+                                        child: const Text('Ha'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                              if (confirmed != true) {
+                                return;
+                              }
+                              setState(() => _sending = true);
+                              try {
+                                final updated =
+                                    await MobileApi.instance.addNotificationComment(
+                                  receiptID: widget.receiptID,
+                                  message:
+                                      'Tasdiqlayman, shu holat bo‘lganini ko‘rdim.',
+                                );
+                                if (!mounted) {
+                                  return;
+                                }
+                                setState(() {
+                                  _future = Future<NotificationDetail>.value(
+                                    updated,
+                                  );
+                                });
+                              } catch (error) {
+                                if (!mounted) {
+                                  return;
+                                }
+                                messenger.showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Tasdiqlash yuborilmadi: $error',
+                                    ),
+                                  ),
+                                );
+                              } finally {
+                                if (mounted) {
+                                  setState(() => _sending = false);
+                                }
+                              }
+                            },
+                      child: Text(
+                        _sending ? 'Yuborilmoqda...' : 'Tasdiqlayman',
+                      ),
                     ),
                   ),
                 ],
