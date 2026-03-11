@@ -1,5 +1,6 @@
 import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
@@ -126,23 +127,16 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
                   onRefresh: _reload,
                   child: ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.zero,
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: MetricBadge(
-                              label: 'Jarayondagi mahsulotlar',
-                              value: items.length.toString(),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: MetricBadge(
-                              label: 'Tasdiqlangan mahsulotlar',
-                              value: confirmedCount.toString(),
-                            ),
-                          ),
-                        ],
+                      _WerkaStatCard(
+                        label: 'Jarayonda',
+                        value: items.length.toString(),
+                      ),
+                      const SizedBox(height: 12),
+                      _WerkaStatCard(
+                        label: 'Tasdiqlangan',
+                        value: confirmedCount.toString(),
                       ),
                       if (previewItems.isNotEmpty) ...[
                         const SizedBox(height: 16),
@@ -227,4 +221,42 @@ class _WerkaHomeData {
 
   final List<DispatchRecord> pending;
   final List<DispatchRecord> history;
+}
+
+class _WerkaStatCard extends StatelessWidget {
+  const _WerkaStatCard({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return SmoothAppear(
+      child: SoftCard(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                    fontSize: 34,
+                    color: AppTheme.isDark(context)
+                        ? Colors.white
+                        : const Color(0xFF1F1A17),
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
