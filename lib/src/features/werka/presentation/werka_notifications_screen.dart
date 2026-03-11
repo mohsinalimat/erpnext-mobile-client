@@ -1,8 +1,6 @@
-import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
-import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/werka_dock.dart';
 import 'package:flutter/material.dart';
@@ -17,13 +15,13 @@ class WerkaNotificationsScreen extends StatefulWidget {
 
 class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
     with WidgetsBindingObserver {
-  late Future<List<DispatchRecord>> _pendingFuture;
+  late Future<List<DispatchRecord>> _itemsFuture;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _pendingFuture = MobileApi.instance.werkaPending();
+    _itemsFuture = MobileApi.instance.werkaHistory();
   }
 
   @override
@@ -40,9 +38,9 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
   }
 
   Future<void> _reload() async {
-    final future = MobileApi.instance.werkaPending();
+    final future = MobileApi.instance.werkaHistory();
     setState(() {
-      _pendingFuture = future;
+      _itemsFuture = future;
     });
     await future;
   }
@@ -54,7 +52,7 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
       subtitle: '',
       bottom: const WerkaDock(activeTab: WerkaDockTab.notifications),
       child: FutureBuilder<List<DispatchRecord>>(
-        future: _pendingFuture,
+        future: _itemsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());
@@ -96,70 +94,127 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
           }
 
           final items = snapshot.data ?? <DispatchRecord>[];
+          if (items.isEmpty) {
+            return const Center(
+              child: SoftCard(
+                child: Text('Hali bildirishnomalar yo‘q.'),
+              ),
+            );
+          }
 
           return RefreshIndicator.adaptive(
             onRefresh: _reload,
-            child: ListView(
+            child: ListView.separated(
               physics: const AlwaysScrollableScrollPhysics(),
-              children: [
-                ...items.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final record = entry.value;
-                  return Padding(
-                    padding: EdgeInsets.only(
-                      bottom: index == items.length - 1 ? 0 : 12,
-                    ),
-                    child: SmoothAppear(
-                      delay: Duration(milliseconds: 70 + (index * 80)),
-                      offset: const Offset(0, 18),
-                      child: PressableScale(
-                        onTap: () => Navigator.of(context).pushNamed(
-                          AppRoutes.werkaDetail,
-                          arguments: record,
+              itemCount: items.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final record = items[index];
+                return SoftCard(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 44,
+                        width: 44,
+                        decoration: const BoxDecoration(
+                          color: Colors.transparent,
+                          shape: BoxShape.circle,
                         ),
-                        child: SoftCard(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      record.supplierName,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleLarge,
-                                    ),
-                                  ),
-                                  const StatusPill(
-                                    status: DispatchStatus.pending,
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              Text('${record.itemCode} • ${record.itemName}'),
-                              const SizedBox(height: 10),
-                              Text(
-                                '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
-                                style: Theme.of(context).textTheme.headlineMedium,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                record.createdLabel,
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            ],
-                          ),
+                        child: Icon(
+                          _notificationIcon(record.status),
+                          color: _notificationColor(record.status),
                         ),
                       ),
-                    ),
-                  );
-                }),
-              ],
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _notificationTitle(record),
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              _notificationBody(record),
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           );
         },
       ),
     );
+  }
+}
+
+String _notificationTitle(DispatchRecord record) {
+  switch (record.status) {
+    case DispatchStatus.pending:
+      return record.supplierName;
+    case DispatchStatus.accepted:
+    case DispatchStatus.partial:
+    case DispatchStatus.rejected:
+    case DispatchStatus.cancelled:
+    case DispatchStatus.draft:
+      return record.itemCode;
+  }
+}
+
+String _notificationBody(DispatchRecord record) {
+  switch (record.status) {
+    case DispatchStatus.pending:
+      return '${record.itemCode} • ${record.sentQty.toStringAsFixed(0)} ${record.uom} qabul kutmoqda.';
+    case DispatchStatus.accepted:
+      return '${record.acceptedQty.toStringAsFixed(0)} ${record.uom} qabul qilindi.';
+    case DispatchStatus.partial:
+      return 'Qisman qabul qilindi: ${record.acceptedQty.toStringAsFixed(0)} ${record.uom}.';
+    case DispatchStatus.rejected:
+      return 'Qabul rad etildi.';
+    case DispatchStatus.cancelled:
+      return 'Jarayon bekor qilindi.';
+    case DispatchStatus.draft:
+      return 'Draft holatida.';
+  }
+}
+
+IconData _notificationIcon(DispatchStatus status) {
+  switch (status) {
+    case DispatchStatus.pending:
+      return Icons.notifications_active_rounded;
+    case DispatchStatus.accepted:
+      return Icons.check_rounded;
+    case DispatchStatus.partial:
+      return Icons.timelapse_rounded;
+    case DispatchStatus.rejected:
+      return Icons.cancel_rounded;
+    case DispatchStatus.cancelled:
+      return Icons.block_rounded;
+    case DispatchStatus.draft:
+      return Icons.edit_note_rounded;
+  }
+}
+
+Color _notificationColor(DispatchStatus status) {
+  switch (status) {
+    case DispatchStatus.pending:
+      return const Color(0xFFFFD54F);
+    case DispatchStatus.accepted:
+      return const Color(0xFF5BB450);
+    case DispatchStatus.partial:
+      return const Color(0xFF2A6FDB);
+    case DispatchStatus.rejected:
+      return const Color(0xFFC53B30);
+    case DispatchStatus.cancelled:
+      return const Color(0xFF9CA3AF);
+    case DispatchStatus.draft:
+      return const Color(0xFFA78BFA);
   }
 }
