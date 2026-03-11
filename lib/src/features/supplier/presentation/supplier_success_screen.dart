@@ -17,7 +17,7 @@ class SupplierSuccessScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppShell(
       title: 'Saqlandi',
-      subtitle: 'Draft Purchase Receipt yaratildi va werka navbatiga tushdi.',
+      subtitle: '',
       bottom: const SupplierDock(activeTab: null, centerActive: true),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

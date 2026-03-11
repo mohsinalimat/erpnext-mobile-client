@@ -57,7 +57,7 @@ class _AdminItemCreateScreenState extends State<AdminItemCreateScreen> {
         onTap: () => Navigator.of(context).maybePop(),
       ),
       title: 'Item qo‘shish',
-      subtitle: 'Yangi mahsulot yaratish.',
+      subtitle: '',
       child: ListView(
         padding: EdgeInsets.zero,
         children: [

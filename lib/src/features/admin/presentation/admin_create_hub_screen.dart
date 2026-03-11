@@ -11,7 +11,7 @@ class AdminCreateHubScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppShell(
       title: 'Qo‘shish',
-      subtitle: 'Admin modullari va sozlamalari.',
+      subtitle: '',
       bottom: const AdminDock(activeTab: AdminDockTab.settings),
       child: ListView(
         padding: EdgeInsets.zero,

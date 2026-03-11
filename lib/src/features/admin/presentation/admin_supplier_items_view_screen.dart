@@ -102,7 +102,7 @@ class _AdminSupplierItemsViewScreenState
         onTap: () => Navigator.of(context).maybePop(),
       ),
       title: 'Biriktirilgan mahsulotlar',
-      subtitle: supplierName,
+      subtitle: '',
       child: loading
           ? const Center(child: CircularProgressIndicator())
           : ItemsTable(

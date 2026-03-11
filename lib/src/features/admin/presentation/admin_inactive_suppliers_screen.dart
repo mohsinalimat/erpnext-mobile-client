@@ -67,7 +67,7 @@ class _AdminInactiveSuppliersScreenState
         onTap: () => Navigator.of(context).maybePop(),
       ),
       title: 'Inactive Suppliers',
-      subtitle: 'Bloklangan va chiqarilgan supplierlar.',
+      subtitle: '',
       child: FutureBuilder<List<AdminSupplier>>(
         future: _future,
         builder: (context, snapshot) {

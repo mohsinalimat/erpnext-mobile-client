@@ -338,7 +338,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
     return AppShell(
       title: 'Profile',
-      subtitle: 'Shaxsiy sozlamalar va session.',
+      subtitle: '',
       bottom: role == UserRole.supplier
           ? const SupplierDock(activeTab: SupplierDockTab.profile)
           : role == UserRole.werka

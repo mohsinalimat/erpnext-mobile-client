@@ -49,7 +49,7 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
   Widget build(BuildContext context) {
     return AppShell(
       title: 'Werka',
-      subtitle: 'Pending qabul qilish ro‘yxati.',
+      subtitle: '',
       actions: [
         AppShellIconAction(
           icon: Icons.person_outline_rounded,

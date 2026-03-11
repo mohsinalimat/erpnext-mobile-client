@@ -48,7 +48,7 @@ class _SupplierRecentScreenState extends State<SupplierRecentScreen>
   Widget build(BuildContext context) {
     return AppShell(
       title: 'Recent',
-      subtitle: 'Supplier qilgan avvalgi harakatlar.',
+      subtitle: '',
       bottom: const SupplierDock(activeTab: SupplierDockTab.recent),
       child: FutureBuilder<List<DispatchRecord>>(
         future: _itemsFuture,

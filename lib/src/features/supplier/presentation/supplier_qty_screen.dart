@@ -31,7 +31,7 @@ class _SupplierQtyScreenState extends State<SupplierQtyScreen> {
   Widget build(BuildContext context) {
     return AppShell(
       title: 'Miqdor',
-      subtitle: '${widget.item.code} uchun jo‘natilayotgan miqdorni kiriting.',
+      subtitle: '',
       bottom: const SupplierDock(activeTab: null, centerActive: true),
       child: Column(
         children: [

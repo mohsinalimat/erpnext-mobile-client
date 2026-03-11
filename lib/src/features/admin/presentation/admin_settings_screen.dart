@@ -87,7 +87,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
         onTap: () => Navigator.of(context).maybePop(),
       ),
       title: 'Admin Settings',
-      subtitle: 'Minimal sozlamalar.',
+      subtitle: '',
       bottom: const AdminDock(activeTab: AdminDockTab.settings),
       child: FutureBuilder<AdminSettings>(
         future: _future,

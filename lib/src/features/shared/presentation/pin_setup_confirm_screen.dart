@@ -85,7 +85,7 @@ class _PinSetupConfirmScreenState extends State<PinSetupConfirmScreen> {
   Widget build(BuildContext context) {
     return PinEntryScaffold(
       title: 'PIN takrorlang',
-      subtitle: 'Oldingi 4 xonali PIN kodni qayta kiriting.',
+      subtitle: '',
       length: _pin.length,
       errorText: _error,
       onDigit: _handleDigit,

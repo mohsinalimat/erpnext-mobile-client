@@ -105,7 +105,7 @@ class _AdminSupplierItemsAddScreenState
         onTap: () => Navigator.of(context).maybePop(),
       ),
       title: 'Mahsulot qo‘shish',
-      subtitle: supplierName,
+      subtitle: '',
       child: loading
           ? const Center(child: CircularProgressIndicator())
           : ItemsTable(

@@ -28,7 +28,7 @@ class SupplierConfirmScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppShell(
       title: 'Tasdiqlash',
-      subtitle: 'Yuborishdan oldin ma’lumotlarni yana bir ko‘rib chiqing.',
+      subtitle: '',
       bottom: const SupplierDock(activeTab: null, centerActive: true),
       child: Column(
         children: [

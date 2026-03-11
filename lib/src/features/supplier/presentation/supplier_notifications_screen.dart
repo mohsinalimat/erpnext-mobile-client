@@ -49,7 +49,7 @@ class _SupplierNotificationsScreenState
   Widget build(BuildContext context) {
     return AppShell(
       title: 'Notifications',
-      subtitle: 'Werka mahsulotni oldimi yoki yo‘qmi, shu yerda ko‘rasiz.',
+      subtitle: '',
       bottom: const SupplierDock(activeTab: SupplierDockTab.notifications),
       child: FutureBuilder<List<DispatchRecord>>(
         future: _itemsFuture,

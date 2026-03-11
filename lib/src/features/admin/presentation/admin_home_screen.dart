@@ -35,7 +35,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   Widget build(BuildContext context) {
     return AppShell(
       title: 'Admin',
-      subtitle: 'Minimal boshqaruv paneli.',
+      subtitle: '',
       bottom: const AdminDock(activeTab: AdminDockTab.home),
       child: FutureBuilder<AdminSupplierSummary>(
         future: _summaryFuture,

@@ -67,7 +67,7 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
   Widget build(BuildContext context) {
     return AppShell(
       title: 'Users',
-      subtitle: 'Supplier va werka ro‘yxati.',
+      subtitle: '',
       bottom: const AdminDock(activeTab: AdminDockTab.suppliers),
       child: FutureBuilder<List<AdminUserListEntry>>(
         future: _future,

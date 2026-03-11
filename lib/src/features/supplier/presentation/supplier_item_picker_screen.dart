@@ -56,7 +56,7 @@ class _SupplierItemPickerScreenState extends State<SupplierItemPickerScreen>
         onTap: () => Navigator.of(context).maybePop(),
       ),
       title: 'Mahsulot tanlash',
-      subtitle: 'Faqat sizga biriktirilgan itemlar ko‘rinadi.',
+      subtitle: '',
       bottom: const SupplierDock(
         activeTab: null,
         centerActive: true,

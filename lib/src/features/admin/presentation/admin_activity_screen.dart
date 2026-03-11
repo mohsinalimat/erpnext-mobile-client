@@ -33,7 +33,7 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
   Widget build(BuildContext context) {
     return AppShell(
       title: 'Harakatlar',
-      subtitle: 'Supplier va werka o‘rtasidagi oqim.',
+      subtitle: '',
       bottom: const AdminDock(activeTab: AdminDockTab.activity),
       child: FutureBuilder<List<DispatchRecord>>(
         future: _future,

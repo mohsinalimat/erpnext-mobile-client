@@ -165,7 +165,7 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
         onTap: () => Navigator.of(context).maybePop(),
       ),
       title: 'Supplier',
-      subtitle: 'Mahsulot, code va status boshqaruvi.',
+      subtitle: '',
       child: FutureBuilder<AdminSupplierDetail>(
         future: _detailFuture,
         builder: (context, snapshot) {

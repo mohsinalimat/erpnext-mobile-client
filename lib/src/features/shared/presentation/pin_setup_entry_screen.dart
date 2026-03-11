@@ -55,7 +55,7 @@ class _PinSetupEntryScreenState extends State<PinSetupEntryScreen> {
   Widget build(BuildContext context) {
     return PinEntryScaffold(
       title: 'PIN kiriting',
-      subtitle: 'App uchun 4 xonali PIN kod yarating.',
+      subtitle: '',
       length: _pin.length,
       onDigit: _handleDigit,
       onBackspace: _handleBackspace,

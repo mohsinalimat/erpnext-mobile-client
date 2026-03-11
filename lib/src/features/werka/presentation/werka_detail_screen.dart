@@ -37,7 +37,7 @@ class _WerkaDetailScreenState extends State<WerkaDetailScreen> {
   Widget build(BuildContext context) {
     return AppShell(
       title: 'Qabul qilish',
-      subtitle: 'Real qabul qilingan miqdorni kiriting.',
+      subtitle: '',
       child: Column(
         children: [
           SoftCard(

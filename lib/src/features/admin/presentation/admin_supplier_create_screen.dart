@@ -48,7 +48,7 @@ class _AdminSupplierCreateScreenState extends State<AdminSupplierCreateScreen> {
         onTap: () => Navigator.of(context).maybePop(),
       ),
       title: 'Supplier qo‘shish',
-      subtitle: 'Yangi supplier yaratish.',
+      subtitle: '',
       child: ListView(
         padding: EdgeInsets.zero,
         children: [

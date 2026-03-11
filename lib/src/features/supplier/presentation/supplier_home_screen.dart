@@ -50,7 +50,7 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
   Widget build(BuildContext context) {
     return AppShell(
       title: 'Supplier',
-      subtitle: 'Faqat asosiy holatlar.',
+      subtitle: '',
       bottom: const SupplierDock(activeTab: SupplierDockTab.home),
       child: FutureBuilder<List<DispatchRecord>>(
         future: _historyFuture,

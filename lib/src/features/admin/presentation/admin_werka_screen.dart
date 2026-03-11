@@ -129,7 +129,7 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
         onTap: () => Navigator.of(context).maybePop(),
       ),
       title: 'Werka',
-      subtitle: 'Omborchi sozlamalari.',
+      subtitle: '',
       bottom: const AdminDock(activeTab: AdminDockTab.settings),
       child: FutureBuilder<AdminSettings>(
         future: _future,
