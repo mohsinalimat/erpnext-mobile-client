@@ -69,22 +69,28 @@ class _WerkaUnannouncedQtyScreenState extends State<WerkaUnannouncedQtyScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          FilledButton(
-            onPressed: () {
-              final qty = double.tryParse(_controller.text.trim()) ?? 0;
-              if (qty <= 0) {
-                return;
-              }
-              Navigator.of(context).pushNamed(
-                AppRoutes.werkaUnannouncedConfirm,
-                arguments: WerkaUnannouncedConfirmArgs(
-                  supplier: widget.args.supplier,
-                  item: widget.args.item,
-                  qty: qty,
-                ),
-              );
-            },
-            child: const Text('Keyingi'),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 18),
+              ),
+              onPressed: () {
+                final qty = double.tryParse(_controller.text.trim()) ?? 0;
+                if (qty <= 0) {
+                  return;
+                }
+                Navigator.of(context).pushNamed(
+                  AppRoutes.werkaUnannouncedConfirm,
+                  arguments: WerkaUnannouncedConfirmArgs(
+                    supplier: widget.args.supplier,
+                    item: widget.args.item,
+                    qty: qty,
+                  ),
+                );
+              },
+              child: const Text('Keyingi'),
+            ),
           ),
         ],
       ),

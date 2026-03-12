@@ -93,11 +93,13 @@ class _WerkaUnannouncedSupplierScreenState
                                 Text(
                                   items[index].name,
                                   style: Theme.of(context).textTheme.titleLarge,
+                                  textAlign: TextAlign.left,
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
                                   items[index].phone,
                                   style: Theme.of(context).textTheme.bodySmall,
+                                  textAlign: TextAlign.left,
                                 ),
                               ],
                             ),
