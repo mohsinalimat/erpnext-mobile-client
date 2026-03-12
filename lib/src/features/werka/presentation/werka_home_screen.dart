@@ -204,7 +204,7 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
                       if (previewItems.isNotEmpty) ...[
                         const SizedBox(height: 16),
                         Padding(
-                          padding: const EdgeInsets.only(left: 6, bottom: 12),
+                          padding: const EdgeInsets.only(left: 10, bottom: 12),
                           child: Text(
                             'Jarayondagi mahsulotlar',
                             style: Theme.of(context).textTheme.titleLarge,

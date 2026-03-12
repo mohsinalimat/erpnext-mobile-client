@@ -85,6 +85,7 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
       title: 'Bildirishnomalar',
       subtitle: '',
       bottom: const WerkaDock(activeTab: WerkaDockTab.notifications),
+      contentPadding: const EdgeInsets.fromLTRB(10, 0, 12, 0),
       child: FutureBuilder<List<DispatchRecord>>(
         future: _itemsFuture,
         builder: (context, snapshot) {
@@ -139,72 +140,125 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
 
           return RefreshIndicator.adaptive(
             onRefresh: _reload,
-            child: ListView.separated(
+            child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: items.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final record = items[index];
-                return InkWell(
-                  borderRadius: BorderRadius.circular(24),
-                  onTap: () => Navigator.of(context).pushNamed(
-                    AppRoutes.notificationDetail,
-                    arguments: record.id,
-                  ),
-                  child: SoftCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                _notificationTitle(record),
-                                style: Theme.of(context).textTheme.titleLarge,
-                              ),
-                            ),
-                            _NotificationStatusBadge(status: record.status),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          record.eventType == 'supplier_ack'
-                              ? record.highlight
-                              : '${record.itemCode} • ${record.itemName}',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Jo‘natildi: ${record.sentQty.toStringAsFixed(0)} ${record.uom}',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        if (record.acceptedQty > 0) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            'Qabul qilindi: ${record.acceptedQty.toStringAsFixed(0)} ${record.uom}',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
-                        if (record.note.trim().isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            record.note,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
-                        const SizedBox(height: 8),
-                        Text(
-                          record.createdLabel,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+              padding: EdgeInsets.zero,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: _WerkaNotificationsSection(items: items),
+                ),
+              ],
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _WerkaNotificationsSection extends StatelessWidget {
+  const _WerkaNotificationsSection({
+    required this.items,
+  });
+
+  final List<DispatchRecord> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return SoftCard(
+      padding: EdgeInsets.zero,
+      borderWidth: 1.45,
+      borderRadius: 20,
+      child: Column(
+        children: [
+          for (int index = 0; index < items.length; index++) ...[
+            _WerkaNotificationRow(record: items[index]),
+            if (index != items.length - 1)
+              const Divider(height: 1, thickness: 1),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _WerkaNotificationRow extends StatelessWidget {
+  const _WerkaNotificationRow({
+    required this.record,
+  });
+
+  final DispatchRecord record;
+
+  String _secondary(DispatchRecord record) {
+    if (record.eventType == 'supplier_ack') {
+      return record.highlight;
+    }
+    return record.itemName;
+  }
+
+  String _metricLine(DispatchRecord record) {
+    final sent =
+        '${record.sentQty.toStringAsFixed(0)} ${record.uom} jo‘natildi';
+    if (record.acceptedQty > 0) {
+      return '$sent • ${record.acceptedQty.toStringAsFixed(0)} ${record.uom} qabul';
+    }
+    return sent;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: () => Navigator.of(context).pushNamed(
+        AppRoutes.notificationDetail,
+        arguments: record.id,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    _notificationTitle(record),
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                _NotificationStatusBadge(status: record.status),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              _secondary(record),
+              style: Theme.of(context).textTheme.bodyMedium,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _metricLine(record),
+                    style: Theme.of(context).textTheme.bodySmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  record.createdLabel,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
