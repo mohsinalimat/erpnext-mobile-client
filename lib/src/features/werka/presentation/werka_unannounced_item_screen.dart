@@ -1,5 +1,6 @@
 import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../shared/models/app_models.dart';
@@ -32,10 +33,15 @@ class _WerkaUnannouncedItemScreenState extends State<WerkaUnannouncedItemScreen>
     );
   }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   Future<void> _reload() async {
     final future = MobileApi.instance.werkaSupplierItems(
       supplierRef: widget.supplier.ref,
-      query: _controller.text,
     );
     setState(() => _future = future);
     await future;
@@ -72,27 +78,78 @@ class _WerkaUnannouncedItemScreenState extends State<WerkaUnannouncedItemScreen>
                 if (snapshot.hasError) {
                   return Center(child: SoftCard(child: Text('${snapshot.error}')));
                 }
+                final query = _controller.text.trim().toLowerCase();
                 final items = snapshot.data ?? const <SupplierItem>[];
-                return ListView.separated(
+                final filtered = items
+                    .where((item) {
+                      if (query.isEmpty) return true;
+                      return item.name.toLowerCase().contains(query) ||
+                          item.code.toLowerCase().contains(query);
+                    })
+                    .toList()
+                  ..sort((a, b) {
+                    final aStarts = a.name.toLowerCase().startsWith(query);
+                    final bStarts = b.name.toLowerCase().startsWith(query);
+                    if (aStarts != bStarts) {
+                      return aStarts ? -1 : 1;
+                    }
+                    return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+                  });
+
+                if (filtered.isEmpty) {
+                  return const Center(
+                    child: SoftCard(
+                      child: Text('Mahsulot topilmadi.'),
+                    ),
+                  );
+                }
+
+                return ListView(
                   padding: EdgeInsets.zero,
-                  itemCount: items.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final item = items[index];
-                    return InkWell(
-                      borderRadius: BorderRadius.circular(24),
-                      onTap: () => Navigator.of(context).pushNamed(
-                        AppRoutes.werkaUnannouncedQty,
-                        arguments: WerkaUnannouncedQtyArgs(
-                          supplier: widget.supplier,
-                          item: item,
-                        ),
+                  children: [
+                    SoftCard(
+                      padding: EdgeInsets.zero,
+                      borderWidth: 1.45,
+                      borderRadius: 20,
+                      child: Column(
+                        children: [
+                          for (int index = 0; index < filtered.length; index++) ...[
+                            InkWell(
+                              borderRadius: BorderRadius.circular(20),
+                              onTap: () => Navigator.of(context).pushNamed(
+                                AppRoutes.werkaUnannouncedQty,
+                                arguments: WerkaUnannouncedQtyArgs(
+                                  supplier: widget.supplier,
+                                  item: filtered[index],
+                                ),
+                              ),
+                              child: Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  border: index != filtered.length - 1
+                                      ? Border(
+                                          bottom: BorderSide(
+                                            color: AppTheme.cardBorder(context),
+                                            width: 1,
+                                          ),
+                                        )
+                                      : null,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 16,
+                                ),
+                                child: Text(
+                                  filtered[index].name,
+                                  style: Theme.of(context).textTheme.titleLarge,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                      child: SoftCard(
-                        child: Text(item.name, style: Theme.of(context).textTheme.titleLarge),
-                      ),
-                    );
-                  },
+                    ),
+                  ],
                 );
               },
             ),
