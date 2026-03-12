@@ -197,95 +197,25 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: EdgeInsets.zero,
                     children: [
-                      _WerkaSummaryCard(summary: currentSummary),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: _WerkaSummaryCard(summary: currentSummary),
+                      ),
                       if (previewItems.isNotEmpty) ...[
                         const SizedBox(height: 16),
                         Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.only(left: 6, bottom: 12),
                           child: Text(
                             'Jarayondagi mahsulotlar',
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
                         ),
                       ],
-                      ...previewItems.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final DispatchRecord record = entry.value;
-                        return Padding(
-                          padding: EdgeInsets.only(
-                            bottom: index == previewItems.length - 1 ? 0 : 12,
-                          ),
-                          child: SmoothAppear(
-                            delay: Duration(milliseconds: 70 + (index * 80)),
-                            offset: const Offset(0, 18),
-                            child: PressableScale(
-                              onTap: () => Navigator.of(context).pushNamed(
-                                AppRoutes.werkaDetail,
-                                arguments: record,
-                              ),
-                              child: SoftCard(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 18,
-                                  vertical: 16,
-                                ),
-                                borderWidth: 1.55,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                record.itemName,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .titleLarge,
-                                              ),
-                                              const SizedBox(height: 6),
-                                              Text(
-                                                record.supplierName,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodySmall,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            Text(
-                                              '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .titleMedium,
-                                            ),
-                                            const SizedBox(height: 6),
-                                            Text(
-                                              record.createdLabel,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall,
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
+                      if (previewItems.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: _WerkaPendingSection(items: previewItems),
+                        ),
                     ],
                   ),
                 );
@@ -321,6 +251,7 @@ class _WerkaSummaryCard extends StatelessWidget {
       child: SoftCard(
         padding: EdgeInsets.zero,
         borderWidth: 1.35,
+        borderRadius: 20,
         child: Column(
           children: [
             _WerkaSummaryRow(
@@ -331,7 +262,7 @@ class _WerkaSummaryCard extends StatelessWidget {
                 arguments: WerkaStatusKind.pending,
               ),
             ),
-            _WerkaSummaryDivider(),
+            const _WerkaSummaryDivider(),
             _WerkaSummaryRow(
               label: 'Tasdiqlangan',
               value: summary.confirmedCount.toString(),
@@ -340,7 +271,7 @@ class _WerkaSummaryCard extends StatelessWidget {
                 arguments: WerkaStatusKind.confirmed,
               ),
             ),
-            _WerkaSummaryDivider(),
+            const _WerkaSummaryDivider(),
             _WerkaSummaryRow(
               label: 'Qaytarilgan',
               value: summary.returnedCount.toString(),
@@ -401,12 +332,100 @@ class _WerkaSummaryRow extends StatelessWidget {
 }
 
 class _WerkaSummaryDivider extends StatelessWidget {
+  const _WerkaSummaryDivider();
+
   @override
   Widget build(BuildContext context) {
     return Divider(
       height: 1,
       thickness: 1,
       color: AppTheme.cardBorder(context),
+    );
+  }
+}
+
+class _WerkaPendingSection extends StatelessWidget {
+  const _WerkaPendingSection({
+    required this.items,
+  });
+
+  final List<DispatchRecord> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return SmoothAppear(
+      delay: const Duration(milliseconds: 90),
+      offset: const Offset(0, 18),
+      child: SoftCard(
+        padding: EdgeInsets.zero,
+        borderWidth: 1.45,
+        borderRadius: 20,
+        child: Column(
+          children: [
+            for (int index = 0; index < items.length; index++) ...[
+              _WerkaPendingRow(record: items[index]),
+              if (index != items.length - 1) const _WerkaSummaryDivider(),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WerkaPendingRow extends StatelessWidget {
+  const _WerkaPendingRow({
+    required this.record,
+  });
+
+  final DispatchRecord record;
+
+  @override
+  Widget build(BuildContext context) {
+    return PressableScale(
+      onTap: () => Navigator.of(context).pushNamed(
+        AppRoutes.werkaDetail,
+        arguments: record,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    record.itemName,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    record.supplierName,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  record.createdLabel,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

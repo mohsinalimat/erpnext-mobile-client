@@ -17,11 +17,13 @@ class SoftCard extends StatelessWidget {
     required this.child,
     this.padding = const EdgeInsets.all(18),
     this.borderWidth,
+    this.borderRadius = 24,
   });
 
   final Widget child;
   final EdgeInsets padding;
   final double? borderWidth;
+  final double borderRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +31,7 @@ class SoftCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.cardBackground(context),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(borderRadius),
         boxShadow: isDark
             ? const [
                 BoxShadow(
