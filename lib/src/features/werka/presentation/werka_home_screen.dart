@@ -362,10 +362,11 @@ class _WerkaPendingSection extends StatelessWidget {
         borderRadius: 20,
         child: Column(
           children: [
-            for (int index = 0; index < items.length; index++) ...[
-              _WerkaPendingRow(record: items[index]),
-              if (index != items.length - 1) const _WerkaSummaryDivider(),
-            ],
+            for (int index = 0; index < items.length; index++)
+              _WerkaPendingRow(
+                record: items[index],
+                hasBottomBorder: index != items.length - 1,
+              ),
           ],
         ),
       ),
@@ -376,9 +377,11 @@ class _WerkaPendingSection extends StatelessWidget {
 class _WerkaPendingRow extends StatelessWidget {
   const _WerkaPendingRow({
     required this.record,
+    required this.hasBottomBorder,
   });
 
   final DispatchRecord record;
+  final bool hasBottomBorder;
 
   @override
   Widget build(BuildContext context) {
@@ -389,7 +392,17 @@ class _WerkaPendingRow extends StatelessWidget {
       ),
       child: SizedBox(
         width: double.infinity,
-        child: Padding(
+        child: Container(
+          decoration: BoxDecoration(
+            border: hasBottomBorder
+                ? Border(
+                    bottom: BorderSide(
+                      color: AppTheme.cardBorder(context),
+                      width: 1,
+                    ),
+                  )
+                : null,
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
