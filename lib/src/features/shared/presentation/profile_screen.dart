@@ -339,21 +339,12 @@ class _ProfileScreenState extends State<ProfileScreen>
     return AppShell(
       title: 'Profile',
       subtitle: '',
-      bottomPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
+      bottomPadding: const EdgeInsets.fromLTRB(8, 0, 10, 0),
       bottom: role == UserRole.supplier
-          ? const SupplierDock(
-              activeTab: SupplierDockTab.profile,
-              compact: true,
-            )
+          ? const SupplierDock(activeTab: SupplierDockTab.profile)
           : role == UserRole.werka
-              ? const WerkaDock(
-                  activeTab: WerkaDockTab.profile,
-                  compact: true,
-                )
-              : const AdminDock(
-                  activeTab: AdminDockTab.profile,
-                  compact: true,
-                ),
+              ? const WerkaDock(activeTab: WerkaDockTab.profile)
+              : const AdminDock(activeTab: AdminDockTab.profile),
       child: RefreshIndicator.adaptive(
         onRefresh: _refreshProfile,
         child: ListView(
