@@ -58,9 +58,8 @@ class _WerkaDetailScreenState extends State<WerkaDetailScreen> {
   }
 
   Future<void> _submit() async {
-    final double acceptedQty = fullReturnMode
-        ? 0.0
-        : (double.tryParse(controller.text.trim()) ?? 0.0);
+    final double acceptedQty =
+        fullReturnMode ? 0.0 : (double.tryParse(controller.text.trim()) ?? 0.0);
     if (acceptedQty <= 0) {
       if (fullReturnMode) {
         // full return mode handles zero accepted qty
@@ -102,7 +101,7 @@ class _WerkaDetailScreenState extends State<WerkaDetailScreen> {
         );
         return;
       }
-      if (returnedQty-difference > 0.0001) {
+      if (returnedQty - difference > 0.0001) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Qaytarilayotgan miqdor farqdan oshmasin.'),
@@ -169,6 +168,10 @@ class _WerkaDetailScreenState extends State<WerkaDetailScreen> {
     return AppShell(
       title: 'Qabul qilish',
       subtitle: '',
+      leading: AppShellIconAction(
+        icon: Icons.arrow_back_rounded,
+        onTap: () => Navigator.of(context).maybePop(),
+      ),
       bottom: const WerkaDock(activeTab: null),
       child: ListView(
         padding: EdgeInsets.zero,

@@ -46,11 +46,11 @@ class _WerkaStatusDetailScreenState extends State<WerkaStatusDetailScreen> {
   String get _title {
     switch (widget.args.kind) {
       case WerkaStatusKind.pending:
-        return '${widget.args.supplierName} • Jarayonda';
+        return 'Jarayonda • ${widget.args.supplierName}';
       case WerkaStatusKind.confirmed:
-        return '${widget.args.supplierName} • Tasdiqlangan';
+        return 'Tasdiqlangan • ${widget.args.supplierName}';
       case WerkaStatusKind.returned:
-        return '${widget.args.supplierName} • Qaytarilgan';
+        return 'Qaytarilgan • ${widget.args.supplierName}';
     }
   }
 
