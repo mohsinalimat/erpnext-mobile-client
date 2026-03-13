@@ -110,10 +110,6 @@ class _SupplierNotificationsScreenState
   }
 
   Future<void> _openDetail(String receiptId) async {
-    await Navigator.of(context).pushNamed(
-      AppRoutes.notificationDetail,
-      arguments: receiptId,
-    );
     await NotificationUnreadStore.instance.markSeen(
       profile: AppSession.instance.profile,
       ids: [receiptId],
@@ -124,6 +120,10 @@ class _SupplierNotificationsScreenState
     setState(() {
       _highlightedUnreadIds.remove(receiptId);
     });
+    await Navigator.of(context).pushNamed(
+      AppRoutes.notificationDetail,
+      arguments: receiptId,
+    );
   }
 
   @override
