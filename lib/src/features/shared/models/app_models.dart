@@ -1,6 +1,7 @@
 enum UserRole {
   supplier,
   werka,
+  customer,
   admin,
 }
 
@@ -389,6 +390,8 @@ class SessionProfile {
     return SessionProfile(
       role: roleValue == 'werka'
           ? UserRole.werka
+          : roleValue == 'customer'
+              ? UserRole.customer
           : roleValue == 'admin'
               ? UserRole.admin
               : UserRole.supplier,
@@ -404,6 +407,8 @@ class SessionProfile {
     return {
       'role': role == UserRole.werka
           ? 'werka'
+          : role == UserRole.customer
+              ? 'customer'
           : role == UserRole.admin
               ? 'admin'
               : 'supplier',

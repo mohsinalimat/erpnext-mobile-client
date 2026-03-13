@@ -23,6 +23,8 @@ class AppSession {
         return '/supplier-home';
       case UserRole.werka:
         return '/werka-home';
+      case UserRole.customer:
+        return '/customer-home';
       case UserRole.admin:
         return '/admin-home';
     }

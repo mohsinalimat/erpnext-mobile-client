@@ -1,4 +1,5 @@
 import '../features/auth/presentation/login_screen.dart';
+import '../features/customer/presentation/customer_home_screen.dart';
 import '../features/admin/presentation/admin_activity_screen.dart';
 import '../features/admin/presentation/admin_create_hub_screen.dart';
 import '../features/admin/presentation/admin_home_screen.dart';
@@ -71,6 +72,7 @@ class AppRoutes {
   static const String werkaDetail = '/werka-detail';
   static const String werkaSuccess = '/werka-success';
   static const String profile = '/profile';
+  static const String customerHome = '/customer-home';
   static const String pinSetupEntry = '/pin-setup-entry';
   static const String pinSetupConfirm = '/pin-setup-confirm';
   static const String adminHome = '/admin-home';
@@ -101,6 +103,7 @@ class AppRouter {
     AppRoutes.adminSuppliers,
     AppRoutes.adminWerka,
     AppRoutes.profile,
+    AppRoutes.customerHome,
   };
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
@@ -222,6 +225,8 @@ class AppRouter {
         return _buildRoute(settings, WerkaSuccessScreen(record: record));
       case AppRoutes.profile:
         return _buildRoute(settings, const ProfileScreen());
+      case AppRoutes.customerHome:
+        return _buildRoute(settings, const CustomerHomeScreen());
       case AppRoutes.pinSetupEntry:
         return _buildRoute(settings, const PinSetupEntryScreen());
       case AppRoutes.pinSetupConfirm:

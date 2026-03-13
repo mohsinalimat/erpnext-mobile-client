@@ -10,6 +10,7 @@ import '../data/profile_avatar_cache.dart';
 import '../models/app_models.dart';
 import '../../admin/presentation/widgets/admin_dock.dart';
 import '../../supplier/presentation/widgets/supplier_dock.dart';
+import '../../customer/presentation/widgets/customer_dock.dart';
 import '../../werka/presentation/widgets/werka_dock.dart';
 import 'dart:io';
 import 'dart:typed_data';
@@ -330,6 +331,8 @@ class _ProfileScreenState extends State<ProfileScreen>
         ? 'Supplier account'
         : role == UserRole.werka
             ? 'Werka account'
+            : role == UserRole.customer
+                ? 'Customer account'
             : 'Admin account';
     final bool hasPin = SecurityController.instance.hasPinForCurrentUser;
     final bool biometricEnabled =
@@ -343,6 +346,8 @@ class _ProfileScreenState extends State<ProfileScreen>
           ? const SupplierDock(activeTab: SupplierDockTab.profile)
           : role == UserRole.werka
               ? const WerkaDock(activeTab: WerkaDockTab.profile)
+              : role == UserRole.customer
+                  ? const CustomerDock(activeTab: CustomerDockTab.profile)
               : const AdminDock(activeTab: AdminDockTab.profile),
       contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
       child: RefreshIndicator.adaptive(

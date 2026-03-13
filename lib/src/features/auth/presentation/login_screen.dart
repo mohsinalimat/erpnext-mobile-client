@@ -60,6 +60,8 @@ class _LoginScreenState extends State<LoginScreen> {
           ? AppRoutes.supplierHome
           : profile.role == UserRole.werka
               ? AppRoutes.werkaHome
+              : profile.role == UserRole.customer
+                  ? AppRoutes.customerHome
               : AppRoutes.adminHome;
       Navigator.of(context).pushNamedAndRemoveUntil(route, (route) => false);
     }).catchError((error) {
