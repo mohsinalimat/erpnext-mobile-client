@@ -394,14 +394,14 @@ class _DockButtonState extends State<DockButton> {
                         color: foreground,
                         size: widget.primary
                             ? switch (deviceClass) {
-                                _DockDeviceClass.small => 26,
-                                _DockDeviceClass.medium => 27,
-                                _DockDeviceClass.large => 27,
+                                _DockDeviceClass.small => 28,
+                                _DockDeviceClass.medium => 29,
+                                _DockDeviceClass.large => 29,
                               }
                             : switch (deviceClass) {
-                                _DockDeviceClass.small => 22,
-                                _DockDeviceClass.medium => 23,
-                                _DockDeviceClass.large => 23,
+                                _DockDeviceClass.small => 24,
+                                _DockDeviceClass.medium => 25,
+                                _DockDeviceClass.large => 25,
                               },
                       ),
                 ),
@@ -451,8 +451,8 @@ class DockSvgIcon extends StatelessWidget {
 
     return SvgPicture.asset(
       asset,
-      width: size ?? (primary ? 26 : 25),
-      height: size ?? (primary ? 26 : 25),
+      width: size ?? (primary ? 28 : 27),
+      height: size ?? (primary ? 28 : 27),
       colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
     );
   }
