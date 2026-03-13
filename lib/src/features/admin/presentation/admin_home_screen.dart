@@ -1,12 +1,11 @@
-import '../../../core/api/mobile_api.dart';
 import '../../../app/app_router.dart';
+import '../../../core/api/mobile_api.dart';
 import '../../../core/cache/json_cache_store.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/admin_dock.dart';
-import 'widgets/admin_module_card.dart';
 import 'package:flutter/material.dart';
 
 class AdminHomeScreen extends StatefulWidget {
@@ -104,36 +103,40 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
-                _AdminSummarySection(
-                  summary: summaryValue,
-                  onTapActive: () =>
-                      Navigator.of(context).pushNamed(AppRoutes.adminSuppliers),
-                  onTapTotal: () =>
-                      Navigator.of(context).pushNamed(AppRoutes.adminSuppliers),
-                  onTapBlocked: () => Navigator.of(context)
-                      .pushNamed(AppRoutes.adminInactiveSuppliers),
-                ),
-                const SizedBox(height: 12),
-                AdminModuleCard(
-                  title: 'Settings',
-                  subtitle: 'ERP va default sozlamalar',
-                  onTap: () =>
-                      Navigator.of(context).pushNamed(AppRoutes.adminSettings),
-                ),
-                const SizedBox(height: 12),
-                AdminModuleCard(
-                  title: 'Suppliers',
-                  subtitle: 'List, mahsulot biriktirish va block nazorati',
-                  onTap: () =>
-                      Navigator.of(context).pushNamed(AppRoutes.adminSuppliers),
-                ),
-                const SizedBox(height: 12),
-                AdminModuleCard(
-                  title: 'Werka',
-                  subtitle: 'Omborchi phone va name',
-                  onTap: () =>
+                _AdminModulesSection(
+                  onTapSettings: () => Navigator.of(context)
+                      .pushNamed(AppRoutes.adminSettings),
+                  onTapSuppliers: () => Navigator.of(context)
+                      .pushNamed(AppRoutes.adminSuppliers),
+                  onTapWerka: () =>
                       Navigator.of(context).pushNamed(AppRoutes.adminWerka),
                 ),
+                if (summaryValue.blockedSuppliers > 0) ...[
+                  const SizedBox(height: 12),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(24),
+                    onTap: () => Navigator.of(context)
+                        .pushNamed(AppRoutes.adminInactiveSuppliers),
+                    child: SoftCard(
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.block_rounded,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Bloklangan supplierlar: ${summaryValue.blockedSuppliers} ta',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_rounded),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           );
@@ -143,18 +146,16 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
 }
 
-class _AdminSummarySection extends StatelessWidget {
-  const _AdminSummarySection({
-    required this.summary,
-    required this.onTapActive,
-    required this.onTapTotal,
-    required this.onTapBlocked,
+class _AdminModulesSection extends StatelessWidget {
+  const _AdminModulesSection({
+    required this.onTapSettings,
+    required this.onTapSuppliers,
+    required this.onTapWerka,
   });
 
-  final AdminSupplierSummary summary;
-  final VoidCallback onTapActive;
-  final VoidCallback onTapTotal;
-  final VoidCallback onTapBlocked;
+  final VoidCallback onTapSettings;
+  final VoidCallback onTapSuppliers;
+  final VoidCallback onTapWerka;
 
   @override
   Widget build(BuildContext context) {
@@ -162,22 +163,22 @@ class _AdminSummarySection extends StatelessWidget {
       padding: EdgeInsets.zero,
       child: Column(
         children: [
-          _AdminSummaryRow(
-            label: 'Aktiv supplierlar',
-            value: '${summary.activeSuppliers}',
-            onTap: onTapActive,
+          _AdminModuleRow(
+            title: 'Settings',
+            subtitle: 'ERP va default sozlamalar',
+            onTap: onTapSettings,
           ),
-          const _AdminSummaryDivider(),
-          _AdminSummaryRow(
-            label: 'Jami supplierlar',
-            value: '${summary.totalSuppliers}',
-            onTap: onTapTotal,
+          const _AdminSectionDivider(),
+          _AdminModuleRow(
+            title: 'Suppliers',
+            subtitle: 'List, mahsulot biriktirish va block nazorati',
+            onTap: onTapSuppliers,
           ),
-          const _AdminSummaryDivider(),
-          _AdminSummaryRow(
-            label: 'Bloklangan supplierlar',
-            value: '${summary.blockedSuppliers}',
-            onTap: onTapBlocked,
+          const _AdminSectionDivider(),
+          _AdminModuleRow(
+            title: 'Werka',
+            subtitle: 'Omborchi phone va name',
+            onTap: onTapWerka,
           ),
         ],
       ),
@@ -185,15 +186,15 @@ class _AdminSummarySection extends StatelessWidget {
   }
 }
 
-class _AdminSummaryRow extends StatelessWidget {
-  const _AdminSummaryRow({
-    required this.label,
-    required this.value,
+class _AdminModuleRow extends StatelessWidget {
+  const _AdminModuleRow({
+    required this.title,
+    required this.subtitle,
     required this.onTap,
   });
 
-  final String label;
-  final String value;
+  final String title;
+  final String subtitle;
   final VoidCallback onTap;
 
   @override
@@ -206,15 +207,22 @@ class _AdminSummaryRow extends StatelessWidget {
         child: Row(
           children: [
             Expanded(
-              child: Text(
-                label,
-                style: Theme.of(context).textTheme.titleLarge,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
               ),
             ),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
+            const Icon(Icons.arrow_forward_rounded),
           ],
         ),
       ),
@@ -222,8 +230,8 @@ class _AdminSummaryRow extends StatelessWidget {
   }
 }
 
-class _AdminSummaryDivider extends StatelessWidget {
-  const _AdminSummaryDivider();
+class _AdminSectionDivider extends StatelessWidget {
+  const _AdminSectionDivider();
 
   @override
   Widget build(BuildContext context) {
