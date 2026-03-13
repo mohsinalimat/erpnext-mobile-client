@@ -1,5 +1,6 @@
 import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
+import '../../../core/network/network_required_dialog.dart';
 import '../../../core/notifications/push_messaging_service.dart';
 import '../../../core/security/security_controller.dart';
 import '../../../core/widgets/app_shell.dart';
@@ -61,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ? AppRoutes.werkaHome
               : AppRoutes.adminHome;
       Navigator.of(context).pushNamedAndRemoveUntil(route, (route) => false);
-    }).catchError((_) {
+    }).catchError((error) {
       if (!context.mounted) {
         return;
       }
@@ -69,6 +70,17 @@ class _LoginScreenState extends State<LoginScreen> {
         errorText = 'Login muvaffaqiyatsiz';
         loading = false;
       });
+      final text = '$error';
+      if (text.contains('SocketException') ||
+          text.contains('ClientException') ||
+          text.contains('Failed host lookup') ||
+          text.contains('Connection refused') ||
+          text.contains('timed out')) {
+        showNetworkRequiredDialog(
+          context,
+          message: 'Iltimos internetga ulaning.',
+        );
+      }
     });
   }
 

@@ -7,6 +7,7 @@ import 'src/core/notifications/notification_unread_store.dart';
 import 'src/core/security/security_controller.dart';
 import 'src/core/session/app_session.dart';
 import 'src/core/theme/theme_controller.dart';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -15,9 +16,6 @@ Future<void> main() async {
   await LocalNotificationService.instance.initialize();
   await AppSession.instance.load();
   await NotificationUnreadStore.instance.load();
-  if (!kIsWeb) {
-    await PushMessagingService.instance.initialize();
-  }
   await SecurityController.instance.load();
   await ThemeController.instance.load();
   runApp(
@@ -26,4 +24,7 @@ Future<void> main() async {
       builder: (_) => const ErpnextStockMobileApp(),
     ),
   );
+  if (!kIsWeb) {
+    unawaited(PushMessagingService.instance.initialize());
+  }
 }
