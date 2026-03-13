@@ -352,9 +352,9 @@ class _DockButtonState extends State<DockButton> {
                     _DockDeviceClass.large => widget.compact ? 52 : 56,
                   }
                 : switch (deviceClass) {
-                    _DockDeviceClass.small => widget.compact ? 42 : 46,
-                    _DockDeviceClass.medium => widget.compact ? 46 : 50,
-                    _DockDeviceClass.large => widget.compact ? 46 : 50,
+                    _DockDeviceClass.small => widget.compact ? 44 : 48,
+                    _DockDeviceClass.medium => widget.compact ? 48 : 52,
+                    _DockDeviceClass.large => widget.compact ? 48 : 52,
                   },
             width: widget.primary
                 ? switch (deviceClass) {
@@ -363,9 +363,9 @@ class _DockButtonState extends State<DockButton> {
                     _DockDeviceClass.large => widget.compact ? 52 : 56,
                   }
                 : switch (deviceClass) {
-                    _DockDeviceClass.small => widget.compact ? 42 : 46,
-                    _DockDeviceClass.medium => widget.compact ? 46 : 50,
-                    _DockDeviceClass.large => widget.compact ? 46 : 50,
+                    _DockDeviceClass.small => widget.compact ? 44 : 48,
+                    _DockDeviceClass.medium => widget.compact ? 48 : 52,
+                    _DockDeviceClass.large => widget.compact ? 48 : 52,
                   },
             decoration: BoxDecoration(
               color: background,
