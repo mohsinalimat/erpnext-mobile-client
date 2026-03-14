@@ -15,9 +15,13 @@ class CustomerDock extends StatelessWidget {
   const CustomerDock({
     super.key,
     required this.activeTab,
+    this.compact = false,
+    this.tightToEdges = true,
   });
 
   final CustomerDockTab? activeTab;
+  final bool compact;
+  final bool tightToEdges;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +33,8 @@ class CustomerDock extends StatelessWidget {
             ) &&
             activeTab != CustomerDockTab.notifications;
         return ActionDock(
+          compact: compact,
+          tightToEdges: tightToEdges,
           liftCenter: false,
           leading: [
             DockButton(
@@ -38,6 +44,7 @@ class CustomerDock extends StatelessWidget {
                 primary: false,
               ),
               active: activeTab == CustomerDockTab.home,
+              compact: compact,
               onTap: () {
                 if (activeTab == CustomerDockTab.home) return;
                 Navigator.of(context).pushNamedAndRemoveUntil(
@@ -56,6 +63,7 @@ class CustomerDock extends StatelessWidget {
             active: activeTab == CustomerDockTab.notifications,
             primary: false,
             showBadge: showBadge,
+            compact: compact,
             onTap: () {
               if (activeTab == CustomerDockTab.notifications) return;
               Navigator.of(context).pushNamedAndRemoveUntil(
@@ -72,6 +80,7 @@ class CustomerDock extends StatelessWidget {
                 primary: false,
               ),
               active: activeTab == CustomerDockTab.profile,
+              compact: compact,
               onHoldComplete: activeTab == CustomerDockTab.profile
                   ? () => showLogoutPrompt(context)
                   : null,
