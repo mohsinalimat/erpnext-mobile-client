@@ -6,12 +6,10 @@ import '../../../core/notifications/notification_unread_store.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/session/app_session.dart';
 import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/common_widgets.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/customer_dock.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class CustomerNotificationsScreen extends StatefulWidget {
   const CustomerNotificationsScreen({super.key});
@@ -34,7 +32,9 @@ class _CustomerNotificationsScreenState
     super.initState();
     _future = _loadAndTrack();
     NotificationHiddenStore.instance.load().then((_) {
-      if (mounted) setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     });
     _loadCache();
     RefreshHub.instance.addListener(_handlePushRefresh);
@@ -172,15 +172,7 @@ class _CustomerNotificationsScreenState
       subtitle: '',
       actions: [
         AppShellIconAction(
-          iconWidget: SvgPicture.asset(
-            'assets/icons/brush-3-line.svg',
-            width: 22,
-            height: 22,
-            colorFilter: ColorFilter.mode(
-              Theme.of(context).colorScheme.onSurface,
-              BlendMode.srcIn,
-            ),
-          ),
+          icon: Icons.cleaning_services_outlined,
           onTap: _clearAll,
         ),
       ],
@@ -198,72 +190,134 @@ class _CustomerNotificationsScreenState
             ...items.where((item) => _highlightedUnreadIds.contains(item.id)),
             ...items.where((item) => !_highlightedUnreadIds.contains(item.id)),
           ];
-          if (snapshot.connectionState != ConnectionState.done) {
-            if (items.isEmpty) {
-              return const Center(child: CircularProgressIndicator());
-            }
+
+          if (snapshot.connectionState != ConnectionState.done &&
+              items.isEmpty) {
+            return const Center(child: CircularProgressIndicator.adaptive());
           }
           if (snapshot.hasError && items.isEmpty) {
-            return Center(child: SoftCard(child: Text('${snapshot.error}')));
+            return Center(
+              child: _NotificationPanel(
+                child: Text('${snapshot.error}'),
+              ),
+            );
           }
           if (items.isEmpty) {
             return const Center(
-              child: SoftCard(
+              child: _NotificationPanel(
                 child: Text('Hozircha yozuv yo‘q.'),
               ),
             );
           }
+
           return RefreshIndicator.adaptive(
             onRefresh: _reload,
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.zero,
+              padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
               children: [
-                SoftCard(
-                  backgroundColor: const Color(0xFF161616),
-                  padding: const EdgeInsets.fromLTRB(0, 14, 0, 0),
-                  borderWidth: 1.45,
-                  borderRadius: 20,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const _CustomerFeedSectionLabel(
-                        label: 'Jo‘natmalar oqimi',
-                      ),
-                      const SizedBox(height: 14),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(18),
-                        child: Container(
-                          color: const Color(0xFF000000),
-                          child: Column(
-                            children: [
-                              for (int index = 0;
-                                  index < orderedItems.length;
-                                  index++) ...[
-                                _CustomerFeedRow(
-                                  record: orderedItems[index],
-                                  isFirst: index == 0,
-                                  isLast: index == orderedItems.length - 1,
-                                  highlighted: _highlightedUnreadIds.contains(
-                                    orderedItems[index].id,
-                                  ),
-                                  onTap: () =>
-                                      _openDetail(orderedItems[index].id),
-                                ),
-                                if (index != orderedItems.length - 1)
-                                  const Divider(height: 1, thickness: 1),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+                SmoothAppear(
+                  delay: const Duration(milliseconds: 20),
+                  child: _NotificationSection(
+                    items: orderedItems,
+                    highlightedUnreadIds: _highlightedUnreadIds,
+                    onTapRecord: _openDetail,
                   ),
                 ),
               ],
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _NotificationPanel extends StatelessWidget {
+  const _NotificationPanel({
+    required this.child,
+    this.padding = const EdgeInsets.all(16),
+  });
+
+  final Widget child;
+  final EdgeInsets padding;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Card.filled(
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      color: scheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Padding(
+        padding: padding,
+        child: child,
+      ),
+    );
+  }
+}
+
+class _NotificationSection extends StatelessWidget {
+  const _NotificationSection({
+    required this.items,
+    required this.highlightedUnreadIds,
+    required this.onTapRecord,
+  });
+
+  final List<DispatchRecord> items;
+  final Set<String> highlightedUnreadIds;
+  final ValueChanged<String> onTapRecord;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return _NotificationPanel(
+      padding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'Jo‘natmalar oqimi',
+              style: theme.textTheme.titleLarge,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Card.filled(
+            margin: EdgeInsets.zero,
+            color: scheme.surfaceContainer,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              children: [
+                for (int index = 0; index < items.length; index++) ...[
+                  _CustomerFeedRow(
+                    record: items[index],
+                    isFirst: index == 0,
+                    isLast: index == items.length - 1,
+                    highlighted: highlightedUnreadIds.contains(items[index].id),
+                    onTap: () => onTapRecord(items[index].id),
+                  ),
+                  if (index != items.length - 1)
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      indent: 16,
+                      endIndent: 16,
+                      color: scheme.outlineVariant.withValues(alpha: 0.55),
+                    ),
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -287,7 +341,7 @@ class _CustomerFeedRow extends StatelessWidget {
   IconData get _icon {
     switch (record.status) {
       case DispatchStatus.accepted:
-        return Icons.done_all_rounded;
+        return Icons.done_rounded;
       case DispatchStatus.rejected:
         return Icons.close_rounded;
       default:
@@ -297,106 +351,89 @@ class _CustomerFeedRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PressableScale(
-      borderRadius: 0,
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          color: highlighted ? const Color(0xFF212121) : Colors.transparent,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(0),
-            topRight: Radius.circular(0),
-            bottomLeft: Radius.circular(0),
-            bottomRight: Radius.circular(0),
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final borderRadius = BorderRadius.only(
+      topLeft: Radius.circular(isFirst ? 24 : 0),
+      topRight: Radius.circular(isFirst ? 24 : 0),
+      bottomLeft: Radius.circular(isLast ? 24 : 0),
+      bottomRight: Radius.circular(isLast ? 24 : 0),
+    );
+
+    return Material(
+      color: highlighted ? scheme.surfaceContainerHigh : Colors.transparent,
+      child: InkWell(
+        borderRadius: borderRadius,
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 40,
+                width: 40,
+                decoration: BoxDecoration(
+                  color: highlighted
+                      ? scheme.secondaryContainer
+                      : scheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  _icon,
+                  size: 20,
+                  color: highlighted
+                      ? scheme.onSecondaryContainer
+                      : scheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      record.itemName,
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      record.itemCode,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      record.note.trim().isNotEmpty
+                          ? record.note
+                          : '${record.sentQty.toStringAsFixed(0)} ${record.uom} jo‘natildi',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    record.createdLabel,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    record.itemName,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: highlighted ? Colors.white : null,
-                        ),
-                  ),
-                ),
-                Container(
-                  height: 34,
-                  width: 34,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Theme.of(context).dividerColor),
-                  ),
-                  child: Icon(
-                    _icon,
-                    size: 18,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(
-              record.itemCode,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: highlighted ? Colors.white70 : null,
-                  ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    record.note.trim().isNotEmpty
-                        ? record.note
-                        : '${record.sentQty.toStringAsFixed(0)} ${record.uom} jo‘natildi',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: highlighted ? Colors.white70 : null,
-                        ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  record.createdLabel,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: highlighted ? Colors.white70 : null,
-                      ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CustomerFeedSectionLabel extends StatelessWidget {
-  const _CustomerFeedSectionLabel({
-    required this.label,
-  });
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
       ),
     );
   }
