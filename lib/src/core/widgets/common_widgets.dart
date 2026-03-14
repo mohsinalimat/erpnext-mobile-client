@@ -174,9 +174,9 @@ class ActionDock extends StatelessWidget {
 
   double _hostHeightForDevice(_DockDeviceClass deviceClass) {
     final double base = switch (deviceClass) {
-      _DockDeviceClass.small => 72.0,
-      _DockDeviceClass.medium => 76.0,
-      _DockDeviceClass.large => 78.0,
+      _DockDeviceClass.small => 86.0,
+      _DockDeviceClass.medium => 90.0,
+      _DockDeviceClass.large => 92.0,
     };
     return compact ? base - 6.0 : base;
   }
@@ -196,15 +196,42 @@ class ActionDock extends StatelessWidget {
     ];
 
     final double hostHeight = _hostHeightForDevice(deviceClass);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final bool isDark = AppTheme.isDark(context);
 
     return SizedBox(
       height: hostHeight,
       child: Stack(
         children: [
           Positioned(
-            left: tightToEdges ? 4 : 0,
-            right: tightToEdges ? 4 : 0,
-            bottom: 8,
+            left: tightToEdges ? 0 : 12,
+            right: tightToEdges ? 0 : 12,
+            bottom: 0,
+            child: Container(
+              height: compact ? hostHeight - 18 : hostHeight - 14,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? scheme.surfaceContainerLow.withValues(alpha: 0.94)
+                    : scheme.surfaceContainerLowest.withValues(alpha: 0.98),
+                borderRadius: BorderRadius.circular(32),
+                border: Border.all(color: AppTheme.cardBorder(context)),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDark
+                        ? const Color(0x40000000)
+                        : const Color(0x180E1525),
+                    blurRadius: isDark ? 26 : 22,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            left: tightToEdges ? 10 : 22,
+            right: tightToEdges ? 10 : 22,
+            bottom: compact ? 11 : 13,
             child: Row(
               mainAxisAlignment: tightToEdges
                   ? MainAxisAlignment.spaceBetween
@@ -300,6 +327,7 @@ class _DockButtonState extends State<DockButton> {
         : width <= 430
             ? _DockDeviceClass.medium
             : _DockDeviceClass.large;
+    final scheme = Theme.of(context).colorScheme;
     final Color background = widget.primary
         ? AppTheme.primaryButton(context)
         : widget.active
@@ -307,7 +335,9 @@ class _DockButtonState extends State<DockButton> {
             : AppTheme.dockInactive(context);
     final Color foreground = widget.primary
         ? AppTheme.primaryButtonForeground(context)
-        : Theme.of(context).colorScheme.onSurface;
+        : widget.active
+            ? scheme.onPrimaryContainer
+            : scheme.onSurfaceVariant;
 
     return AnimatedScale(
       duration: AppMotion.fast,
@@ -318,8 +348,8 @@ class _DockButtonState extends State<DockButton> {
         shape: const CircleBorder(),
         child: InkWell(
           customBorder: const CircleBorder(),
-          splashColor: const Color(0x33212121),
-          highlightColor: const Color(0x14212121),
+          splashColor: scheme.primary.withValues(alpha: 0.10),
+          highlightColor: scheme.primary.withValues(alpha: 0.06),
           onTapDown: (_) {
             _startHold();
             setState(() => _pressed = true);
@@ -368,24 +398,34 @@ class _DockButtonState extends State<DockButton> {
               color: background,
               shape: BoxShape.circle,
               border: Border.all(
-                color: widget.primary ? background : AppTheme.cardBorder(context),
-                width: widget.primary ? 2 : 1.2,
+                color: widget.primary
+                    ? background
+                    : widget.active
+                        ? scheme.primary.withValues(alpha: 0.18)
+                        : AppTheme.cardBorder(context),
+                width: widget.primary
+                    ? 2
+                    : widget.active
+                        ? 1.4
+                        : 1.1,
               ),
               boxShadow: widget.primary
-                  ? const [
+                  ? [
                       BoxShadow(
-                        color: Color(0x33000000),
-                        blurRadius: 14,
-                        offset: Offset(0, 4),
+                        color: scheme.primary.withValues(alpha: 0.26),
+                        blurRadius: 20,
+                        offset: const Offset(0, 6),
                       ),
                     ]
                   : [
                       BoxShadow(
-                        color: AppTheme.isDark(context)
-                            ? const Color(0x22000000)
-                            : const Color(0x12000000),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
+                        color: widget.active
+                            ? scheme.primary.withValues(alpha: 0.16)
+                            : AppTheme.isDark(context)
+                                ? const Color(0x22000000)
+                                : const Color(0x12000000),
+                        blurRadius: widget.active ? 14 : 10,
+                        offset: const Offset(0, 4),
                       ),
                     ],
             ),
@@ -393,33 +433,40 @@ class _DockButtonState extends State<DockButton> {
               clipBehavior: Clip.none,
               children: [
                 Center(
-                  child: widget.iconWidget ??
-                      Icon(
-                        widget.icon,
-                        color: foreground,
-                        size: widget.primary
-                            ? switch (deviceClass) {
-                                _DockDeviceClass.small => 28,
-                                _DockDeviceClass.medium => 29,
-                                _DockDeviceClass.large => 29,
-                              }
-                            : switch (deviceClass) {
-                                _DockDeviceClass.small => 24,
-                                _DockDeviceClass.medium => 25,
-                                _DockDeviceClass.large => 25,
-                              },
-                      ),
+                  child: IconTheme(
+                    data: IconThemeData(color: foreground),
+                    child: widget.iconWidget ??
+                        Icon(
+                          widget.icon,
+                          color: foreground,
+                          size: widget.primary
+                              ? switch (deviceClass) {
+                                  _DockDeviceClass.small => 28,
+                                  _DockDeviceClass.medium => 29,
+                                  _DockDeviceClass.large => 29,
+                                }
+                              : switch (deviceClass) {
+                                  _DockDeviceClass.small => 24,
+                                  _DockDeviceClass.medium => 25,
+                                  _DockDeviceClass.large => 25,
+                                },
+                        ),
+                  ),
                 ),
                 if (widget.showBadge)
                   Positioned(
-                    right: 2,
-                    top: 2,
+                    right: 4,
+                    top: 4,
                     child: Container(
-                      height: 9,
-                      width: 9,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFE53935),
+                      height: 11,
+                      width: 11,
+                      decoration: BoxDecoration(
+                        color: scheme.error,
                         shape: BoxShape.circle,
+                        border: Border.all(
+                          color: widget.primary ? background : scheme.surface,
+                          width: 1.4,
+                        ),
                       ),
                     ),
                   ),
@@ -450,9 +497,10 @@ class DockSvgIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool dark = AppTheme.isDark(context);
     final String asset = dark ? lineAsset : fillAsset;
-    final Color color = primary
-        ? AppTheme.primaryButtonForeground(context)
-        : Theme.of(context).colorScheme.onSurface;
+    final Color color = IconTheme.of(context).color ??
+        (primary
+            ? AppTheme.primaryButtonForeground(context)
+            : Theme.of(context).colorScheme.onSurface);
 
     return SvgPicture.asset(
       asset,

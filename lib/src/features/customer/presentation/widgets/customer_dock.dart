@@ -16,7 +16,7 @@ class CustomerDock extends StatelessWidget {
     super.key,
     required this.activeTab,
     this.compact = false,
-    this.tightToEdges = true,
+    this.tightToEdges = false,
   });
 
   final CustomerDockTab? activeTab;
