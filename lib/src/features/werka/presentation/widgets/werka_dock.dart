@@ -37,11 +37,8 @@ class WerkaDock extends StatelessWidget {
           tightToEdges: tightToEdges,
           leading: [
             DockButton(
-              iconWidget: const DockSvgIcon(
-                fillAsset: 'assets/icons/home-fill.svg',
-                lineAsset: 'assets/icons/home-line.svg',
-                primary: false,
-              ),
+              icon: Icons.home_outlined,
+              selectedIcon: Icons.home_rounded,
               active: activeTab == WerkaDockTab.home,
               compact: compact,
               onTap: () {
@@ -55,11 +52,8 @@ class WerkaDock extends StatelessWidget {
               },
             ),
             DockButton(
-              iconWidget: const DockSvgIcon(
-                fillAsset: 'assets/icons/notification-3-fill.svg',
-                lineAsset: 'assets/icons/notification-3-line.svg',
-                primary: false,
-              ),
+              icon: Icons.notifications_outlined,
+              selectedIcon: Icons.notifications_rounded,
               active: activeTab == WerkaDockTab.notifications,
               compact: compact,
               showBadge: showBadge,
@@ -74,17 +68,19 @@ class WerkaDock extends StatelessWidget {
               },
             ),
           ],
-      center: DockButton(
-        icon: Icons.add_rounded,
-        primary: true,
-        compact: compact,
-        onTap: () {
-          Navigator.of(context).pushNamed(AppRoutes.werkaCreateHub);
-        },
-      ),
+          center: DockButton(
+            icon: Icons.add_rounded,
+            selectedIcon: Icons.add_rounded,
+            primary: true,
+            compact: compact,
+            onTap: () {
+              Navigator.of(context).pushNamed(AppRoutes.werkaCreateHub);
+            },
+          ),
           trailing: [
             DockButton(
               icon: Icons.history_rounded,
+              selectedIcon: Icons.history_rounded,
               compact: compact,
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -94,7 +90,8 @@ class WerkaDock extends StatelessWidget {
               },
             ),
             DockButton(
-              icon: Icons.person_outline_rounded,
+              icon: Icons.account_circle_outlined,
+              selectedIcon: Icons.account_circle_rounded,
               active: activeTab == WerkaDockTab.profile,
               compact: compact,
               onHoldComplete: activeTab == WerkaDockTab.profile

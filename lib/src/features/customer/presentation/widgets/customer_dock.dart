@@ -38,11 +38,8 @@ class CustomerDock extends StatelessWidget {
           liftCenter: false,
           leading: [
             DockButton(
-              iconWidget: const DockSvgIcon(
-                fillAsset: 'assets/icons/home-fill.svg',
-                lineAsset: 'assets/icons/home-line.svg',
-                primary: false,
-              ),
+              icon: Icons.home_outlined,
+              selectedIcon: Icons.home_rounded,
               active: activeTab == CustomerDockTab.home,
               compact: compact,
               onTap: () {
@@ -55,11 +52,8 @@ class CustomerDock extends StatelessWidget {
             ),
           ],
           center: DockButton(
-            iconWidget: const DockSvgIcon(
-              fillAsset: 'assets/icons/notification-3-fill.svg',
-              lineAsset: 'assets/icons/notification-3-line.svg',
-              primary: false,
-            ),
+            icon: Icons.notifications_outlined,
+            selectedIcon: Icons.notifications_rounded,
             active: activeTab == CustomerDockTab.notifications,
             primary: false,
             showBadge: showBadge,
@@ -74,11 +68,8 @@ class CustomerDock extends StatelessWidget {
           ),
           trailing: [
             DockButton(
-              iconWidget: const DockSvgIcon(
-                fillAsset: 'assets/icons/account-circle-fill.svg',
-                lineAsset: 'assets/icons/account-circle-line.svg',
-                primary: false,
-              ),
+              icon: Icons.account_circle_outlined,
+              selectedIcon: Icons.account_circle_rounded,
               active: activeTab == CustomerDockTab.profile,
               compact: compact,
               onHoldComplete: activeTab == CustomerDockTab.profile

@@ -2,7 +2,6 @@ import '../../features/shared/models/app_models.dart';
 import '../theme/app_motion.dart';
 import '../theme/app_theme.dart';
 import 'dart:async';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -175,9 +174,9 @@ class ActionDock extends StatelessWidget {
 
   double _hostHeightForDevice(_DockDeviceClass deviceClass) {
     final double base = switch (deviceClass) {
-      _DockDeviceClass.small => 86.0,
-      _DockDeviceClass.medium => 90.0,
-      _DockDeviceClass.large => 92.0,
+      _DockDeviceClass.small => 82.0,
+      _DockDeviceClass.medium => 86.0,
+      _DockDeviceClass.large => 88.0,
     };
     return compact ? base - 6.0 : base;
   }
@@ -197,6 +196,8 @@ class ActionDock extends StatelessWidget {
     ];
 
     final double hostHeight = _hostHeightForDevice(deviceClass);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final bool isDark = AppTheme.isDark(context);
 
     return SizedBox(
@@ -207,40 +208,30 @@ class ActionDock extends StatelessWidget {
             left: tightToEdges ? 0 : 12,
             right: tightToEdges ? 0 : 12,
             bottom: 0,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(32),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                child: Container(
-                  height: compact ? hostHeight - 18 : hostHeight - 14,
-                  decoration: BoxDecoration(
+            child: Container(
+              height: compact ? hostHeight - 16 : hostHeight - 12,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? scheme.surfaceContainerLow
+                    : scheme.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: AppTheme.cardBorder(context)),
+                boxShadow: [
+                  BoxShadow(
                     color: isDark
-                        ? const Color(0x66121822)
-                        : const Color(0xB3FBFAF7),
-                    borderRadius: BorderRadius.circular(32),
-                    border: Border.all(
-                      color: AppTheme.cardBorder(context).withValues(
-                        alpha: isDark ? 0.82 : 0.9,
-                      ),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: isDark
-                            ? const Color(0x24000000)
-                            : const Color(0x100E1525),
-                        blurRadius: isDark ? 20 : 16,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
+                        ? const Color(0x24000000)
+                        : const Color(0x120E1525),
+                    blurRadius: isDark ? 18 : 14,
+                    offset: const Offset(0, 8),
                   ),
-                ),
+                ],
               ),
             ),
           ),
           Positioned(
-            left: tightToEdges ? 10 : 22,
-            right: tightToEdges ? 10 : 22,
-            bottom: compact ? 11 : 13,
+            left: tightToEdges ? 8 : 20,
+            right: tightToEdges ? 8 : 20,
+            bottom: compact ? 8 : 10,
             child: Row(
               mainAxisAlignment: tightToEdges
                   ? MainAxisAlignment.spaceBetween
@@ -276,7 +267,9 @@ class DockButton extends StatefulWidget {
   const DockButton({
     super.key,
     this.icon,
+    this.selectedIcon,
     this.iconWidget,
+    this.selectedIconWidget,
     required this.onTap,
     this.active = false,
     this.primary = false,
@@ -287,7 +280,9 @@ class DockButton extends StatefulWidget {
   });
 
   final IconData? icon;
+  final IconData? selectedIcon;
   final Widget? iconWidget;
+  final Widget? selectedIconWidget;
   final VoidCallback onTap;
   final bool active;
   final bool primary;
@@ -337,26 +332,45 @@ class _DockButtonState extends State<DockButton> {
             ? _DockDeviceClass.medium
             : _DockDeviceClass.large;
     final scheme = Theme.of(context).colorScheme;
-    final Color background = widget.primary
-        ? AppTheme.primaryButton(context)
-        : widget.active
-            ? AppTheme.dockActive(context)
-            : AppTheme.dockInactive(context);
+    final Color background =
+        widget.primary ? AppTheme.primaryButton(context) : Colors.transparent;
     final Color foreground = widget.primary
         ? AppTheme.primaryButtonForeground(context)
         : widget.active
-            ? scheme.onPrimaryContainer
+            ? scheme.onSecondaryContainer
             : scheme.onSurfaceVariant;
+    final BorderRadius borderRadius = BorderRadius.circular(
+      widget.primary ? 999 : 22,
+    );
+    final OutlinedBorder tapShape = widget.primary
+        ? const CircleBorder()
+        : RoundedRectangleBorder(borderRadius: borderRadius);
+    final Widget iconChild = widget.active
+        ? (widget.selectedIconWidget ??
+            widget.iconWidget ??
+            Icon(widget.selectedIcon ?? widget.icon))
+        : (widget.iconWidget ?? Icon(widget.icon));
+    final double iconSize = widget.primary
+        ? switch (deviceClass) {
+            _DockDeviceClass.small => 27,
+            _DockDeviceClass.medium => 28,
+            _DockDeviceClass.large => 28,
+          }
+        : switch (deviceClass) {
+            _DockDeviceClass.small => 24,
+            _DockDeviceClass.medium => 24,
+            _DockDeviceClass.large => 24,
+          };
 
     return AnimatedScale(
       duration: AppMotion.fast,
       curve: AppMotion.smooth,
-      scale: _pressed ? 0.92 : 1,
+      scale: _pressed ? 0.96 : 1,
       child: Material(
         color: Colors.transparent,
-        shape: const CircleBorder(),
+        shape: tapShape,
         child: InkWell(
-          customBorder: const CircleBorder(),
+          customBorder: tapShape,
           splashColor: scheme.primary.withValues(alpha: 0.10),
           highlightColor: scheme.primary.withValues(alpha: 0.06),
           onTapDown: (_) {
@@ -383,98 +397,79 @@ class _DockButtonState extends State<DockButton> {
             curve: AppMotion.smooth,
             height: widget.primary
                 ? switch (deviceClass) {
-                    _DockDeviceClass.small => widget.compact ? 54 : 58,
-                    _DockDeviceClass.medium => widget.compact ? 57 : 61,
-                    _DockDeviceClass.large => widget.compact ? 56 : 60,
+                    _DockDeviceClass.small => widget.compact ? 52 : 56,
+                    _DockDeviceClass.medium => widget.compact ? 54 : 58,
+                    _DockDeviceClass.large => widget.compact ? 54 : 58,
                   }
                 : switch (deviceClass) {
-                    _DockDeviceClass.small => widget.compact ? 46 : 50,
+                    _DockDeviceClass.small => widget.compact ? 48 : 52,
                     _DockDeviceClass.medium => widget.compact ? 50 : 54,
                     _DockDeviceClass.large => widget.compact ? 50 : 54,
                   },
             width: widget.primary
                 ? switch (deviceClass) {
-                    _DockDeviceClass.small => widget.compact ? 54 : 58,
-                    _DockDeviceClass.medium => widget.compact ? 57 : 61,
-                    _DockDeviceClass.large => widget.compact ? 56 : 60,
+                    _DockDeviceClass.small => widget.compact ? 52 : 56,
+                    _DockDeviceClass.medium => widget.compact ? 54 : 58,
+                    _DockDeviceClass.large => widget.compact ? 54 : 58,
                   }
                 : switch (deviceClass) {
-                    _DockDeviceClass.small => widget.compact ? 46 : 50,
-                    _DockDeviceClass.medium => widget.compact ? 50 : 54,
-                    _DockDeviceClass.large => widget.compact ? 50 : 54,
+                    _DockDeviceClass.small => widget.compact ? 62 : 66,
+                    _DockDeviceClass.medium => widget.compact ? 66 : 72,
+                    _DockDeviceClass.large => widget.compact ? 66 : 72,
                   },
             decoration: BoxDecoration(
               color: background,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: widget.primary
-                    ? background
-                    : widget.active
-                        ? scheme.primary.withValues(alpha: 0.18)
-                        : AppTheme.cardBorder(context),
-                width: widget.primary
-                    ? 2
-                    : widget.active
-                        ? 1.4
-                        : 1.1,
-              ),
+              borderRadius: borderRadius,
               boxShadow: widget.primary
                   ? [
                       BoxShadow(
-                        color: scheme.primary.withValues(alpha: 0.26),
-                        blurRadius: 20,
-                        offset: const Offset(0, 6),
+                        color: scheme.primary.withValues(alpha: 0.22),
+                        blurRadius: 18,
+                        offset: const Offset(0, 5),
                       ),
                     ]
-                  : [
-                      BoxShadow(
-                        color: widget.active
-                            ? scheme.primary.withValues(alpha: 0.16)
-                            : AppTheme.isDark(context)
-                                ? const Color(0x22000000)
-                                : const Color(0x12000000),
-                        blurRadius: widget.active ? 14 : 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                  : const [],
             ),
             child: Stack(
               clipBehavior: Clip.none,
               children: [
                 Center(
-                  child: IconTheme(
-                    data: IconThemeData(color: foreground),
-                    child: widget.iconWidget ??
-                        Icon(
-                          widget.icon,
-                          color: foreground,
-                          size: widget.primary
-                              ? switch (deviceClass) {
-                                  _DockDeviceClass.small => 28,
-                                  _DockDeviceClass.medium => 29,
-                                  _DockDeviceClass.large => 29,
-                                }
-                              : switch (deviceClass) {
-                                  _DockDeviceClass.small => 24,
-                                  _DockDeviceClass.medium => 25,
-                                  _DockDeviceClass.large => 25,
-                                },
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      if (!widget.primary)
+                        AnimatedContainer(
+                          duration: AppMotion.medium,
+                          curve: AppMotion.smooth,
+                          height: 32,
+                          width: widget.active ? 56 : 32,
+                          decoration: BoxDecoration(
+                            color: widget.active
+                                ? scheme.secondaryContainer
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
                         ),
+                      IconTheme(
+                        data: IconThemeData(color: foreground, size: iconSize),
+                        child: iconChild,
+                      ),
+                    ],
                   ),
                 ),
                 if (widget.showBadge)
                   Positioned(
-                    right: 4,
-                    top: 4,
+                    right: widget.primary ? 3 : 14,
+                    top: widget.primary ? 4 : 8,
                     child: Container(
-                      height: 11,
-                      width: 11,
+                      height: 10,
+                      width: 10,
                       decoration: BoxDecoration(
                         color: scheme.error,
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: widget.primary ? background : scheme.surface,
-                          width: 1.4,
+                          width: 1.2,
                         ),
                       ),
                     ),

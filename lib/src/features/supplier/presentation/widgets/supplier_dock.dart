@@ -40,11 +40,8 @@ class SupplierDock extends StatelessWidget {
           tightToEdges: tightToEdges,
           leading: [
             DockButton(
-              iconWidget: const DockSvgIcon(
-                fillAsset: 'assets/icons/home-fill.svg',
-                lineAsset: 'assets/icons/home-line.svg',
-                primary: false,
-              ),
+              icon: Icons.home_outlined,
+              selectedIcon: Icons.home_rounded,
               active: activeTab == SupplierDockTab.home,
               compact: compact,
               onTap: () {
@@ -58,11 +55,8 @@ class SupplierDock extends StatelessWidget {
               },
             ),
             DockButton(
-              iconWidget: const DockSvgIcon(
-                fillAsset: 'assets/icons/notification-3-fill.svg',
-                lineAsset: 'assets/icons/notification-3-line.svg',
-                primary: false,
-              ),
+              icon: Icons.notifications_outlined,
+              selectedIcon: Icons.notifications_rounded,
               active: activeTab == SupplierDockTab.notifications,
               compact: compact,
               showBadge: showBadge,
@@ -79,6 +73,7 @@ class SupplierDock extends StatelessWidget {
           ],
           center: DockButton(
             icon: Icons.add_rounded,
+            selectedIcon: Icons.add_rounded,
             primary: true,
             compact: compact,
             onTap: () {
@@ -90,11 +85,8 @@ class SupplierDock extends StatelessWidget {
           ),
           trailing: [
             DockButton(
-              iconWidget: const DockSvgIcon(
-                fillAsset: 'assets/icons/repeat-2-fill.svg',
-                lineAsset: 'assets/icons/repeat-2-fill.svg',
-                primary: false,
-              ),
+              icon: Icons.history_outlined,
+              selectedIcon: Icons.history_rounded,
               active: activeTab == SupplierDockTab.recent,
               compact: compact,
               onTap: () {
@@ -108,11 +100,8 @@ class SupplierDock extends StatelessWidget {
               },
             ),
             DockButton(
-              iconWidget: const DockSvgIcon(
-                fillAsset: 'assets/icons/account-circle-fill.svg',
-                lineAsset: 'assets/icons/account-circle-line.svg',
-                primary: false,
-              ),
+              icon: Icons.account_circle_outlined,
+              selectedIcon: Icons.account_circle_rounded,
               active: activeTab == SupplierDockTab.profile,
               compact: compact,
               onHoldComplete: activeTab == SupplierDockTab.profile

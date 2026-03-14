@@ -30,11 +30,8 @@ class AdminDock extends StatelessWidget {
       tightToEdges: tightToEdges,
       leading: [
         DockButton(
-          iconWidget: const DockSvgIcon(
-            fillAsset: 'assets/icons/home-fill.svg',
-            lineAsset: 'assets/icons/home-line.svg',
-            primary: false,
-          ),
+          icon: Icons.home_outlined,
+          selectedIcon: Icons.home_rounded,
           active: activeTab == AdminDockTab.home,
           compact: compact,
           onTap: () {
@@ -44,11 +41,8 @@ class AdminDock extends StatelessWidget {
           },
         ),
         DockButton(
-          iconWidget: const DockSvgIcon(
-            fillAsset: 'assets/icons/group-fill.svg',
-            lineAsset: 'assets/icons/group-line.svg',
-            primary: false,
-          ),
+          icon: Icons.groups_outlined,
+          selectedIcon: Icons.groups_rounded,
           active: activeTab == AdminDockTab.suppliers,
           compact: compact,
           onTap: () {
@@ -62,6 +56,7 @@ class AdminDock extends StatelessWidget {
       ],
       center: DockButton(
         icon: Icons.add_rounded,
+        selectedIcon: Icons.add_rounded,
         primary: true,
         compact: compact,
         onTap: () {
@@ -74,11 +69,8 @@ class AdminDock extends StatelessWidget {
       ),
       trailing: [
         DockButton(
-          iconWidget: const DockSvgIcon(
-            fillAsset: 'assets/icons/chat-history-fill.svg',
-            lineAsset: 'assets/icons/chat-history-line.svg',
-            primary: false,
-          ),
+          icon: Icons.history_outlined,
+          selectedIcon: Icons.history_rounded,
           active: activeTab == AdminDockTab.activity,
           compact: compact,
           onTap: () {
@@ -90,11 +82,8 @@ class AdminDock extends StatelessWidget {
           },
         ),
         DockButton(
-          iconWidget: const DockSvgIcon(
-            fillAsset: 'assets/icons/account-circle-fill.svg',
-            lineAsset: 'assets/icons/account-circle-line.svg',
-            primary: false,
-          ),
+          icon: Icons.account_circle_outlined,
+          selectedIcon: Icons.account_circle_rounded,
           active: activeTab == AdminDockTab.profile,
           compact: compact,
           onHoldComplete: activeTab == AdminDockTab.profile
