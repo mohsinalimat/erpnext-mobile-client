@@ -380,10 +380,10 @@ class AppTheme {
       Theme.of(context).brightness == Brightness.dark;
 
   static Color shellStart(BuildContext context) =>
-      isDark(context) ? const Color(0xFF0A0D13) : const Color(0xFFFDFBF7);
+      isDark(context) ? const Color(0xFF101317) : const Color(0xFFFDFBF7);
 
   static Color shellEnd(BuildContext context) =>
-      isDark(context) ? const Color(0xFF151A22) : const Color(0xFFF3F1EA);
+      isDark(context) ? const Color(0xFF101317) : const Color(0xFFF3F1EA);
 
   static Color cardBackground(BuildContext context) =>
       Theme.of(context).colorScheme.surfaceContainerLow;
