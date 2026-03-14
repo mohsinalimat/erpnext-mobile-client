@@ -280,6 +280,8 @@ class _CustomerSectionHeader extends StatelessWidget {
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
+          bottomLeft: Radius.circular(16),
+          bottomRight: Radius.circular(16),
         ),
       ),
       child: Text(
