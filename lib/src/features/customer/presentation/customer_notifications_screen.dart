@@ -298,7 +298,7 @@ class _CustomerFeedRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PressableScale(
-      borderRadius: 20,
+      borderRadius: 0,
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
