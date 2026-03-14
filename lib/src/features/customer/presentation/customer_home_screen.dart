@@ -147,21 +147,17 @@ class _QuietPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? scheme.surfaceContainerLow : scheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(26),
-        boxShadow: [
-          BoxShadow(
-            color: scheme.shadow.withValues(alpha: isDark ? 0.16 : 0.08),
-            blurRadius: isDark ? 14 : 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+    return Card.filled(
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      color: scheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
       ),
-      padding: padding,
-      child: child,
+      child: Padding(
+        padding: padding,
+        child: child,
+      ),
     );
   }
 }
@@ -243,70 +239,61 @@ class _CustomerStatusRow extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    return PressableScale(
-      borderRadius: 26,
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(isFirst ? 26 : 0),
-            topRight: Radius.circular(isFirst ? 26 : 0),
-            bottomLeft: Radius.circular(isLast ? 26 : 0),
-            bottomRight: Radius.circular(isLast ? 26 : 0),
-          ),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Row(
-                children: [
-                  if (highlighted) ...[
-                    Container(
-                      width: 3,
-                      height: 22,
-                      decoration: BoxDecoration(
-                        color: scheme.primary,
-                        borderRadius: BorderRadius.circular(999),
+    final borderRadius = BorderRadius.only(
+      topLeft: Radius.circular(isFirst ? 28 : 0),
+      topRight: Radius.circular(isFirst ? 28 : 0),
+      bottomLeft: Radius.circular(isLast ? 28 : 0),
+      bottomRight: Radius.circular(isLast ? 28 : 0),
+    );
+
+    return Material(
+      color: highlighted ? scheme.surfaceContainer : Colors.transparent,
+      child: InkWell(
+        borderRadius: borderRadius,
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          child: Row(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    if (highlighted) ...[
+                      Container(
+                        width: 4,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: scheme.primary,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
+                      const SizedBox(width: 12),
+                    ],
+                    Text(label, style: theme.textTheme.titleMedium),
                   ],
-                  Text(
-                    label,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: highlighted ? scheme.onSurface : null,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              constraints: const BoxConstraints(minWidth: 42),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: highlighted
-                    ? scheme.secondaryContainer
-                    : scheme.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Text(
-                value,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: highlighted
-                      ? scheme.onSecondaryContainer
-                      : scheme.onSurface,
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Icon(
-              Icons.chevron_right_rounded,
-              size: 22,
-              color: scheme.onSurfaceVariant,
-            ),
-          ],
+              FilledButton.tonal(
+                onPressed: onTap,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(44, 40),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: Text(value),
+              ),
+              const SizedBox(width: 6),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 22,
+                color: scheme.onSurfaceVariant,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -336,25 +323,32 @@ class _CustomerShipmentsPanel extends StatelessWidget {
           if (items.isEmpty)
             const _CustomerEmptyState()
           else
-            Column(
-              children: [
-                for (int index = 0; index < items.length; index++) ...[
-                  _CustomerPreviewRow(
-                    record: items[index],
-                    isFirst: index == 0,
-                    isLast: index == items.length - 1,
-                    onTap: () => onTapRecord(items[index].id),
-                  ),
-                  if (index != items.length - 1)
-                    Divider(
-                      height: 1,
-                      thickness: 1,
-                      indent: 16,
-                      endIndent: 16,
-                      color: scheme.outlineVariant.withValues(alpha: 0.55),
+            Card.filled(
+              margin: EdgeInsets.zero,
+              color: scheme.surfaceContainer,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Column(
+                children: [
+                  for (int index = 0; index < items.length; index++) ...[
+                    _CustomerPreviewRow(
+                      record: items[index],
+                      isFirst: index == 0,
+                      isLast: index == items.length - 1,
+                      onTap: () => onTapRecord(items[index].id),
                     ),
+                    if (index != items.length - 1)
+                      Divider(
+                        height: 1,
+                        thickness: 1,
+                        indent: 16,
+                        endIndent: 16,
+                        color: scheme.outlineVariant.withValues(alpha: 0.55),
+                      ),
+                  ],
                 ],
-              ],
+              ),
             ),
         ],
       ),
@@ -398,66 +392,68 @@ class _CustomerPreviewRow extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    return PressableScale(
-      borderRadius: 22,
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(isFirst ? 22 : 0),
-            topRight: Radius.circular(isFirst ? 22 : 0),
-            bottomLeft: Radius.circular(isLast ? 22 : 0),
-            bottomRight: Radius.circular(isLast ? 22 : 0),
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              height: 38,
-              width: 38,
-              decoration: BoxDecoration(
-                color: scheme.secondaryContainer,
-                borderRadius: BorderRadius.circular(12),
+    final borderRadius = BorderRadius.only(
+      topLeft: Radius.circular(isFirst ? 24 : 0),
+      topRight: Radius.circular(isFirst ? 24 : 0),
+      bottomLeft: Radius.circular(isLast ? 24 : 0),
+      bottomRight: Radius.circular(isLast ? 24 : 0),
+    );
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: borderRadius,
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Row(
+            children: [
+              Container(
+                height: 40,
+                width: 40,
+                decoration: BoxDecoration(
+                  color: scheme.secondaryContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.local_shipping_outlined,
+                  size: 18,
+                  color: scheme.onSecondaryContainer,
+                ),
               ),
-              child: Icon(
-                Icons.local_shipping_outlined,
-                size: 18,
-                color: scheme.onPrimaryContainer,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    record.itemName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    record.itemCode,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      record.itemName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 3),
+                    Text(
+                      record.itemCode,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: scheme.onSurfaceVariant,
-                fontWeight: FontWeight.w600,
+              const SizedBox(width: 12),
+              Text(
+                '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
