@@ -29,6 +29,7 @@ class AppShell extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
+      extendBody: true,
       bottomNavigationBar: bottom == null
           ? null
           : SafeArea(
