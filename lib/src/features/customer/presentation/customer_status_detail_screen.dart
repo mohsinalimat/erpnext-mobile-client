@@ -1,6 +1,8 @@
+import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/customer_dock.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +34,16 @@ class _CustomerStatusDetailScreenState
     final future = MobileApi.instance.customerStatusDetails(widget.kind);
     setState(() => _future = future);
     await future;
+  }
+
+  Future<void> _openDetail(String deliveryNoteID) async {
+    final changed = await Navigator.of(context).pushNamed(
+      AppRoutes.customerDetail,
+      arguments: deliveryNoteID,
+    );
+    if (changed == true) {
+      await _reload();
+    }
   }
 
   String get _title {
@@ -81,30 +93,33 @@ class _CustomerStatusDetailScreenState
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final record = items[index];
-                return SoftCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        record.itemName,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        record.itemCode,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
-                        style: Theme.of(context).textTheme.headlineMedium,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        record.createdLabel,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
+                return PressableScale(
+                  onTap: () => _openDetail(record.id),
+                  child: SoftCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          record.itemName,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          record.itemCode,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          record.createdLabel,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },

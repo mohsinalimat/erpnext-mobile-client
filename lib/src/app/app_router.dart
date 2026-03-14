@@ -1,5 +1,6 @@
 import '../features/auth/presentation/login_screen.dart';
 import '../features/customer/presentation/customer_home_screen.dart';
+import '../features/customer/presentation/customer_delivery_detail_screen.dart';
 import '../features/customer/presentation/customer_notifications_screen.dart';
 import '../features/customer/presentation/customer_status_detail_screen.dart';
 import '../features/admin/presentation/admin_activity_screen.dart';
@@ -81,6 +82,7 @@ class AppRoutes {
   static const String customerHome = '/customer-home';
   static const String customerNotifications = '/customer-notifications';
   static const String customerStatusDetail = '/customer-status-detail';
+  static const String customerDetail = '/customer-detail';
   static const String pinSetupEntry = '/pin-setup-entry';
   static const String pinSetupConfirm = '/pin-setup-confirm';
   static const String adminHome = '/admin-home';
@@ -246,6 +248,12 @@ class AppRouter {
         return _buildRoute(
           settings,
           CustomerStatusDetailScreen(kind: kind),
+        );
+      case AppRoutes.customerDetail:
+        final String deliveryNoteID = settings.arguments as String;
+        return _buildRoute(
+          settings,
+          CustomerDeliveryDetailScreen(deliveryNoteID: deliveryNoteID),
         );
       case AppRoutes.pinSetupEntry:
         return _buildRoute(settings, const PinSetupEntryScreen());

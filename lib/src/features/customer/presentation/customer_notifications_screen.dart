@@ -1,6 +1,8 @@
+import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/customer_dock.dart';
 import 'package:flutter/material.dart';
@@ -27,6 +29,16 @@ class _CustomerNotificationsScreenState
     final future = MobileApi.instance.customerHistory();
     setState(() => _future = future);
     await future;
+  }
+
+  Future<void> _openDetail(String deliveryNoteID) async {
+    final changed = await Navigator.of(context).pushNamed(
+      AppRoutes.customerDetail,
+      arguments: deliveryNoteID,
+    );
+    if (changed == true) {
+      await _reload();
+    }
   }
 
   @override
@@ -69,6 +81,7 @@ class _CustomerNotificationsScreenState
                           record: items[index],
                           isFirst: index == 0,
                           isLast: index == items.length - 1,
+                          onTap: () => _openDetail(items[index].id),
                         ),
                         if (index != items.length - 1)
                           const Divider(height: 1, thickness: 1),
@@ -90,94 +103,94 @@ class _CustomerFeedRow extends StatelessWidget {
     required this.record,
     required this.isFirst,
     required this.isLast,
+    required this.onTap,
   });
 
   final DispatchRecord record;
   final bool isFirst;
   final bool isLast;
+  final VoidCallback onTap;
 
   IconData get _icon {
     switch (record.status) {
       case DispatchStatus.accepted:
         return Icons.done_all_rounded;
-      case DispatchStatus.partial:
-        return Icons.check_rounded;
       case DispatchStatus.rejected:
         return Icons.close_rounded;
-      case DispatchStatus.cancelled:
-        return Icons.remove_rounded;
-      case DispatchStatus.draft:
-        return Icons.schedule_rounded;
-      case DispatchStatus.pending:
+      default:
         return Icons.schedule_outlined;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(isFirst ? 20 : 0),
-          topRight: Radius.circular(isFirst ? 20 : 0),
-          bottomLeft: Radius.circular(isLast ? 20 : 0),
-          bottomRight: Radius.circular(isLast ? 20 : 0),
+    return PressableScale(
+      borderRadius: 20,
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(isFirst ? 20 : 0),
+            topRight: Radius.circular(isFirst ? 20 : 0),
+            bottomLeft: Radius.circular(isLast ? 20 : 0),
+            bottomRight: Radius.circular(isLast ? 20 : 0),
+          ),
         ),
-      ),
-      padding: const EdgeInsets.all(18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  record.itemCode,
-                  style: Theme.of(context).textTheme.titleLarge,
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    record.itemCode,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                 ),
-              ),
-              Container(
-                height: 36,
-                width: 36,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Theme.of(context).dividerColor),
+                Container(
+                  height: 36,
+                  width: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Theme.of(context).dividerColor),
+                  ),
+                  child: Icon(
+                    _icon,
+                    size: 18,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
-                child: Icon(
-                  _icon,
-                  size: 18,
-                  color: Theme.of(context).colorScheme.onSurface,
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              record.itemName,
+              style: Theme.of(context).textTheme.bodyMedium,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${record.sentQty.toStringAsFixed(0)} ${record.uom} jo‘natildi',
+                    style: Theme.of(context).textTheme.bodySmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            record.itemName,
-            style: Theme.of(context).textTheme.bodyMedium,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '${record.sentQty.toStringAsFixed(0)} ${record.uom} jo‘natildi',
+                const SizedBox(width: 12),
+                Text(
+                  record.createdLabel,
                   style: Theme.of(context).textTheme.bodySmall,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                record.createdLabel,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -399,6 +399,28 @@ class NotificationDetail {
   }
 }
 
+class CustomerDeliveryDetail {
+  const CustomerDeliveryDetail({
+    required this.record,
+    required this.canApprove,
+    required this.canReject,
+  });
+
+  final DispatchRecord record;
+  final bool canApprove;
+  final bool canReject;
+
+  factory CustomerDeliveryDetail.fromJson(Map<String, dynamic> json) {
+    return CustomerDeliveryDetail(
+      record: DispatchRecord.fromJson(
+        json['record'] as Map<String, dynamic>? ?? <String, dynamic>{},
+      ),
+      canApprove: json['can_approve'] as bool? ?? false,
+      canReject: json['can_reject'] as bool? ?? false,
+    );
+  }
+}
+
 class SessionProfile {
   const SessionProfile({
     required this.role,

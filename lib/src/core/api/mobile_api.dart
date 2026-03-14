@@ -163,6 +163,50 @@ class MobileApi {
         .toList();
   }
 
+  Future<CustomerDeliveryDetail> customerDeliveryDetail(
+    String deliveryNoteID,
+  ) async {
+    final response = await _sendAuthorized(
+      () => http.get(
+        Uri.parse('$baseUrl/v1/mobile/customer/detail').replace(
+          queryParameters: {'delivery_note_id': deliveryNoteID},
+        ),
+        headers: _headers(requireToken()),
+      ),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Customer detail failed');
+    }
+    return CustomerDeliveryDetail.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
+
+  Future<CustomerDeliveryDetail> customerRespondDelivery({
+    required String deliveryNoteID,
+    required bool approve,
+    String reason = '',
+  }) async {
+    final response = await _sendAuthorized(
+      () => http.post(
+        Uri.parse('$baseUrl/v1/mobile/customer/respond'),
+        headers: _headers(requireToken())
+          ..['Content-Type'] = 'application/json',
+        body: jsonEncode({
+          'delivery_note_id': deliveryNoteID,
+          'approve': approve,
+          'reason': reason,
+        }),
+      ),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Customer respond failed');
+    }
+    return CustomerDeliveryDetail.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
+
   Future<SessionProfile> updateNickname(String nickname) async {
     final http.Response response = await _sendAuthorized(
       () => http.put(

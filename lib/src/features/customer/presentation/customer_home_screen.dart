@@ -39,6 +39,16 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     await future;
   }
 
+  Future<void> _openDetail(String deliveryNoteID) async {
+    final changed = await Navigator.of(context).pushNamed(
+      AppRoutes.customerDetail,
+      arguments: deliveryNoteID,
+    );
+    if (changed == true) {
+      await _reload();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppShell(
@@ -63,7 +73,10 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
               children: [
                 _CustomerSummaryCard(summary: payload.summary),
                 const SizedBox(height: 16),
-                _CustomerPendingPreviewCard(items: payload.previewItems),
+                _CustomerPendingPreviewCard(
+                  items: payload.previewItems,
+                  onTapRecord: _openDetail,
+                ),
               ],
             ),
           );
@@ -189,9 +202,11 @@ class _CustomerSummaryRow extends StatelessWidget {
 class _CustomerPendingPreviewCard extends StatelessWidget {
   const _CustomerPendingPreviewCard({
     required this.items,
+    required this.onTapRecord,
   });
 
   final List<DispatchRecord> items;
+  final ValueChanged<String> onTapRecord;
 
   @override
   Widget build(BuildContext context) {
@@ -225,6 +240,7 @@ class _CustomerPendingPreviewCard extends StatelessWidget {
             _CustomerPreviewRow(
               record: items[index],
               isLast: index == items.length - 1,
+              onTap: () => onTapRecord(items[index].id),
             ),
             if (index != items.length - 1)
               const Divider(height: 1, thickness: 1),
@@ -239,55 +255,61 @@ class _CustomerPreviewRow extends StatelessWidget {
   const _CustomerPreviewRow({
     required this.record,
     required this.isLast,
+    required this.onTap,
   });
 
   final DispatchRecord record;
   final bool isLast;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(isLast ? 20 : 0),
-          bottomRight: Radius.circular(isLast ? 20 : 0),
+    return PressableScale(
+      borderRadius: 20,
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(isLast ? 20 : 0),
+            bottomRight: Radius.circular(isLast ? 20 : 0),
+          ),
         ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    record.itemName,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    record.itemCode,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  record.itemName,
-                  style: Theme.of(context).textTheme.titleLarge,
+                  '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  record.itemCode,
+                  record.createdLabel,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
             ),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                record.createdLabel,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
