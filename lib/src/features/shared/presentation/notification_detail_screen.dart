@@ -34,6 +34,43 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
   void initState() {
     super.initState();
     _accountKey = _currentAccountKey();
+    final profile = AppSession.instance.profile;
+    if (profile?.role == UserRole.customer &&
+        widget.receiptID.startsWith('MAT-DN-')) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        Navigator.of(context).pushReplacementNamed(
+          AppRoutes.customerDetail,
+          arguments: widget.receiptID,
+        );
+      });
+      _future = Future<NotificationDetail>.value(
+        const NotificationDetail(
+          record: DispatchRecord(
+            id: '',
+            supplierRef: '',
+            supplierName: '',
+            itemCode: '',
+            itemName: '',
+            uom: '',
+            sentQty: 0,
+            acceptedQty: 0,
+            amount: 0,
+            currency: '',
+            note: '',
+            eventType: '',
+            highlight: '',
+            status: DispatchStatus.pending,
+            createdLabel: '',
+          ),
+          comments: <NotificationComment>[],
+        ),
+      );
+      _commentController.addListener(_handleCommentChanged);
+      return;
+    }
     _future = _loadAfterMarkSeen();
     _commentController.addListener(_handleCommentChanged);
   }
@@ -443,7 +480,8 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
                     child: Text(record.note),
                   ),
                 ],
-                if (isSupplierAckEvent && record.highlight.trim().isNotEmpty) ...[
+                if (isSupplierAckEvent &&
+                    record.highlight.trim().isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Text(
                     record.highlight,
@@ -526,8 +564,8 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
                               }
                               setState(() => _sending = true);
                               try {
-                                final updated =
-                                    await MobileApi.instance.addNotificationComment(
+                                final updated = await MobileApi.instance
+                                    .addNotificationComment(
                                   receiptID: widget.receiptID,
                                   message:
                                       'Tasdiqlayman, shu holat bo‘lganini ko‘rdim.',
