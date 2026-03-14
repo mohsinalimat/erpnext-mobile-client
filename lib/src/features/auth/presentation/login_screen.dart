@@ -62,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ? AppRoutes.werkaHome
               : profile.role == UserRole.customer
                   ? AppRoutes.customerHome
-              : AppRoutes.adminHome;
+                  : AppRoutes.adminHome;
       Navigator.of(context).pushNamedAndRemoveUntil(route, (route) => false);
     }).catchError((error) {
       if (!context.mounted) {
@@ -88,9 +88,23 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final badgeBackground =
+        isDark ? const Color(0xFF1C2434) : const Color(0xFFD9E3F8);
+    final badgeForeground =
+        isDark ? const Color(0xFFC7D7F7) : const Color(0xFF264A84);
+    final panelBackground =
+        isDark ? const Color(0xFF10141C) : const Color(0xFFF7F6F2);
+    final panelBorder =
+        isDark ? const Color(0xFF283244) : const Color(0xFFD8D4CB);
+    final quietText =
+        isDark ? const Color(0xFFB8C0CE) : const Color(0xFF5C6472);
+
     return AppShell(
-      title: 'Login',
-      subtitle: '',
+      title: 'Accord',
+      subtitle: 'Secure mobile access for warehouse operations',
       child: LayoutBuilder(
         builder: (context, constraints) {
           return SingleChildScrollView(
@@ -99,85 +113,209 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 28),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AutofillGroup(
-                        child: Column(
-                          children: [
-                            SmoothAppear(
-                              delay: const Duration(milliseconds: 30),
-                              child: TextField(
-                                controller: phoneController,
-                                focusNode: phoneFocusNode,
-                                textInputAction: TextInputAction.done,
-                                keyboardType: TextInputType.phone,
-                                autocorrect: false,
-                                enableSuggestions: true,
-                                autofillHints: const [
-                                  AutofillHints.telephoneNumber
-                                ],
-                                decoration: const InputDecoration(
-                                  labelText: 'Telefon raqam',
-                                  hintText: 'Masalan: +998901234567',
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                            SmoothAppear(
-                              delay: const Duration(milliseconds: 40),
-                              child: TextField(
-                                controller: codeController,
-                                focusNode: codeFocusNode,
-                                textInputAction: TextInputAction.done,
-                                autocorrect: false,
-                                enableSuggestions: true,
-                                autofillHints: const [AutofillHints.username],
-                                onSubmitted: (_) {
-                                  if (!loading) {
-                                    submitLogin(context);
-                                  }
-                                },
-                                decoration: const InputDecoration(
-                                  labelText: 'Code',
-                                  hintText: 'Masalan: 10XXXXXXXXXX',
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                          ],
-                        ),
-                      ),
-                      if (errorText != null) ...[
-                        const SizedBox(height: 14),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 520),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
                         SmoothAppear(
-                          delay: const Duration(milliseconds: 120),
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF0B0B0B),
-                              borderRadius: BorderRadius.circular(18),
-                              border:
-                                  Border.all(color: const Color(0xFF2A2A2A)),
+                          delay: const Duration(milliseconds: 20),
+                          child: Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: badgeBackground,
+                                  borderRadius: BorderRadius.circular(999),
+                                  border: Border.all(color: panelBorder),
+                                ),
+                                child: Text(
+                                  'Accord Mobile',
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                    color: badgeForeground,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                'Supplier, Werka, Customer, Admin',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: quietText,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        SmoothAppear(
+                          delay: const Duration(milliseconds: 40),
+                          child: Text(
+                            'One entry point for your daily ERP flow.',
+                            style: theme.textTheme.displaySmall?.copyWith(
+                              fontSize: 38,
+                              height: 1.05,
+                              letterSpacing: -1.4,
                             ),
-                            child: Text(
-                              errorText!,
-                              style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        SmoothAppear(
+                          delay: const Duration(milliseconds: 70),
+                          child: Text(
+                            'Mavjud telefon raqam va code orqali tizimga kiring. Ilova ombor, jo‘natma va tasdiqlash jarayonlarini xavfsiz boshqaradi.',
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: quietText,
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 26),
+                        SmoothAppear(
+                          delay: const Duration(milliseconds: 90),
+                          child: Container(
+                            padding: const EdgeInsets.all(22),
+                            decoration: BoxDecoration(
+                              color: panelBackground,
+                              borderRadius: BorderRadius.circular(28),
+                              border: Border.all(color: panelBorder),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: isDark
+                                      ? const Color(0x33000000)
+                                      : const Color(0x12000000),
+                                  blurRadius: 32,
+                                  offset: const Offset(0, 14),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Text(
+                                  'Sign in',
+                                  style: theme.textTheme.headlineMedium
+                                      ?.copyWith(fontSize: 26),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'ERPNext bilan bog‘langan ishchi profilingizni oching.',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: quietText,
+                                    height: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 22),
+                                AutofillGroup(
+                                  child: Column(
+                                    children: [
+                                      TextField(
+                                        controller: phoneController,
+                                        focusNode: phoneFocusNode,
+                                        textInputAction: TextInputAction.next,
+                                        keyboardType: TextInputType.phone,
+                                        autocorrect: false,
+                                        enableSuggestions: true,
+                                        autofillHints: const [
+                                          AutofillHints.telephoneNumber
+                                        ],
+                                        decoration: const InputDecoration(
+                                          labelText: 'Telefon raqam',
+                                          hintText: 'Masalan: +998901234567',
+                                          prefixIcon:
+                                              Icon(Icons.phone_outlined),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 14),
+                                      TextField(
+                                        controller: codeController,
+                                        focusNode: codeFocusNode,
+                                        textInputAction: TextInputAction.done,
+                                        autocorrect: false,
+                                        enableSuggestions: true,
+                                        autofillHints: const [
+                                          AutofillHints.username
+                                        ],
+                                        onSubmitted: (_) {
+                                          if (!loading) {
+                                            submitLogin(context);
+                                          }
+                                        },
+                                        decoration: const InputDecoration(
+                                          labelText: 'Code',
+                                          hintText: 'Masalan: 10XXXXXXXXXX',
+                                          prefixIcon:
+                                              Icon(Icons.password_outlined),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (errorText != null) ...[
+                                  const SizedBox(height: 16),
+                                  Container(
+                                    padding: const EdgeInsets.all(14),
+                                    decoration: BoxDecoration(
+                                      color: scheme.errorContainer,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.error_outline_rounded,
+                                          color: scheme.onErrorContainer,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            errorText!,
+                                            style: theme.textTheme.bodyMedium
+                                                ?.copyWith(
+                                              color: scheme.onErrorContainer,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 20),
+                                FilledButton.icon(
+                                  onPressed: loading
+                                      ? null
+                                      : () => submitLogin(context),
+                                  icon: loading
+                                      ? SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.2,
+                                            color: scheme.onPrimary,
+                                          ),
+                                        )
+                                      : const Icon(Icons.arrow_forward_rounded),
+                                  label: Text(
+                                    loading ? 'Kuting...' : 'Login',
+                                  ),
+                                  style: FilledButton.styleFrom(
+                                    minimumSize: const Size.fromHeight(58),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ],
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed:
-                              loading ? null : () => submitLogin(context),
-                          child: Text(loading ? 'Kuting...' : 'Login'),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
