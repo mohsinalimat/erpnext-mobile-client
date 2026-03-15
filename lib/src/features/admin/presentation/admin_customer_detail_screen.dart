@@ -191,6 +191,15 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final detail = _detail ??
+        AdminCustomerDetail(
+          ref: widget.customerRef,
+          name: _loading ? 'Yuklanmoqda...' : 'Customer',
+          phone: _loading ? 'Yuklanmoqda...' : 'Kiritilmagan',
+          code: _loading ? 'Yuklanmoqda...' : 'Hali generatsiya qilinmagan',
+          codeLocked: false,
+          codeRetryAfterSec: _retryAfterSec,
+        );
 
     return Scaffold(
       backgroundColor: AppTheme.shellStart(context),
@@ -222,50 +231,39 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
               ),
             ),
             const SizedBox(height: 20),
+            _AdminCustomerDetailCard(
+              detail: detail,
+              savingPhone: _savingPhone || _loading,
+              regeneratingCode: _regeneratingCode,
+              retryAfterSec: _retryAfterSec,
+              statusLabel: _loading
+                  ? 'Yuklanmoqda'
+                  : _loadError != null
+                      ? 'Xato'
+                      : _detail == null
+                          ? 'Bo‘sh'
+                          : 'Tayyor',
+              onAddPhone: _addPhone,
+              onRegenerateCode: _regenerateCode,
+              onCopyCode: _copyCode,
+            ),
+            const SizedBox(height: 12),
             _AdminCustomerInfoCard(
               child: Text(
                 'Customer detail route: ${widget.customerRef}',
                 style: theme.textTheme.titleMedium,
               ),
             ),
-            const SizedBox(height: 12),
-            if (_loading)
-              _AdminCustomerInfoCard(
-                child: Row(
-                  children: [
-                    const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child:
-                          CircularProgressIndicator.adaptive(strokeWidth: 2.2),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Customer detail yuklanmoqda...',
-                        style: theme.textTheme.titleMedium,
-                      ),
-                    ),
-                    const _AdminStateChip(label: 'Yuklanmoqda'),
-                  ],
-                ),
-              )
-            else if (_loadError != null)
+            if (_loadError != null) ...[
+              const SizedBox(height: 12),
               _AdminCustomerInfoCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Customer detail yuklanmadi',
-                            style: theme.textTheme.titleMedium,
-                          ),
-                        ),
-                        const _AdminStateChip(label: 'Xato'),
-                      ],
+                    Text(
+                      'Customer detail yuklanmadi',
+                      style: theme.textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
                     Text('$_loadError'),
@@ -276,31 +274,8 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
                     ),
                   ],
                 ),
-              )
-            else if (_detail == null)
-              _AdminCustomerInfoCard(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Customer detail topilmadi.',
-                        style: theme.textTheme.titleMedium,
-                      ),
-                    ),
-                    const _AdminStateChip(label: 'Bo‘sh'),
-                  ],
-                ),
-              )
-            else
-              _AdminCustomerDetailCard(
-                detail: _detail!,
-                savingPhone: _savingPhone,
-                regeneratingCode: _regeneratingCode,
-                retryAfterSec: _retryAfterSec,
-                onAddPhone: _addPhone,
-                onRegenerateCode: _regenerateCode,
-                onCopyCode: _copyCode,
               ),
+            ],
           ],
         ),
       ),
@@ -339,6 +314,7 @@ class _AdminCustomerDetailCard extends StatelessWidget {
     required this.savingPhone,
     required this.regeneratingCode,
     required this.retryAfterSec,
+    required this.statusLabel,
     required this.onAddPhone,
     required this.onRegenerateCode,
     required this.onCopyCode,
@@ -348,6 +324,7 @@ class _AdminCustomerDetailCard extends StatelessWidget {
   final bool savingPhone;
   final bool regeneratingCode;
   final int retryAfterSec;
+  final String statusLabel;
   final Future<void> Function(AdminCustomerDetail detail) onAddPhone;
   final Future<void> Function() onRegenerateCode;
   final Future<void> Function(String code) onCopyCode;
@@ -380,7 +357,7 @@ class _AdminCustomerDetailCard extends StatelessWidget {
                     style: theme.textTheme.headlineMedium,
                   ),
                 ),
-                const _AdminStateChip(label: 'Tayyor'),
+                _AdminStateChip(label: statusLabel),
               ],
             ),
             const SizedBox(height: 14),
