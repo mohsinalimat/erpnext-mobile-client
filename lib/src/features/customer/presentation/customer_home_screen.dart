@@ -369,7 +369,7 @@ class _CustomerShipmentsPanel extends StatelessWidget {
 
     return _QuietPanel(
       padding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
-      color: isDark ? const Color(0xFF2A2F4F) : null,
+      color: isDark ? null : const Color(0xFF2A2F4F),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
