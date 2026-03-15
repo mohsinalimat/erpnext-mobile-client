@@ -227,10 +227,7 @@ class _PinGlyph extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     if (!filled) {
-      return const SizedBox(
-        width: 16,
-        height: 16,
-      );
+      return const SizedBox(width: 18, height: 18);
     }
 
     if (!animate) {
@@ -243,16 +240,18 @@ class _PinGlyph extends StatelessWidget {
     return TweenAnimationBuilder<double>(
       key: ValueKey<String>('glyph-$variant-$animateTick'),
       tween: Tween(begin: 0, end: 1),
-      duration: AppMotion.medium,
+      duration: AppMotion.slow,
       curve: AppMotion.emphasizedDecelerate,
       builder: (context, value, _) {
+        final polygonOpacity = (1 - (value * 1.4)).clamp(0.0, 1.0);
+        final circleOpacity = ((value - 0.18) / 0.82).clamp(0.0, 1.0);
         return Stack(
           alignment: Alignment.center,
           children: [
             Opacity(
-              opacity: 1 - value,
+              opacity: polygonOpacity,
               child: Transform.scale(
-                scale: 0.92 + (0.12 * (1 - value)),
+                scale: 1.28 - (0.42 * value),
                 child: _GlyphSurface(
                   shape: _polygonShape(),
                   color: scheme.onSurface,
@@ -260,9 +259,9 @@ class _PinGlyph extends StatelessWidget {
               ),
             ),
             Opacity(
-              opacity: value,
+              opacity: circleOpacity,
               child: Transform.scale(
-                scale: 0.88 + (0.12 * value),
+                scale: 0.78 + (0.22 * value),
                 child: _GlyphSurface(
                   shape: const CircleBorder(),
                   color: scheme.onSurface,
@@ -288,8 +287,8 @@ class _GlyphSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 16,
-      height: 16,
+      width: 18,
+      height: 18,
       child: DecoratedBox(
         decoration: ShapeDecoration(
           color: color,
@@ -358,8 +357,8 @@ class _PinDigitButtonState extends State<_PinDigitButton> {
       child: AnimatedContainer(
         duration: AppMotion.fast,
         curve: AppMotion.smooth,
-        width: 72,
-        height: 72,
+        width: 78,
+        height: 78,
         decoration: BoxDecoration(
           color: widget.enabled
               ? (_pressed ? pressedColor : idleColor)
@@ -420,8 +419,8 @@ class _PinActionButtonState extends State<_PinActionButton> {
       child: AnimatedContainer(
         duration: AppMotion.fast,
         curve: AppMotion.smooth,
-        width: 72,
-        height: 72,
+        width: 78,
+        height: 78,
         decoration: BoxDecoration(
           color: widget.enabled
               ? (_pressed ? pressedColor : idleColor)

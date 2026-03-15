@@ -36,40 +36,35 @@ class PinEntryScaffold extends StatelessWidget {
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 420),
-          child: Card.filled(
-            margin: EdgeInsets.zero,
-            color: Theme.of(context).colorScheme.surfaceContainerLow,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(28),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(22),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    actionLabel,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '4 xonali PIN kiriting',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 18),
-                  PinCodeEditor(
-                    controller: controller,
-                    onAction: onAction,
-                    actionLabel: busy ? 'Tekshirilmoqda...' : actionLabel,
-                    actionIcon: actionLabel == 'Saqlash'
-                        ? Icons.check_rounded
-                        : Icons.arrow_forward_rounded,
-                    errorText: errorText,
-                    busy: busy,
-                  ),
-                ],
-              ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  actionLabel,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '4 xonali PIN kiriting',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 22),
+                PinCodeEditor(
+                  controller: controller,
+                  onAction: onAction,
+                  actionLabel: busy ? 'Tekshirilmoqda...' : actionLabel,
+                  actionIcon: actionLabel == 'Saqlash'
+                      ? Icons.check_rounded
+                      : Icons.arrow_forward_rounded,
+                  errorText: errorText,
+                  busy: busy,
+                ),
+              ],
             ),
           ),
         ),
