@@ -250,11 +250,11 @@ class _PinGlyph extends StatelessWidget {
     return TweenAnimationBuilder<double>(
       key: ValueKey<String>('glyph-$variant-$animateTick'),
       tween: Tween(begin: 0, end: 1),
-      duration: const Duration(milliseconds: 1100),
+      duration: const Duration(milliseconds: 820),
       curve: Curves.easeInOutCubic,
       builder: (context, value, _) {
-        final polygonOpacity = (1 - (value * 1.02)).clamp(0.0, 1.0);
-        final circleOpacity = ((value - 0.36) / 0.64).clamp(0.0, 1.0);
+        final polygonOpacity = (1 - (value * 1.08)).clamp(0.0, 1.0);
+        final circleOpacity = ((value - 0.28) / 0.72).clamp(0.0, 1.0);
         return Stack(
           alignment: Alignment.center,
           children: [
@@ -368,7 +368,7 @@ class _PinDigitButtonState extends State<_PinDigitButton> {
 
   void _releaseSoon() {
     _releaseTimer?.cancel();
-    _releaseTimer = Timer(const Duration(milliseconds: 220), () {
+    _releaseTimer = Timer(const Duration(milliseconds: 120), () {
       if (mounted) {
         setState(() => _pressed = false);
       }
@@ -397,8 +397,8 @@ class _PinDigitButtonState extends State<_PinDigitButton> {
             }
           : null,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 460),
-        curve: Curves.easeInOutCubic,
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
         width: 78,
         height: 78,
         decoration: BoxDecoration(
@@ -458,7 +458,7 @@ class _PinActionButtonState extends State<_PinActionButton> {
 
   void _releaseSoon() {
     _releaseTimer?.cancel();
-    _releaseTimer = Timer(const Duration(milliseconds: 220), () {
+    _releaseTimer = Timer(const Duration(milliseconds: 120), () {
       if (mounted) {
         setState(() => _pressed = false);
       }
@@ -491,8 +491,8 @@ class _PinActionButtonState extends State<_PinActionButton> {
             }
           : null,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 460),
-        curve: Curves.easeInOutCubic,
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
         width: 78,
         height: 78,
         decoration: BoxDecoration(
