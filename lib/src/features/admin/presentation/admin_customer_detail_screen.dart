@@ -1,7 +1,6 @@
 import '../../../core/api/mobile_api.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/common_widgets.dart';
+import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/admin_dock.dart';
 import 'dart:async';
@@ -164,26 +163,31 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
       ),
       title: 'Customer',
       subtitle: '',
+      contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
       bottom: const AdminDock(activeTab: AdminDockTab.suppliers),
       child: FutureBuilder<AdminCustomerDetail>(
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator.adaptive());
           }
           if (snapshot.hasError) {
             return Center(
-              child: SoftCard(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('Customer detail yuklanmadi: ${snapshot.error}'),
-                    const SizedBox(height: 12),
-                    FilledButton(
-                      onPressed: _reload,
-                      child: const Text('Qayta urinish'),
-                    ),
-                  ],
+              child: Card.filled(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('Customer detail yuklanmadi: ${snapshot.error}'),
+                      const SizedBox(height: 12),
+                      FilledButton(
+                        onPressed: _reload,
+                        child: const Text('Qayta urinish'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -191,100 +195,138 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
 
           final detail = snapshot.data!;
           final hasPhone = detail.phone.trim().isNotEmpty;
+          final theme = Theme.of(context);
+          final scheme = theme.colorScheme;
+
           return ListView(
             padding: EdgeInsets.zero,
             children: [
-              SoftCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      detail.name,
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                    const SizedBox(height: 14),
-                    Text('Ref', style: Theme.of(context).textTheme.bodySmall),
-                    const SizedBox(height: 4),
-                    Text(
-                      detail.ref,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
+              SmoothAppear(
+                delay: const Duration(milliseconds: 20),
+                child: Card.filled(
+                  margin: EdgeInsets.zero,
+                  color: scheme.surfaceContainerLow,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(28),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
+                        Text(
+                          detail.name,
+                          style: theme.textTheme.headlineMedium,
+                        ),
+                        const SizedBox(height: 14),
+                        Text('Ref', style: theme.textTheme.bodySmall),
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: scheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(18),
+                          ),
                           child: Text(
-                            'Telefon',
-                            style: Theme.of(context).textTheme.bodySmall,
+                            detail.ref,
+                            style: theme.textTheme.titleMedium,
                           ),
                         ),
-                        FilledButton.tonal(
-                          onPressed: _savingPhone ? null : () => _addPhone(detail),
-                          child: Text(hasPhone ? 'Yangilash' : 'Qo‘shish'),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Telefon',
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ),
+                            FilledButton.tonal(
+                              onPressed:
+                                  _savingPhone ? null : () => _addPhone(detail),
+                              child: Text(hasPhone ? 'Yangilash' : 'Qo‘shish'),
+                            ),
+                          ],
                         ),
+                        const SizedBox(height: 6),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: scheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: Text(
+                            hasPhone ? detail.phone : 'Kiritilmagan',
+                            style: theme.textTheme.titleMedium,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text('Code', style: theme.textTheme.bodySmall),
+                        const SizedBox(height: 6),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: scheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  detail.code.trim().isEmpty
+                                      ? 'Hali generatsiya qilinmagan'
+                                      : detail.code,
+                                  style: theme.textTheme.titleMedium,
+                                ),
+                              ),
+                              if (detail.code.trim().isNotEmpty)
+                                IconButton(
+                                  onPressed: () => _copyCode(detail.code),
+                                  icon: const Icon(Icons.content_copy_outlined),
+                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton(
+                            onPressed: _regeneratingCode || _retryAfterSec > 0
+                                ? null
+                                : _regenerateCode,
+                            child: Text(
+                              _regeneratingCode
+                                  ? 'Generatsiya qilinmoqda...'
+                                  : 'Code generatsiya qilish',
+                            ),
+                          ),
+                        ),
+                        if (_retryAfterSec > 0) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            'Keyingi code uchun $_retryAfterSec soniyadan keyin qayta urining.',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      hasPhone ? detail.phone : 'Kiritilmagan',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 16),
-                    Text('Code', style: Theme.of(context).textTheme.bodySmall),
-                    const SizedBox(height: 6),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 14,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppTheme.actionSurface(context),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppTheme.cardBorder(context)),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              detail.code.trim().isEmpty
-                                  ? 'Hali generatsiya qilinmagan'
-                                  : detail.code,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                          ),
-                          if (detail.code.trim().isNotEmpty)
-                            IconButton(
-                              onPressed: () => _copyCode(detail.code),
-                              icon: const Icon(Icons.copy_rounded),
-                            ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: _regeneratingCode || _retryAfterSec > 0
-                            ? null
-                            : _regenerateCode,
-                        child: Text(
-                          _regeneratingCode
-                              ? 'Generatsiya qilinmoqda...'
-                              : 'Code generatsiya qilish',
-                        ),
-                      ),
-                    ),
-                    if (_retryAfterSec > 0) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        'Keyingi code uchun $_retryAfterSec soniyadan keyin qayta urining.',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
-                  ],
+                  ),
                 ),
               ),
+              const SizedBox(height: 24),
             ],
           );
         },
