@@ -350,7 +350,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               : role == UserRole.customer
                   ? const CustomerDock(activeTab: CustomerDockTab.profile)
                   : const AdminDock(activeTab: AdminDockTab.profile),
-      contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
+      contentPadding: const EdgeInsets.fromLTRB(16, 0, 18, 0),
       child: RefreshIndicator.adaptive(
         onRefresh: _refreshProfile,
         child: ListView(
@@ -579,10 +579,10 @@ class _ProfilePanel extends StatelessWidget {
       margin: EdgeInsets.zero,
       color: Theme.of(context).colorScheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(26),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(20),
         child: child,
       ),
     );
@@ -691,14 +691,24 @@ class _ProfileActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final child = SizedBox(
       width: double.infinity,
-      height: 52,
+      height: 50,
       child: primary
           ? FilledButton(
               onPressed: onPressed,
+              style: FilledButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
               child: Text(label),
             )
           : OutlinedButton(
               onPressed: onPressed,
+              style: OutlinedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
               child: Text(label),
             ),
     );
@@ -722,7 +732,7 @@ class _InfoTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [

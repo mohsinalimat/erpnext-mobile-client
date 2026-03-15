@@ -275,6 +275,7 @@ class _CustomerNotificationsScreenState
       title: 'Bildirishnomalar',
       subtitle: '',
       animateOnEnter: false,
+      contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
       actions: [
         AppShellIconAction(
           icon: Icons.cleaning_services_outlined,
