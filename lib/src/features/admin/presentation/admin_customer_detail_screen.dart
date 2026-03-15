@@ -1,6 +1,5 @@
 import '../../../core/api/mobile_api.dart';
 import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/admin_dock.dart';
 import 'dart:async';
@@ -41,8 +40,12 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
   }
 
   Future<AdminCustomerDetail> _loadDetail() async {
-    final detail =
-        await MobileApi.instance.adminCustomerDetail(widget.customerRef);
+    final detail = await MobileApi.instance
+        .adminCustomerDetail(widget.customerRef)
+        .timeout(
+          const Duration(seconds: 15),
+          onTimeout: () => throw Exception('Customer detail timeout'),
+        );
     _setRetryAfter(detail.codeRetryAfterSec);
     return detail;
   }
@@ -169,7 +172,25 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator.adaptive());
+            return Center(
+              child: Card.filled(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CircularProgressIndicator.adaptive(),
+                      const SizedBox(height: 14),
+                      Text(
+                        'Customer detail yuklanmoqda...',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
           }
           if (snapshot.hasError) {
             return Center(
@@ -192,6 +213,27 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
               ),
             );
           }
+          if (!snapshot.hasData) {
+            return Center(
+              child: Card.filled(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('Customer detail topilmadi.'),
+                      const SizedBox(height: 12),
+                      FilledButton(
+                        onPressed: _reload,
+                        child: const Text('Qayta urinish'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
 
           final detail = snapshot.data!;
           final hasPhone = detail.phone.trim().isNotEmpty;
@@ -201,128 +243,125 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
           return ListView(
             padding: EdgeInsets.zero,
             children: [
-              SmoothAppear(
-                delay: const Duration(milliseconds: 20),
-                child: Card.filled(
-                  margin: EdgeInsets.zero,
-                  color: scheme.surfaceContainerLow,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(28),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          detail.name,
-                          style: theme.textTheme.headlineMedium,
+              Card.filled(
+                margin: EdgeInsets.zero,
+                color: scheme.surfaceContainerLow,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(28),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        detail.name,
+                        style: theme.textTheme.headlineMedium,
+                      ),
+                      const SizedBox(height: 14),
+                      Text('Ref', style: theme.textTheme.bodySmall),
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
                         ),
-                        const SizedBox(height: 14),
-                        Text('Ref', style: theme.textTheme.bodySmall),
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: scheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: Text(
-                            detail.ref,
-                            style: theme.textTheme.titleMedium,
-                          ),
+                        decoration: BoxDecoration(
+                          color: scheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(18),
                         ),
-                        const SizedBox(height: 16),
-                        Row(
+                        child: Text(
+                          detail.ref,
+                          style: theme.textTheme.titleMedium,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Telefon',
+                              style: theme.textTheme.bodySmall,
+                            ),
+                          ),
+                          FilledButton.tonal(
+                            onPressed:
+                                _savingPhone ? null : () => _addPhone(detail),
+                            child: Text(hasPhone ? 'Yangilash' : 'Qo‘shish'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: scheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: Text(
+                          hasPhone ? detail.phone : 'Kiritilmagan',
+                          style: theme.textTheme.titleMedium,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text('Code', style: theme.textTheme.bodySmall),
+                      const SizedBox(height: 6),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: scheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: Row(
                           children: [
                             Expanded(
                               child: Text(
-                                'Telefon',
-                                style: theme.textTheme.bodySmall,
+                                detail.code.trim().isEmpty
+                                    ? 'Hali generatsiya qilinmagan'
+                                    : detail.code,
+                                style: theme.textTheme.titleMedium,
                               ),
                             ),
-                            FilledButton.tonal(
-                              onPressed:
-                                  _savingPhone ? null : () => _addPhone(detail),
-                              child: Text(hasPhone ? 'Yangilash' : 'Qo‘shish'),
-                            ),
+                            if (detail.code.trim().isNotEmpty)
+                              IconButton(
+                                onPressed: () => _copyCode(detail.code),
+                                icon: const Icon(Icons.content_copy_outlined),
+                              ),
                           ],
                         ),
-                        const SizedBox(height: 6),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: scheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(18),
-                          ),
+                      ),
+                      const SizedBox(height: 14),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton(
+                          onPressed: _regeneratingCode || _retryAfterSec > 0
+                              ? null
+                              : _regenerateCode,
                           child: Text(
-                            hasPhone ? detail.phone : 'Kiritilmagan',
-                            style: theme.textTheme.titleMedium,
+                            _regeneratingCode
+                                ? 'Generatsiya qilinmoqda...'
+                                : 'Code generatsiya qilish',
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        Text('Code', style: theme.textTheme.bodySmall),
-                        const SizedBox(height: 6),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: scheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  detail.code.trim().isEmpty
-                                      ? 'Hali generatsiya qilinmagan'
-                                      : detail.code,
-                                  style: theme.textTheme.titleMedium,
-                                ),
-                              ),
-                              if (detail.code.trim().isNotEmpty)
-                                IconButton(
-                                  onPressed: () => _copyCode(detail.code),
-                                  icon: const Icon(Icons.content_copy_outlined),
-                                ),
-                            ],
+                      ),
+                      if (_retryAfterSec > 0) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          'Keyingi code uchun $_retryAfterSec soniyadan keyin qayta urining.',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: scheme.onSurfaceVariant,
                           ),
                         ),
-                        const SizedBox(height: 14),
-                        SizedBox(
-                          width: double.infinity,
-                          child: FilledButton(
-                            onPressed: _regeneratingCode || _retryAfterSec > 0
-                                ? null
-                                : _regenerateCode,
-                            child: Text(
-                              _regeneratingCode
-                                  ? 'Generatsiya qilinmoqda...'
-                                  : 'Code generatsiya qilish',
-                            ),
-                          ),
-                        ),
-                        if (_retryAfterSec > 0) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            'Keyingi code uchun $_retryAfterSec soniyadan keyin qayta urining.',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
                       ],
-                    ),
+                    ],
                   ),
                 ),
               ),
