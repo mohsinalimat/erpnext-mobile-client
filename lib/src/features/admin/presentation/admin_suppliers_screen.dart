@@ -112,7 +112,7 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
           return RefreshIndicator(
             onRefresh: _reload,
             child: ListView(
-              padding: EdgeInsets.zero,
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 116),
               children: [
                 SmoothAppear(
                   delay: const Duration(milliseconds: 20),
