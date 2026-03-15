@@ -13,6 +13,7 @@ class AppShell extends StatelessWidget {
     this.bottom,
     this.contentPadding = const EdgeInsets.fromLTRB(4, 0, 6, 0),
     this.bottomPadding = const EdgeInsets.fromLTRB(20, 0, 24, 0),
+    this.scrollBottomInset = 116,
     this.animateOnEnter = true,
   });
 
@@ -24,6 +25,7 @@ class AppShell extends StatelessWidget {
   final Widget? bottom;
   final EdgeInsets contentPadding;
   final EdgeInsets bottomPadding;
+  final double scrollBottomInset;
   final bool animateOnEnter;
 
   @override
@@ -90,7 +92,9 @@ class AppShell extends StatelessWidget {
         Expanded(
           child: Container(
             width: double.infinity,
-            padding: contentPadding,
+            padding: contentPadding.add(
+              EdgeInsets.only(bottom: bottom == null ? 0 : scrollBottomInset),
+            ),
             child: child,
           ),
         ),
