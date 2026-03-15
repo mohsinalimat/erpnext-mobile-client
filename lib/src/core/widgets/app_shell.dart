@@ -13,6 +13,7 @@ class AppShell extends StatelessWidget {
     this.bottom,
     this.contentPadding = const EdgeInsets.fromLTRB(4, 0, 6, 0),
     this.bottomPadding = const EdgeInsets.fromLTRB(20, 0, 24, 0),
+    this.animateOnEnter = true,
   });
 
   final String title;
@@ -23,6 +24,7 @@ class AppShell extends StatelessWidget {
   final Widget? bottom;
   final EdgeInsets contentPadding;
   final EdgeInsets bottomPadding;
+  final bool animateOnEnter;
 
   @override
   Widget build(BuildContext context) {
@@ -45,64 +47,74 @@ class AppShell extends StatelessWidget {
         ),
         child: SafeArea(
           bottom: false,
-          child: TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0, end: 1),
-            duration: AppMotion.pageEnter,
-            curve: AppMotion.pageIn,
-            builder: (context, value, animatedChild) {
-              return Opacity(
-                opacity: value,
-                child: Transform.translate(
-                  offset: Offset(18 * (1 - value), 0),
-                  child: animatedChild,
-                ),
-              );
-            },
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (leading != null) ...[
-                        leading!,
-                        const SizedBox(width: 14),
-                      ],
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              title,
-                              style: theme.textTheme.headlineMedium,
-                            ),
-                            if (subtitle.trim().isNotEmpty) ...[
-                              const SizedBox(height: 6),
-                              Text(
-                                subtitle,
-                                style: theme.textTheme.bodyMedium,
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      if (actions != null) ...actions!,
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    padding: contentPadding,
-                    child: child,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          child: _buildAnimatedContent(theme),
         ),
       ),
+    );
+  }
+
+  Widget _buildAnimatedContent(ThemeData theme) {
+    final content = Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (leading != null) ...[
+                leading!,
+                const SizedBox(width: 14),
+              ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: theme.textTheme.headlineMedium,
+                    ),
+                    if (subtitle.trim().isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        subtitle,
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (actions != null) ...actions!,
+            ],
+          ),
+        ),
+        Expanded(
+          child: Container(
+            width: double.infinity,
+            padding: contentPadding,
+            child: child,
+          ),
+        ),
+      ],
+    );
+
+    if (!animateOnEnter) {
+      return content;
+    }
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: AppMotion.pageEnter,
+      curve: AppMotion.pageIn,
+      builder: (context, value, animatedChild) {
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(
+            offset: Offset(18 * (1 - value), 0),
+            child: animatedChild,
+          ),
+        );
+      },
+      child: content,
     );
   }
 }

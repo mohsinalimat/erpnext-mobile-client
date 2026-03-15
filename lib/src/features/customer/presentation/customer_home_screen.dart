@@ -81,6 +81,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     return AppShell(
       title: 'Customer',
       subtitle: '',
+      animateOnEnter: false,
       bottom: const CustomerDock(activeTab: CustomerDockTab.home),
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,

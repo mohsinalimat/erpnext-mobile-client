@@ -205,6 +205,7 @@ class _CustomerNotificationsScreenState
     return AppShell(
       title: 'Bildirishnomalar',
       subtitle: '',
+      animateOnEnter: false,
       actions: [
         AppShellIconAction(
           icon: Icons.cleaning_services_outlined,
