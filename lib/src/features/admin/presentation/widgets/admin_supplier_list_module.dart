@@ -98,10 +98,10 @@ class _AdminSupplierRow extends StatelessWidget {
                 alignment: Alignment.center,
                 child: Icon(
                   item.kind == AdminUserKind.werka
-                      ? Icons.badge_outlined
+                      ? Icons.inventory_2_outlined
                       : item.kind == AdminUserKind.customer
-                          ? Icons.storefront_outlined
-                          : Icons.person_outline_rounded,
+                          ? Icons.groups_2_outlined
+                          : Icons.account_circle_outlined,
                   size: 20,
                   color: item.kind == AdminUserKind.werka
                       ? scheme.onSecondaryContainer
