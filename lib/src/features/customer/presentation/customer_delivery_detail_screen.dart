@@ -224,7 +224,13 @@ class _CustomerDeliveryDetailScreenState
                         ),
                       ),
                       if (record.note.trim().isNotEmpty) ...[
-                        const Divider(height: 1, thickness: 1),
+                        Divider(
+                          height: 1,
+                          thickness: 1,
+                          indent: 18,
+                          endIndent: 18,
+                          color: scheme.outlineVariant.withValues(alpha: 0.55),
+                        ),
                         const _CustomerDetailSectionHeader(
                           label: 'Izoh',
                           topRounded: false,
@@ -238,7 +244,13 @@ class _CustomerDeliveryDetailScreenState
                         ),
                       ],
                       if (detail.canApprove || detail.canReject) ...[
-                        const Divider(height: 1, thickness: 1),
+                        Divider(
+                          height: 1,
+                          thickness: 1,
+                          indent: 18,
+                          endIndent: 18,
+                          color: scheme.outlineVariant.withValues(alpha: 0.55),
+                        ),
                         const _CustomerDetailSectionHeader(
                           label: 'Javob',
                           topRounded: false,
@@ -310,11 +322,13 @@ class _CustomerDetailSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       decoration: BoxDecoration(
-        color: scheme.surfaceContainer,
+        color:
+            isDark ? scheme.surfaceContainerHigh : scheme.surfaceContainerHigh,
         borderRadius: topRounded
             ? const BorderRadius.only(
                 topLeft: Radius.circular(20),
@@ -342,6 +356,8 @@ class _DetailLine extends StatelessWidget {
   final String label;
   final String value;
 
+  bool get _isStatus => label == 'Status';
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -357,13 +373,29 @@ class _DetailLine extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        Text(
-          value,
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        _isStatus
+            ? Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: scheme.secondaryContainer,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Text(
+                  value,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: scheme.onSecondaryContainer,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              )
+            : Text(
+                value,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
       ],
     );
   }
