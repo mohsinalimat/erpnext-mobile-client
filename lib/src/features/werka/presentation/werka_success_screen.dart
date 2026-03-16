@@ -22,8 +22,9 @@ class WerkaSuccessScreen extends StatelessWidget {
       contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
       bottom: const WerkaDock(activeTab: null),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
+          const SizedBox(height: 140),
           Card.filled(
             margin: EdgeInsets.zero,
             color: scheme.surfaceContainerLow,
