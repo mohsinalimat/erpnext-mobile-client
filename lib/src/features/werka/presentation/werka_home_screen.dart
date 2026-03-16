@@ -7,7 +7,6 @@ import '../../../core/session/app_session.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/common_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/werka_dock.dart';
 import 'package:flutter/material.dart';
@@ -120,38 +119,29 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
                 NotificationUnreadStore.instance.hasUnreadForProfile(
               AppSession.instance.profile,
             );
-            return InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () => Navigator.of(context).pushNamed(
-                AppRoutes.werkaNotifications,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(6),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    const DockSvgIcon(
-                      fillAsset: 'assets/icons/notification-3-fill.svg',
-                      lineAsset: 'assets/icons/notification-3-line.svg',
-                      primary: false,
-                      size: 24,
-                    ),
-                    if (showBadge)
-                      Positioned(
-                        right: -2,
-                        top: -2,
-                        child: Container(
-                          height: 9,
-                          width: 9,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFE53935),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                  ],
+            return Stack(
+              clipBehavior: Clip.none,
+              children: [
+                IconButton.filledTonal(
+                  onPressed: () => Navigator.of(context).pushNamed(
+                    AppRoutes.werkaNotifications,
+                  ),
+                  icon: const Icon(Icons.notifications_none_rounded),
                 ),
-              ),
+                if (showBadge)
+                  Positioned(
+                    right: 9,
+                    top: 9,
+                    child: Container(
+                      height: 9,
+                      width: 9,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFE53935),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
             );
           },
         ),
@@ -182,8 +172,11 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
                         const SizedBox(height: 120),
-                        SoftCard(
-                          child: Column(
+                        Card.filled(
+                          margin: EdgeInsets.zero,
+                          child: Padding(
+                            padding: const EdgeInsets.all(18),
+                            child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
@@ -204,6 +197,7 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
                                 ),
                               ),
                             ],
+                          ),
                           ),
                         ),
                       ],
@@ -267,11 +261,17 @@ class _WerkaSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return SmoothAppear(
-      child: SoftCard(
-        padding: EdgeInsets.zero,
-        borderWidth: 1.35,
-        borderRadius: 20,
+      child: Card.filled(
+        margin: EdgeInsets.zero,
+        color: scheme.surfaceContainerLow,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+          side: BorderSide(
+            color: AppTheme.cardBorder(context).withValues(alpha: 0.75),
+          ),
+        ),
         child: Column(
           children: [
             _WerkaSummaryRow(
@@ -320,6 +320,8 @@ class _WerkaSummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     return PressableScale(
       onTap: onTap,
       child: Padding(
@@ -329,20 +331,24 @@ class _WerkaSummaryRow extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                    ),
+                style: theme.textTheme.titleLarge,
               ),
             ),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                    fontSize: 34,
-                    color: AppTheme.isDark(context)
-                        ? Colors.white
-                        : const Color(0xFF1F1A17),
-                  ),
+            Container(
+              constraints: const BoxConstraints(minWidth: 58),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                value,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ],
         ),
@@ -359,7 +365,9 @@ class _WerkaSummaryDivider extends StatelessWidget {
     return Divider(
       height: 1,
       thickness: 1,
-      color: AppTheme.cardBorder(context),
+      indent: 18,
+      endIndent: 18,
+      color: AppTheme.cardBorder(context).withValues(alpha: 0.7),
     );
   }
 }
@@ -373,22 +381,28 @@ class _WerkaPendingSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return SmoothAppear(
       delay: const Duration(milliseconds: 90),
       offset: const Offset(0, 18),
-      child: SoftCard(
-        padding: EdgeInsets.zero,
-        borderWidth: 1.45,
-        borderRadius: 20,
+      child: Card.filled(
+        margin: EdgeInsets.zero,
+        color: scheme.surfaceContainerLow,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+          side: BorderSide(
+            color: AppTheme.cardBorder(context).withValues(alpha: 0.75),
+          ),
+        ),
         child: Column(
           children: [
             Container(
               width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Color(0xFF212121),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainer,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(28),
+                  topRight: Radius.circular(28),
                 ),
               ),
               padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
@@ -427,6 +441,7 @@ class _WerkaPendingRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return PressableScale(
       onTap: () => Navigator.of(context).pushNamed(
         AppRoutes.werkaDetail,
@@ -455,12 +470,12 @@ class _WerkaPendingRow extends StatelessWidget {
                   children: [
                     Text(
                       record.itemName,
-                      style: Theme.of(context).textTheme.titleLarge,
+                      style: theme.textTheme.titleLarge,
                     ),
                     const SizedBox(height: 6),
                     Text(
                       record.supplierName,
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: theme.textTheme.bodySmall,
                     ),
                   ],
                 ),
@@ -471,12 +486,12 @@ class _WerkaPendingRow extends StatelessWidget {
                 children: [
                   Text(
                     '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: theme.textTheme.titleMedium,
                   ),
                   const SizedBox(height: 6),
                   Text(
                     record.createdLabel,
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: theme.textTheme.bodySmall,
                   ),
                 ],
               ),
