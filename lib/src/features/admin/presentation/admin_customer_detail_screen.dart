@@ -241,6 +241,33 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
     }
   }
 
+  Future<bool> _assignItem(SupplierItem item) async {
+    setState(() => _addingItem = true);
+    try {
+      final updated = await MobileApi.instance.adminAssignCustomerItem(
+        ref: widget.customerRef,
+        itemCode: item.code,
+      );
+      if (!mounted) {
+        return false;
+      }
+      setState(() => _detail = updated);
+      return true;
+    } catch (error) {
+      if (!mounted) {
+        return false;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Mahsulot biriktirilmadi: $error')),
+      );
+      return false;
+    } finally {
+      if (mounted) {
+        setState(() => _addingItem = false);
+      }
+    }
+  }
+
   Future<void> _addItem() async {
     final detail = _detail;
     if (detail == null) {
@@ -260,93 +287,12 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
       );
       return;
     }
-
-    final SupplierItem? selected = await showModalBottomSheet<SupplierItem>(
-      context: context,
-      useSafeArea: true,
-      isScrollControlled: true,
-      builder: (context) {
-        final theme = Theme.of(context);
-        final scheme = theme.colorScheme;
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Mahsulot qo‘shish',
-                      style: theme.textTheme.titleLarge,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close_rounded),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Text(
-                detail.name,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 14),
-              Flexible(
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  itemCount: availableItems.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                  itemBuilder: (context, index) {
-                    final item = availableItems[index];
-                    return ListTile(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      tileColor: scheme.surfaceContainerHighest,
-                      title: Text(item.name),
-                      subtitle: Text(item.code),
-                      trailing: const Icon(Icons.add_rounded),
-                      onTap: () => Navigator.of(context).pop(item),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+    await _showAvailableItemsSheet(
+      context,
+      detail,
+      availableItems,
+      onAddItem: _assignItem,
     );
-    if (selected == null) {
-      return;
-    }
-
-    setState(() => _addingItem = true);
-    try {
-      final updated = await MobileApi.instance.adminAssignCustomerItem(
-        ref: widget.customerRef,
-        itemCode: selected.code,
-      );
-      if (!mounted) {
-        return;
-      }
-      setState(() => _detail = updated);
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Mahsulot biriktirilmadi: $error')),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _addingItem = false);
-      }
-    }
   }
 
   Future<bool> _removeItem(SupplierItem item) async {
@@ -496,6 +442,137 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
       ),
     );
   }
+}
+
+Future<void> _showAvailableItemsSheet(
+  BuildContext context,
+  AdminCustomerDetail detail,
+  List<SupplierItem> availableItems,
+  {
+  required Future<bool> Function(SupplierItem item) onAddItem,
+}
+) async {
+  final visibleItems = availableItems.toList();
+  final collapsingCodes = <String>{};
+  String? activeAddingCode;
+
+  await showModalBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    builder: (context) {
+      final theme = Theme.of(context);
+      final scheme = theme.colorScheme;
+      return StatefulBuilder(
+        builder: (context, setModalState) {
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Mahsulot qo‘shish',
+                        style: theme.textTheme.titleLarge,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  detail.name,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Flexible(
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: visibleItems.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (context, index) {
+                      final item = visibleItems[index];
+                      final collapsing = collapsingCodes.contains(item.code);
+                      return AnimatedSize(
+                        duration: const Duration(milliseconds: 220),
+                        curve: Curves.easeInOutCubic,
+                        child: AnimatedOpacity(
+                          duration: const Duration(milliseconds: 180),
+                          curve: Curves.easeInOutCubic,
+                          opacity: collapsing ? 0 : 1,
+                          child: collapsing
+                              ? const SizedBox.shrink()
+                              : ListTile(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(18),
+                                  ),
+                                  tileColor: scheme.surfaceContainerHighest,
+                                  title: Text(item.name),
+                                  subtitle: Text(item.code),
+                                  trailing: activeAddingCode == item.code
+                                      ? const SizedBox(
+                                          height: 18,
+                                          width: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : const Icon(Icons.add_rounded),
+                                  onTap: activeAddingCode == item.code
+                                      ? null
+                                      : () async {
+                                          setModalState(() {
+                                            activeAddingCode = item.code;
+                                          });
+                                          final added = await onAddItem(item);
+                                          if (!context.mounted) {
+                                            return;
+                                          }
+                                          if (added) {
+                                            setModalState(() {
+                                              collapsingCodes.add(item.code);
+                                            });
+                                            await Future<void>.delayed(
+                                              const Duration(milliseconds: 180),
+                                            );
+                                            if (!context.mounted) {
+                                              return;
+                                            }
+                                            setModalState(() {
+                                              visibleItems.removeWhere(
+                                                (current) =>
+                                                    current.code == item.code,
+                                              );
+                                              collapsingCodes.remove(item.code);
+                                              activeAddingCode = null;
+                                            });
+                                          } else {
+                                            setModalState(() {
+                                              activeAddingCode = null;
+                                            });
+                                          }
+                                        },
+                                ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    },
+  );
 }
 
 class _AdminCustomerDetailCard extends StatelessWidget {
