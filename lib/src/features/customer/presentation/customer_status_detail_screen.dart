@@ -1,8 +1,6 @@
 import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/common_widgets.dart';
-import '../../../core/widgets/motion_widgets.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/customer_dock.dart';
 import 'package:flutter/material.dart';
@@ -59,73 +57,171 @@ class _CustomerStatusDetailScreenState
 
   @override
   Widget build(BuildContext context) {
-    return AppShell(
-      title: _title,
-      subtitle: '',
-      leading: AppShellIconAction(
-        icon: Icons.arrow_back_rounded,
-        onTap: () => Navigator.of(context).maybePop(),
-      ),
-      bottom: const CustomerDock(activeTab: null),
-      child: FutureBuilder<List<DispatchRecord>>(
-        future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: SoftCard(child: Text('${snapshot.error}')));
-          }
-          final items = snapshot.data ?? const <DispatchRecord>[];
-          if (items.isEmpty) {
-            return const Center(
-              child: SoftCard(
-                child: Text('Hozircha yozuv yo‘q.'),
-              ),
-            );
-          }
-          return RefreshIndicator.adaptive(
-            onRefresh: _reload,
-            child: ListView.separated(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.zero,
-              itemCount: items.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final record = items[index];
-                return PressableScale(
-                  onTap: () => _openDetail(record.id),
-                  child: SoftCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          record.itemName,
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          record.itemCode,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
-                          style: Theme.of(context).textTheme.headlineMedium,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          record.createdLabel,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Scaffold(
+      extendBody: true,
+      backgroundColor: AppTheme.shellStart(context),
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+              child: Row(
+                children: [
+                  SizedBox(
+                    height: 52,
+                    width: 52,
+                    child: IconButton.filledTonal(
+                      onPressed: () => Navigator.of(context).maybePop(),
+                      icon: const Icon(Icons.arrow_back_rounded, size: 28),
                     ),
                   ),
-                );
-              },
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      _title,
+                      style: theme.textTheme.headlineMedium,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          );
-        },
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 0, 16, 0),
+                child: FutureBuilder<List<DispatchRecord>>(
+                  future: _future,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState != ConnectionState.done) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Card.filled(
+                          margin: EdgeInsets.zero,
+                          color: scheme.surfaceContainerLow,
+                          child: Padding(
+                            padding: const EdgeInsets.all(18),
+                            child: Text('${snapshot.error}'),
+                          ),
+                        ),
+                      );
+                    }
+                    final items = snapshot.data ?? const <DispatchRecord>[];
+                    if (items.isEmpty) {
+                      return Center(
+                        child: Card.filled(
+                          margin: EdgeInsets.zero,
+                          color: scheme.surfaceContainerLow,
+                          child: Padding(
+                            padding: const EdgeInsets.all(18),
+                            child: Text(
+                              'Hozircha yozuv yo‘q.',
+                              style: theme.textTheme.titleMedium,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                    return RefreshIndicator.adaptive(
+                      onRefresh: _reload,
+                      child: ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.only(bottom: 110),
+                        children: [
+                          Card.filled(
+                            margin: EdgeInsets.zero,
+                            color: scheme.surfaceContainerLow,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(28),
+                            ),
+                            child: Column(
+                              children: [
+                                for (int index = 0;
+                                    index < items.length;
+                                    index++) ...[
+                                  _CustomerStatusRecordRow(
+                                    record: items[index],
+                                    onTap: () => _openDetail(items[index].id),
+                                  ),
+                                  if (index != items.length - 1)
+                                    const Divider(height: 1, thickness: 1),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: const SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20, 0, 24, 0),
+          child: CustomerDock(activeTab: null),
+        ),
+      ),
+    );
+  }
+}
+
+class _CustomerStatusRecordRow extends StatelessWidget {
+  const _CustomerStatusRecordRow({
+    required this.record,
+    required this.onTap,
+  });
+
+  final DispatchRecord record;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    record.itemName,
+                    style: theme.textTheme.titleLarge,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  record.createdLabel,
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
+              style: theme.textTheme.headlineMedium,
+            ),
+            if (record.note.trim().isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                record.note,
+                style: theme.textTheme.bodySmall,
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
