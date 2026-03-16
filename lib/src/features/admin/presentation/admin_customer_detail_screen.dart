@@ -357,13 +357,22 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
           title: const Text('Mahsulotni uzish'),
           content: Text('${item.name} mahsulotini customerdan uzaymi?'),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Yo‘q'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Ha'),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Yo‘q'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text('Ha'),
+                  ),
+                ),
+              ],
             ),
           ],
         );
