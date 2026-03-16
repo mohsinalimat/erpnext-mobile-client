@@ -4,11 +4,9 @@ import '../../../core/notifications/notification_hidden_store.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/session/app_session.dart';
 import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/common_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/admin_dock.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class AdminActivityScreen extends StatefulWidget {
   const AdminActivityScreen({super.key});
@@ -113,18 +111,11 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
     return AppShell(
       title: 'Harakatlar',
       subtitle: '',
+      contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
       actions: [
-        AppShellIconAction(
-          iconWidget: SvgPicture.asset(
-            'assets/icons/brush-3-line.svg',
-            width: 22,
-            height: 22,
-            colorFilter: ColorFilter.mode(
-              Theme.of(context).colorScheme.onSurface,
-              BlendMode.srcIn,
-            ),
-          ),
-          onTap: _clearAll,
+        IconButton.filledTonal(
+          onPressed: _clearAll,
+          icon: const Icon(Icons.clear_all_rounded),
         ),
       ],
       bottom: const AdminDock(activeTab: AdminDockTab.activity),
@@ -144,7 +135,8 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
           }
           if (snapshot.hasError && items.isEmpty) {
             return Center(
-              child: SoftCard(
+              child: Card.filled(
+                margin: EdgeInsets.zero,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -162,7 +154,8 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
 
           if (items.isEmpty) {
             return Center(
-              child: SoftCard(
+              child: Card.filled(
+                margin: EdgeInsets.zero,
                 child: Text(
                   'Hali harakat yo‘q.',
                   style: Theme.of(context).textTheme.titleMedium,
@@ -195,10 +188,13 @@ class _AdminActivitySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SoftCard(
-      padding: EdgeInsets.zero,
-      borderWidth: 1.45,
-      borderRadius: 20,
+    final scheme = Theme.of(context).colorScheme;
+    return Card.filled(
+      margin: EdgeInsets.zero,
+      color: scheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+      ),
       child: Column(
         children: [
           for (int index = 0; index < items.length; index++) ...[
@@ -240,14 +236,6 @@ class _AdminActivityRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(0),
-          topRight: Radius.circular(0),
-          bottomLeft: Radius.circular(0),
-          bottomRight: Radius.circular(0),
-        ),
-      ),
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -322,9 +310,8 @@ class _ActivityStatusBadge extends StatelessWidget {
       height: 36,
       width: 36,
       decoration: BoxDecoration(
-        color: Colors.transparent,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         shape: BoxShape.circle,
-        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Icon(
         icon,
