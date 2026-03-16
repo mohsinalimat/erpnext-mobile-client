@@ -215,6 +215,7 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
               onRefresh: _reload,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 116),
                 children: [
                   const SizedBox(height: 120),
                   Card.filled(
@@ -266,7 +267,7 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
             onRefresh: _reload,
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.zero,
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 116),
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),

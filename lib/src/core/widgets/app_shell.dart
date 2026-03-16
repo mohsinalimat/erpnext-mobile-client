@@ -13,7 +13,6 @@ class AppShell extends StatelessWidget {
     this.bottom,
     this.contentPadding = const EdgeInsets.fromLTRB(4, 0, 6, 0),
     this.bottomPadding = const EdgeInsets.fromLTRB(20, 0, 24, 0),
-    this.contentBottomInset,
     this.animateOnEnter = true,
   });
 
@@ -25,7 +24,6 @@ class AppShell extends StatelessWidget {
   final Widget? bottom;
   final EdgeInsets contentPadding;
   final EdgeInsets bottomPadding;
-  final double? contentBottomInset;
   final bool animateOnEnter;
 
   @override
@@ -56,8 +54,6 @@ class AppShell extends StatelessWidget {
   }
 
   Widget _buildAnimatedContent(ThemeData theme) {
-    final double resolvedBottomInset =
-        bottom == null ? 0 : (contentBottomInset ?? 108);
     final content = Column(
       children: [
         Padding(
@@ -94,12 +90,7 @@ class AppShell extends StatelessWidget {
         Expanded(
           child: Container(
             width: double.infinity,
-            padding: EdgeInsets.fromLTRB(
-              contentPadding.left,
-              contentPadding.top,
-              contentPadding.right,
-              contentPadding.bottom + resolvedBottomInset,
-            ),
+            padding: contentPadding,
             child: child,
           ),
         ),

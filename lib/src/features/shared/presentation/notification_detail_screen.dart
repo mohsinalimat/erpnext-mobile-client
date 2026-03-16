@@ -409,7 +409,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
             onRefresh: _reload,
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.zero,
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 116),
               children: [
                 _NotificationSummaryCard(record: record),
                 if (record.note.trim().isNotEmpty) ...[
