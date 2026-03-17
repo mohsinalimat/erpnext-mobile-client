@@ -360,11 +360,6 @@ class _DockButtonState extends State<DockButton> {
     final OutlinedBorder tapShape = widget.primary
         ? const CircleBorder()
         : RoundedRectangleBorder(borderRadius: borderRadius);
-    final Widget iconChild = widget.active
-        ? (widget.selectedIconWidget ??
-            widget.iconWidget ??
-            Icon(widget.selectedIcon ?? widget.icon))
-        : (widget.iconWidget ?? Icon(widget.icon));
     final double iconSize = widget.primary
         ? switch (deviceClass) {
             _DockDeviceClass.small => 33,
@@ -376,6 +371,16 @@ class _DockButtonState extends State<DockButton> {
             _DockDeviceClass.medium => 29,
             _DockDeviceClass.large => 29,
           };
+    final Widget iconChild = widget.primary
+        ? _DockPrimaryPlusGlyph(
+            size: iconSize,
+            color: foreground,
+          )
+        : widget.active
+            ? (widget.selectedIconWidget ??
+                widget.iconWidget ??
+                Icon(widget.selectedIcon ?? widget.icon))
+            : (widget.iconWidget ?? Icon(widget.icon));
 
     return AnimatedScale(
       duration: AppMotion.fast,
@@ -526,6 +531,56 @@ class DockSvgIcon extends StatelessWidget {
       width: size ?? (primary ? 28 : 27),
       height: size ?? (primary ? 28 : 27),
       colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+    );
+  }
+}
+
+class _DockPrimaryPlusGlyph extends StatelessWidget {
+  const _DockPrimaryPlusGlyph({
+    required this.size,
+    required this.color,
+  });
+
+  final double size;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final double stroke = size >= 34
+        ? 3.0
+        : size >= 32
+            ? 2.8
+            : 2.6;
+    final double arm = size >= 34
+        ? 16.0
+        : size >= 32
+            ? 15.0
+            : 14.0;
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: arm,
+            height: stroke,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+          Container(
+            width: stroke,
+            height: arm,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
