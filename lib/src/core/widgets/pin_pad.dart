@@ -716,28 +716,17 @@ class _PinDigitButton extends StatefulWidget {
 
 class _PinDigitButtonState extends State<_PinDigitButton> {
   bool _pressed = false;
-  Timer? _releaseTimer;
-
-  @override
-  void dispose() {
-    _releaseTimer?.cancel();
-    super.dispose();
-  }
 
   void _press() {
-    _releaseTimer?.cancel();
     if (!_pressed) {
       setState(() => _pressed = true);
     }
   }
 
-  void _releaseSoon() {
-    _releaseTimer?.cancel();
-    _releaseTimer = Timer(const Duration(milliseconds: 120), () {
-      if (mounted) {
-        setState(() => _pressed = false);
-      }
-    });
+  void _release() {
+    if (_pressed) {
+      setState(() => _pressed = false);
+    }
   }
 
   @override
@@ -748,29 +737,32 @@ class _PinDigitButtonState extends State<_PinDigitButton> {
     final foreground = scheme.onSurface;
     return GestureDetector(
       onTapDown: widget.enabled ? (_) => _press() : null,
-      onTapUp: widget.enabled ? (_) => _releaseSoon() : null,
+      onTapUp: widget.enabled ? (_) => _release() : null,
       onTapCancel: widget.enabled
           ? () {
-              _releaseTimer?.cancel();
-              setState(() => _pressed = false);
+              _release();
             }
           : null,
       onTap: widget.enabled
           ? () {
               widget.onTap();
-              _releaseSoon();
+              _release();
             }
           : null,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
+        duration: _pressed
+            ? const Duration(milliseconds: 90)
+            : const Duration(milliseconds: 280),
+        curve: _pressed
+            ? AppMotion.standardDecelerate
+            : AppMotion.standardDecelerate,
         width: 78,
         height: 78,
         decoration: BoxDecoration(
           color: widget.enabled
               ? (_pressed ? pressedColor : idleColor)
               : idleColor.withValues(alpha: 0.28),
-          borderRadius: BorderRadius.circular(_pressed ? 20 : 999),
+          borderRadius: BorderRadius.circular(_pressed ? 28 : 999),
         ),
         alignment: Alignment.center,
         child: Text(
@@ -806,28 +798,17 @@ class _PinActionButton extends StatefulWidget {
 
 class _PinActionButtonState extends State<_PinActionButton> {
   bool _pressed = false;
-  Timer? _releaseTimer;
-
-  @override
-  void dispose() {
-    _releaseTimer?.cancel();
-    super.dispose();
-  }
 
   void _press() {
-    _releaseTimer?.cancel();
     if (!_pressed) {
       setState(() => _pressed = true);
     }
   }
 
-  void _releaseSoon() {
-    _releaseTimer?.cancel();
-    _releaseTimer = Timer(const Duration(milliseconds: 120), () {
-      if (mounted) {
-        setState(() => _pressed = false);
-      }
-    });
+  void _release() {
+    if (_pressed) {
+      setState(() => _pressed = false);
+    }
   }
 
   @override
@@ -842,29 +823,32 @@ class _PinActionButtonState extends State<_PinActionButton> {
     final foreground = widget.emphasized ? scheme.onPrimary : scheme.onSurface;
     return GestureDetector(
       onTapDown: widget.enabled ? (_) => _press() : null,
-      onTapUp: widget.enabled ? (_) => _releaseSoon() : null,
+      onTapUp: widget.enabled ? (_) => _release() : null,
       onTapCancel: widget.enabled
           ? () {
-              _releaseTimer?.cancel();
-              setState(() => _pressed = false);
+              _release();
             }
           : null,
       onTap: widget.enabled
           ? () {
               widget.onTap();
-              _releaseSoon();
+              _release();
             }
           : null,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
+        duration: _pressed
+            ? const Duration(milliseconds: 90)
+            : const Duration(milliseconds: 280),
+        curve: _pressed
+            ? AppMotion.standardDecelerate
+            : AppMotion.standardDecelerate,
         width: 78,
         height: 78,
         decoration: BoxDecoration(
           color: widget.enabled
               ? (_pressed ? pressedColor : idleColor)
               : idleColor.withValues(alpha: 0.28),
-          borderRadius: BorderRadius.circular(_pressed ? 20 : 999),
+          borderRadius: BorderRadius.circular(_pressed ? 28 : 999),
         ),
         alignment: Alignment.center,
         child: Icon(
