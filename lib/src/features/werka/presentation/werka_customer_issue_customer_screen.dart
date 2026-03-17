@@ -1,6 +1,7 @@
 import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
 import '../../../core/notifications/werka_runtime_store.dart';
+import '../../../core/search/search_normalizer.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/m3_picker_sheet.dart';
@@ -123,10 +124,11 @@ class _WerkaCustomerIssueCustomerScreenState
           itemTitle: (item) => item.name,
           itemSubtitle: (_) => '',
           matchesQuery: (item, query) {
-            final needle = query.trim().toLowerCase();
-            return item.name.toLowerCase().contains(needle) ||
-                item.phone.toLowerCase().contains(needle) ||
-                item.ref.toLowerCase().contains(needle);
+            return searchMatches(query, [
+              item.name,
+              item.phone,
+              item.ref,
+            ]);
           },
           onSelected: (item) => Navigator.of(context).pop(item),
         );
@@ -185,9 +187,10 @@ class _WerkaCustomerIssueCustomerScreenState
           itemTitle: (item) => item.name,
           itemSubtitle: (_) => '',
           matchesQuery: (item, query) {
-            final needle = query.trim().toLowerCase();
-            return item.name.toLowerCase().contains(needle) ||
-                item.code.toLowerCase().contains(needle);
+            return searchMatches(query, [
+              item.name,
+              item.code,
+            ]);
           },
           onSelected: (item) => Navigator.of(context).pop(item),
         );
