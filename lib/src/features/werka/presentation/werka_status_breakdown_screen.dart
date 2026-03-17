@@ -159,6 +159,8 @@ class _WerkaStatusBreakdownScreenState
                                   _WerkaBreakdownRow(
                                     entry: items[index],
                                     metricLabel: _metricLabel(items[index]),
+                                    isFirst: index == 0,
+                                    isLast: index == items.length - 1,
                                     onTap: () =>
                                         Navigator.of(context).pushNamed(
                                       AppRoutes.werkaStatusDetail,
@@ -220,17 +222,28 @@ class _WerkaBreakdownRow extends StatelessWidget {
   const _WerkaBreakdownRow({
     required this.entry,
     required this.metricLabel,
+    required this.isFirst,
+    required this.isLast,
     required this.onTap,
   });
 
   final WerkaStatusBreakdownEntry entry;
   final String metricLabel;
+  final bool isFirst;
+  final bool isLast;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final borderRadius = BorderRadius.only(
+      topLeft: Radius.circular(isFirst ? 28 : 0),
+      topRight: Radius.circular(isFirst ? 28 : 0),
+      bottomLeft: Radius.circular(isLast ? 28 : 0),
+      bottomRight: Radius.circular(isLast ? 28 : 0),
+    );
     return InkWell(
+      borderRadius: borderRadius,
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.all(18),
