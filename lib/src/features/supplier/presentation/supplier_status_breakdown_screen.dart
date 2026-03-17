@@ -1,9 +1,9 @@
 import '../../../app/app_router.dart';
-import '../../../core/api/mobile_api.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
+import '../state/supplier_store.dart';
 import 'supplier_status_detail_screen.dart';
 import 'widgets/supplier_dock.dart';
 import 'package:flutter/material.dart';
@@ -23,18 +23,14 @@ class SupplierStatusBreakdownScreen extends StatefulWidget {
 
 class _SupplierStatusBreakdownScreenState
     extends State<SupplierStatusBreakdownScreen> {
-  late Future<List<SupplierStatusBreakdownEntry>> _future;
-
   @override
   void initState() {
     super.initState();
-    _future = MobileApi.instance.supplierStatusBreakdown(widget.kind);
+    SupplierStore.instance.bootstrapBreakdown(widget.kind);
   }
 
   Future<void> _reload() async {
-    final future = MobileApi.instance.supplierStatusBreakdown(widget.kind);
-    setState(() => _future = future);
-    await future;
+    await SupplierStore.instance.refreshBreakdown(widget.kind);
   }
 
   String get _title {
@@ -69,16 +65,19 @@ class _SupplierStatusBreakdownScreenState
         onTap: () => Navigator.of(context).maybePop(),
       ),
       bottom: const SupplierDock(activeTab: null),
-      child: FutureBuilder<List<SupplierStatusBreakdownEntry>>(
-        future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
+      child: AnimatedBuilder(
+        animation: SupplierStore.instance,
+        builder: (context, _) {
+          final store = SupplierStore.instance;
+          if (store.loadingBreakdown(widget.kind) &&
+              store.breakdownItems(widget.kind).isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snapshot.hasError) {
-            return Center(child: SoftCard(child: Text('${snapshot.error}')));
+          final error = store.breakdownError(widget.kind);
+          if (error != null && store.breakdownItems(widget.kind).isEmpty) {
+            return Center(child: SoftCard(child: Text('$error')));
           }
-          final items = snapshot.data ?? const <SupplierStatusBreakdownEntry>[];
+          final items = store.breakdownItems(widget.kind);
           if (items.isEmpty) {
             return const Center(child: SoftCard(child: Text('Hozircha yozuv yo‘q.')));
           }
@@ -114,7 +113,7 @@ class _SupplierStatusBreakdownScreenState
                 );
               },
             ),
-          );
+            );
         },
       ),
     );

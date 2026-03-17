@@ -1,9 +1,9 @@
 import '../../../app/app_router.dart';
-import '../../../core/api/mobile_api.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
+import '../state/supplier_store.dart';
 import 'widgets/supplier_dock.dart';
 import 'package:flutter/material.dart';
 
@@ -33,24 +33,14 @@ class SupplierStatusDetailScreen extends StatefulWidget {
 }
 
 class _SupplierStatusDetailScreenState extends State<SupplierStatusDetailScreen> {
-  late Future<List<DispatchRecord>> _future;
-
   @override
   void initState() {
     super.initState();
-    _future = MobileApi.instance.supplierStatusDetails(
-      kind: widget.args.kind,
-      itemCode: widget.args.itemCode,
-    );
+    SupplierStore.instance.bootstrapDetail(widget.args.kind, widget.args.itemCode);
   }
 
   Future<void> _reload() async {
-    final future = MobileApi.instance.supplierStatusDetails(
-      kind: widget.args.kind,
-      itemCode: widget.args.itemCode,
-    );
-    setState(() => _future = future);
-    await future;
+    await SupplierStore.instance.refreshDetail(widget.args.kind, widget.args.itemCode);
   }
 
   @override
@@ -63,16 +53,20 @@ class _SupplierStatusDetailScreenState extends State<SupplierStatusDetailScreen>
         onTap: () => Navigator.of(context).maybePop(),
       ),
       bottom: const SupplierDock(activeTab: null),
-      child: FutureBuilder<List<DispatchRecord>>(
-        future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
+      child: AnimatedBuilder(
+        animation: SupplierStore.instance,
+        builder: (context, _) {
+          final store = SupplierStore.instance;
+          if (store.loadingDetail(widget.args.kind, widget.args.itemCode) &&
+              store.detailItems(widget.args.kind, widget.args.itemCode).isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snapshot.hasError) {
-            return Center(child: SoftCard(child: Text('${snapshot.error}')));
+          final error = store.detailError(widget.args.kind, widget.args.itemCode);
+          if (error != null &&
+              store.detailItems(widget.args.kind, widget.args.itemCode).isEmpty) {
+            return Center(child: SoftCard(child: Text('$error')));
           }
-          final items = snapshot.data ?? const <DispatchRecord>[];
+          final items = store.detailItems(widget.args.kind, widget.args.itemCode);
           if (items.isEmpty) {
             return const Center(child: SoftCard(child: Text('Hozircha receipt yo‘q.')));
           }
@@ -110,7 +104,7 @@ class _SupplierStatusDetailScreenState extends State<SupplierStatusDetailScreen>
                 );
               },
             ),
-          );
+            );
         },
       ),
     );

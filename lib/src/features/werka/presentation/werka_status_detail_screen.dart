@@ -1,7 +1,7 @@
 import '../../../app/app_router.dart';
-import '../../../core/api/mobile_api.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../shared/models/app_models.dart';
+import '../state/werka_store.dart';
 import 'werka_status_breakdown_screen.dart';
 import 'widgets/werka_dock.dart';
 import 'package:flutter/material.dart';
@@ -20,26 +20,16 @@ class WerkaStatusDetailScreen extends StatefulWidget {
 }
 
 class _WerkaStatusDetailScreenState extends State<WerkaStatusDetailScreen> {
-  late Future<List<DispatchRecord>> _future;
+  bool _didMutate = false;
 
   @override
   void initState() {
     super.initState();
-    _future = MobileApi.instance.werkaStatusDetails(
-      kind: widget.args.kind,
-      supplierRef: widget.args.supplierRef,
-    );
+    WerkaStore.instance.bootstrapDetail(widget.args.kind, widget.args.supplierRef);
   }
 
   Future<void> _reload() async {
-    final future = MobileApi.instance.werkaStatusDetails(
-      kind: widget.args.kind,
-      supplierRef: widget.args.supplierRef,
-    );
-    setState(() {
-      _future = future;
-    });
-    await future;
+    await WerkaStore.instance.refreshDetail(widget.args.kind, widget.args.supplierRef);
   }
 
   String get _title {
@@ -57,13 +47,19 @@ class _WerkaStatusDetailScreenState extends State<WerkaStatusDetailScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    return Scaffold(
-      extendBody: true,
-      backgroundColor: AppTheme.shellStart(context),
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        Navigator.of(context).pop(_didMutate);
+      },
+      child: Scaffold(
+        extendBody: true,
+        backgroundColor: AppTheme.shellStart(context),
+        body: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
               child: Row(
@@ -72,7 +68,7 @@ class _WerkaStatusDetailScreenState extends State<WerkaStatusDetailScreen> {
                     height: 52,
                     width: 52,
                     child: IconButton.filledTonal(
-                      onPressed: () => Navigator.of(context).maybePop(),
+                      onPressed: () => Navigator.of(context).pop(_didMutate),
                       icon: const Icon(Icons.arrow_back_rounded, size: 28),
                     ),
                   ),
@@ -89,13 +85,17 @@ class _WerkaStatusDetailScreenState extends State<WerkaStatusDetailScreen> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(14, 0, 16, 0),
-                child: FutureBuilder<List<DispatchRecord>>(
-                  future: _future,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState != ConnectionState.done) {
+                child: AnimatedBuilder(
+                  animation: WerkaStore.instance,
+                  builder: (context, _) {
+                    final store = WerkaStore.instance;
+                    if (store.loadingDetail(widget.args.kind, widget.args.supplierRef) &&
+                        store.detailItems(widget.args.kind, widget.args.supplierRef).isEmpty) {
                       return const Center(child: CircularProgressIndicator());
                     }
-                    if (snapshot.hasError) {
+                    final error = store.detailError(widget.args.kind, widget.args.supplierRef);
+                    if (error != null &&
+                        store.detailItems(widget.args.kind, widget.args.supplierRef).isEmpty) {
                       return Center(
                         child: Card.filled(
                           margin: EdgeInsets.zero,
@@ -107,7 +107,7 @@ class _WerkaStatusDetailScreenState extends State<WerkaStatusDetailScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                    'Receiptlar yuklanmadi: ${snapshot.error}'),
+                                    'Receiptlar yuklanmadi: $error'),
                                 const SizedBox(height: 12),
                                 FilledButton(
                                   onPressed: _reload,
@@ -120,7 +120,7 @@ class _WerkaStatusDetailScreenState extends State<WerkaStatusDetailScreen> {
                       );
                     }
 
-                    final items = snapshot.data ?? const <DispatchRecord>[];
+                    final items = store.detailItems(widget.args.kind, widget.args.supplierRef);
                     if (items.isEmpty) {
                       return Center(
                         child: Card.filled(
@@ -161,7 +161,12 @@ class _WerkaStatusDetailScreenState extends State<WerkaStatusDetailScreen> {
                                         Navigator.of(context).pushNamed(
                                           AppRoutes.werkaDetail,
                                           arguments: items[index],
-                                        );
+                                        ).then((changed) {
+                                          if (changed == true) {
+                                            _didMutate = true;
+                                            _reload();
+                                          }
+                                        });
                                         return;
                                       }
                                       Navigator.of(context).pushNamed(
@@ -183,14 +188,15 @@ class _WerkaStatusDetailScreenState extends State<WerkaStatusDetailScreen> {
                 ),
               ),
             ),
-          ],
+            ],
+          ),
         ),
-      ),
-      bottomNavigationBar: const SafeArea(
-        top: false,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(20, 0, 24, 0),
-          child: WerkaDock(activeTab: null),
+        bottomNavigationBar: const SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20, 0, 24, 0),
+            child: WerkaDock(activeTab: null),
+          ),
         ),
       ),
     );

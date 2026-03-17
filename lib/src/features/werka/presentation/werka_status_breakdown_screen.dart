@@ -1,7 +1,7 @@
-import '../../../core/api/mobile_api.dart';
 import '../../../app/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../shared/models/app_models.dart';
+import '../state/werka_store.dart';
 import 'widgets/werka_dock.dart';
 import 'package:flutter/material.dart';
 
@@ -20,20 +20,14 @@ class WerkaStatusBreakdownScreen extends StatefulWidget {
 
 class _WerkaStatusBreakdownScreenState
     extends State<WerkaStatusBreakdownScreen> {
-  late Future<List<WerkaStatusBreakdownEntry>> _future;
-
   @override
   void initState() {
     super.initState();
-    _future = MobileApi.instance.werkaStatusBreakdown(widget.kind);
+    WerkaStore.instance.bootstrapBreakdown(widget.kind);
   }
 
   Future<void> _reload() async {
-    final future = MobileApi.instance.werkaStatusBreakdown(widget.kind);
-    setState(() {
-      _future = future;
-    });
-    await future;
+    await WerkaStore.instance.refreshBreakdown(widget.kind);
   }
 
   String get _title {
@@ -94,13 +88,17 @@ class _WerkaStatusBreakdownScreenState
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(10, 0, 12, 0),
-                child: FutureBuilder<List<WerkaStatusBreakdownEntry>>(
-                  future: _future,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState != ConnectionState.done) {
+                child: AnimatedBuilder(
+                  animation: WerkaStore.instance,
+                  builder: (context, _) {
+                    final store = WerkaStore.instance;
+                    if (store.loadingBreakdown(widget.kind) &&
+                        store.breakdownItems(widget.kind).isEmpty) {
                       return const Center(child: CircularProgressIndicator());
                     }
-                    if (snapshot.hasError) {
+                    final error = store.breakdownError(widget.kind);
+                    if (error != null &&
+                        store.breakdownItems(widget.kind).isEmpty) {
                       return Center(
                         child: Card.filled(
                           margin: EdgeInsets.zero,
@@ -112,7 +110,7 @@ class _WerkaStatusBreakdownScreenState
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                    'Status ro‘yxati yuklanmadi: ${snapshot.error}'),
+                                    'Status ro‘yxati yuklanmadi: $error'),
                                 const SizedBox(height: 12),
                                 FilledButton(
                                   onPressed: _reload,
@@ -125,8 +123,7 @@ class _WerkaStatusBreakdownScreenState
                       );
                     }
 
-                    final items =
-                        snapshot.data ?? const <WerkaStatusBreakdownEntry>[];
+                    final items = store.breakdownItems(widget.kind);
                     if (items.isEmpty) {
                       return Center(
                         child: Card.filled(

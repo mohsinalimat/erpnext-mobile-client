@@ -16,6 +16,13 @@ class WerkaStore extends ChangeNotifier {
   bool _loadedHistory = false;
   Object? _homeError;
   Object? _historyError;
+  final Map<WerkaStatusKind, bool> _loadingBreakdown = {};
+  final Map<WerkaStatusKind, Object?> _breakdownErrors = {};
+  final Map<WerkaStatusKind, List<WerkaStatusBreakdownEntry>> _breakdownItems =
+      {};
+  final Map<String, bool> _loadingDetail = {};
+  final Map<String, Object?> _detailErrors = {};
+  final Map<String, List<DispatchRecord>> _detailItems = {};
 
   WerkaHomeSummary _summary = const WerkaHomeSummary(
     pendingCount: 0,
@@ -31,11 +38,21 @@ class WerkaStore extends ChangeNotifier {
   bool get loadedHistory => _loadedHistory;
   Object? get homeError => _homeError;
   Object? get historyError => _historyError;
-
-  WerkaHomeSummary get summary => WerkaRuntimeStore.instance.applySummary(_summary);
+  WerkaHomeSummary get summary =>
+      WerkaRuntimeStore.instance.applySummary(_summary);
   List<DispatchRecord> get pendingItems =>
       WerkaRuntimeStore.instance.applyPendingItems(_pendingItems);
   List<DispatchRecord> get historyItems => _historyItems;
+  List<WerkaStatusBreakdownEntry> breakdownItems(WerkaStatusKind kind) =>
+      _breakdownItems[kind] ?? const <WerkaStatusBreakdownEntry>[];
+  bool loadingBreakdown(WerkaStatusKind kind) => _loadingBreakdown[kind] == true;
+  Object? breakdownError(WerkaStatusKind kind) => _breakdownErrors[kind];
+  List<DispatchRecord> detailItems(WerkaStatusKind kind, String supplierRef) =>
+      _detailItems[_detailKey(kind, supplierRef)] ?? const <DispatchRecord>[];
+  bool loadingDetail(WerkaStatusKind kind, String supplierRef) =>
+      _loadingDetail[_detailKey(kind, supplierRef)] == true;
+  Object? detailError(WerkaStatusKind kind, String supplierRef) =>
+      _detailErrors[_detailKey(kind, supplierRef)];
 
   Future<void> bootstrapHome({bool force = false}) async {
     if (_loadingHome) return;
@@ -93,6 +110,55 @@ class WerkaStore extends ChangeNotifier {
     ]);
   }
 
+  Future<void> bootstrapBreakdown(WerkaStatusKind kind,
+      {bool force = false}) async {
+    if (loadingBreakdown(kind)) return;
+    if (_breakdownItems.containsKey(kind) && !force) return;
+    await refreshBreakdown(kind);
+  }
+
+  Future<void> refreshBreakdown(WerkaStatusKind kind) async {
+    if (loadingBreakdown(kind)) return;
+    _loadingBreakdown[kind] = true;
+    _breakdownErrors[kind] = null;
+    notifyListeners();
+    try {
+      _breakdownItems[kind] = await MobileApi.instance.werkaStatusBreakdown(kind);
+    } catch (error) {
+      _breakdownErrors[kind] = error;
+    } finally {
+      _loadingBreakdown[kind] = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> bootstrapDetail(WerkaStatusKind kind, String supplierRef,
+      {bool force = false}) async {
+    final key = _detailKey(kind, supplierRef);
+    if (_loadingDetail[key] == true) return;
+    if (_detailItems.containsKey(key) && !force) return;
+    await refreshDetail(kind, supplierRef);
+  }
+
+  Future<void> refreshDetail(WerkaStatusKind kind, String supplierRef) async {
+    final key = _detailKey(kind, supplierRef);
+    if (_loadingDetail[key] == true) return;
+    _loadingDetail[key] = true;
+    _detailErrors[key] = null;
+    notifyListeners();
+    try {
+      _detailItems[key] = await MobileApi.instance.werkaStatusDetails(
+        kind: kind,
+        supplierRef: supplierRef,
+      );
+    } catch (error) {
+      _detailErrors[key] = error;
+    } finally {
+      _loadingDetail[key] = false;
+      notifyListeners();
+    }
+  }
+
   void recordCreatedPending(DispatchRecord record) {
     WerkaRuntimeStore.instance.recordCreatedPending(record);
   }
@@ -107,6 +173,9 @@ class WerkaStore extends ChangeNotifier {
   void _forwardRuntimeChange() {
     notifyListeners();
   }
+
+  String _detailKey(WerkaStatusKind kind, String supplierRef) =>
+      '${kind.name}:${supplierRef.trim()}';
 
   @visibleForTesting
   void clear() {

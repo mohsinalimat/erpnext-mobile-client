@@ -16,6 +16,13 @@ class SupplierStore extends ChangeNotifier {
   bool _loadedHistory = false;
   Object? _summaryError;
   Object? _historyError;
+  final Map<SupplierStatusKind, bool> _loadingBreakdown = {};
+  final Map<SupplierStatusKind, Object?> _breakdownErrors = {};
+  final Map<SupplierStatusKind, List<SupplierStatusBreakdownEntry>>
+      _breakdownItems = {};
+  final Map<String, bool> _loadingDetail = {};
+  final Map<String, Object?> _detailErrors = {};
+  final Map<String, List<DispatchRecord>> _detailItems = {};
 
   SupplierHomeSummary _summary = const SupplierHomeSummary(
     pendingCount: 0,
@@ -34,6 +41,16 @@ class SupplierStore extends ChangeNotifier {
   SupplierHomeSummary get summary =>
       SupplierRuntimeStore.instance.applySummary(_summary);
   List<DispatchRecord> get historyItems => _historyItems;
+  List<SupplierStatusBreakdownEntry> breakdownItems(SupplierStatusKind kind) =>
+      _breakdownItems[kind] ?? const <SupplierStatusBreakdownEntry>[];
+  bool loadingBreakdown(SupplierStatusKind kind) => _loadingBreakdown[kind] == true;
+  Object? breakdownError(SupplierStatusKind kind) => _breakdownErrors[kind];
+  List<DispatchRecord> detailItems(SupplierStatusKind kind, String itemCode) =>
+      _detailItems[_detailKey(kind, itemCode)] ?? const <DispatchRecord>[];
+  bool loadingDetail(SupplierStatusKind kind, String itemCode) =>
+      _loadingDetail[_detailKey(kind, itemCode)] == true;
+  Object? detailError(SupplierStatusKind kind, String itemCode) =>
+      _detailErrors[_detailKey(kind, itemCode)];
 
   Future<void> bootstrapSummary({bool force = false}) async {
     if (_loadingSummary) return;
@@ -86,6 +103,54 @@ class SupplierStore extends ChangeNotifier {
     ]);
   }
 
+  Future<void> bootstrapBreakdown(SupplierStatusKind kind, {bool force = false}) async {
+    if (loadingBreakdown(kind)) return;
+    if (_breakdownItems.containsKey(kind) && !force) return;
+    await refreshBreakdown(kind);
+  }
+
+  Future<void> refreshBreakdown(SupplierStatusKind kind) async {
+    if (loadingBreakdown(kind)) return;
+    _loadingBreakdown[kind] = true;
+    _breakdownErrors[kind] = null;
+    notifyListeners();
+    try {
+      _breakdownItems[kind] = await MobileApi.instance.supplierStatusBreakdown(kind);
+    } catch (error) {
+      _breakdownErrors[kind] = error;
+    } finally {
+      _loadingBreakdown[kind] = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> bootstrapDetail(SupplierStatusKind kind, String itemCode,
+      {bool force = false}) async {
+    final key = _detailKey(kind, itemCode);
+    if (_loadingDetail[key] == true) return;
+    if (_detailItems.containsKey(key) && !force) return;
+    await refreshDetail(kind, itemCode);
+  }
+
+  Future<void> refreshDetail(SupplierStatusKind kind, String itemCode) async {
+    final key = _detailKey(kind, itemCode);
+    if (_loadingDetail[key] == true) return;
+    _loadingDetail[key] = true;
+    _detailErrors[key] = null;
+    notifyListeners();
+    try {
+      _detailItems[key] = await MobileApi.instance.supplierStatusDetails(
+        kind: kind,
+        itemCode: itemCode,
+      );
+    } catch (error) {
+      _detailErrors[key] = error;
+    } finally {
+      _loadingDetail[key] = false;
+      notifyListeners();
+    }
+  }
+
   void recordCreatedPending() {
     SupplierRuntimeStore.instance.recordCreatedPending();
   }
@@ -103,4 +168,7 @@ class SupplierStore extends ChangeNotifier {
   void _forwardRuntimeChange() {
     notifyListeners();
   }
+
+  String _detailKey(SupplierStatusKind kind, String itemCode) =>
+      '${kind.name}:${itemCode.trim()}';
 }
