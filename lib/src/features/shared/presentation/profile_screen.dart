@@ -327,220 +327,229 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final current = profile;
-    final role = current.role;
-    final subtitle = role == UserRole.supplier
-        ? l10n.supplierAccount
-        : role == UserRole.werka
-            ? l10n.werkaAccount
-            : role == UserRole.customer
-                ? l10n.customerAccount
-                : l10n.adminAccount;
-    final bool hasPin = SecurityController.instance.hasPinForCurrentUser;
-    final bool biometricEnabled =
-        SecurityController.instance.biometricEnabledForCurrentUser;
-    final bool savingProfileChanges = savingNickname || savingAvatar;
+    return AnimatedBuilder(
+      animation: LocaleController.instance,
+      builder: (context, _) {
+        final l10n = context.l10n;
+        final current = profile;
+        final role = current.role;
+        final subtitle = role == UserRole.supplier
+            ? l10n.supplierAccount
+            : role == UserRole.werka
+                ? l10n.werkaAccount
+                : role == UserRole.customer
+                    ? l10n.customerAccount
+                    : l10n.adminAccount;
+        final bool hasPin = SecurityController.instance.hasPinForCurrentUser;
+        final bool biometricEnabled =
+            SecurityController.instance.biometricEnabledForCurrentUser;
+        final bool savingProfileChanges = savingNickname || savingAvatar;
 
-    return AppShell(
-      title: l10n.profileTitle,
-      subtitle: '',
-      animateOnEnter: role != UserRole.customer,
-      bottom: role == UserRole.supplier
-          ? const SupplierDock(activeTab: SupplierDockTab.profile)
-          : role == UserRole.werka
-              ? const WerkaDock(activeTab: WerkaDockTab.profile)
-              : role == UserRole.customer
-                  ? const CustomerDock(activeTab: CustomerDockTab.profile)
-                  : const AdminDock(activeTab: AdminDockTab.profile),
-      contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
-      child: RefreshIndicator.adaptive(
-        onRefresh: _refreshProfile,
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.zero,
-          children: [
-            SmoothAppear(
-              delay: const Duration(milliseconds: 20),
-              child: _ProfilePanel(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+        return AppShell(
+          title: l10n.profileTitle,
+          subtitle: '',
+          animateOnEnter: role != UserRole.customer,
+          bottom: role == UserRole.supplier
+              ? const SupplierDock(activeTab: SupplierDockTab.profile)
+              : role == UserRole.werka
+                  ? const WerkaDock(activeTab: WerkaDockTab.profile)
+                  : role == UserRole.customer
+                      ? const CustomerDock(activeTab: CustomerDockTab.profile)
+                      : const AdminDock(activeTab: AdminDockTab.profile),
+          contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
+          child: RefreshIndicator.adaptive(
+            onRefresh: _refreshProfile,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              children: [
+                SmoothAppear(
+                  delay: const Duration(milliseconds: 20),
+                  child: _ProfilePanel(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Stack(
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _AvatarPreview(
-                              displayName: current.displayName,
-                              cachedAvatar: cachedAvatar,
-                              pendingAvatarBytes: pendingAvatarBytes,
-                            ),
-                            Positioned(
-                              right: 0,
-                              bottom: 0,
-                              child: GestureDetector(
-                                onTap: savingAvatar ? null : _pickAvatar,
-                                child: Container(
-                                  height: 32,
-                                  width: 32,
-                                  decoration: BoxDecoration(
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .surfaceContainerLow,
-                                      width: 2,
+                            Stack(
+                              children: [
+                                _AvatarPreview(
+                                  displayName: current.displayName,
+                                  cachedAvatar: cachedAvatar,
+                                  pendingAvatarBytes: pendingAvatarBytes,
+                                ),
+                                Positioned(
+                                  right: 0,
+                                  bottom: 0,
+                                  child: GestureDetector(
+                                    onTap: savingAvatar ? null : _pickAvatar,
+                                    child: Container(
+                                      height: 32,
+                                      width: 32,
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .surfaceContainerLow,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: Icon(
+                                        Icons.camera_alt_rounded,
+                                        size: 16,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                      ),
                                     ),
                                   ),
-                                  child: Icon(
-                                    Icons.camera_alt_rounded,
-                                    size: 16,
-                                    color:
-                                        Theme.of(context).colorScheme.onPrimary,
-                                  ),
                                 ),
+                              ],
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    current.displayName,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineSmall
+                                        ?.copyWith(fontWeight: FontWeight.w700),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    subtitle,
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                ],
                               ),
+                            ),
+                            const SizedBox(width: 12),
+                            _ThemeIconToggle(
+                              isDark: ThemeController.instance.isDark,
                             ),
                           ],
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                current.displayName,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineSmall
-                                    ?.copyWith(fontWeight: FontWeight.w700),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                subtitle,
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            ],
+                        const SizedBox(height: 18),
+                        _InfoTile(
+                          label: l10n.phoneLabel,
+                          value: current.phone,
+                        ),
+                        const SizedBox(height: 10),
+                        _InfoTile(
+                          label: l10n.legalNameLabel,
+                          value: current.legalName.isEmpty
+                              ? current.displayName
+                              : current.legalName,
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: nicknameController,
+                          onChanged: (_) => setState(() {}),
+                          decoration: InputDecoration(
+                            labelText: l10n.nicknameLabel,
+                            hintText: l10n.nicknameHint,
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        _ThemeIconToggle(
-                          isDark: ThemeController.instance.isDark,
+                        if (_hasProfileChanges) ...[
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton.icon(
+                              onPressed: savingProfileChanges
+                                  ? null
+                                  : _saveProfileChanges,
+                              icon: savingProfileChanges
+                                  ? const SizedBox(
+                                      height: 18,
+                                      width: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.check_rounded),
+                              label: Text(l10n.save),
+                            ),
+                          ),
+                        ],
+                        if (pendingAvatarBytes != null) ...[
+                          const SizedBox(height: 10),
+                          Text(
+                            l10n.selectedImageNotice,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                        const SizedBox(height: 24),
+                        Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .outlineVariant
+                              .withValues(alpha: 0.55),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          l10n.securityTitle,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          hasPin ? l10n.pinEnabled : l10n.pinDisabled,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 14),
+                        _ProfileActionButton(
+                          primary: true,
+                          onPressed: savingPin ? null : _showPinFlow,
+                          label: savingPin
+                              ? l10n.pinSaving
+                              : hasPin
+                                  ? l10n.pinChange
+                                  : l10n.pinSet,
+                        ),
+                        if (hasPin) ...[
+                          const SizedBox(height: 10),
+                          _ProfileActionButton(
+                            primary: false,
+                            onPressed: savingPin ? null : _removePin,
+                            label: l10n.pinRemove,
+                          ),
+                        ],
+                        const SizedBox(height: 16),
+                        _LanguagePreferenceRow(
+                          currentLocale: LocaleController.instance.locale,
+                        ),
+                        const SizedBox(height: 16),
+                        _BiometricPreferenceRow(
+                          enabled: biometricEnabled,
+                          interactive: hasPin && !savingBiometric,
+                          onChanged: (value) => _toggleBiometric(value),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 18),
-                    _InfoTile(
-                      label: l10n.phoneLabel,
-                      value: current.phone,
-                    ),
-                    const SizedBox(height: 10),
-                    _InfoTile(
-                      label: l10n.legalNameLabel,
-                      value: current.legalName.isEmpty
-                          ? current.displayName
-                          : current.legalName,
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: nicknameController,
-                      onChanged: (_) => setState(() {}),
-                      decoration: InputDecoration(
-                        labelText: l10n.nicknameLabel,
-                        hintText: l10n.nicknameHint,
-                      ),
-                    ),
-                    if (_hasProfileChanges) ...[
-                      const SizedBox(height: 14),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton.icon(
-                          onPressed:
-                              savingProfileChanges ? null : _saveProfileChanges,
-                          icon: savingProfileChanges
-                              ? const SizedBox(
-                                  height: 18,
-                                  width: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : const Icon(Icons.check_rounded),
-                          label: Text(l10n.save),
-                        ),
-                      ),
-                    ],
-                    if (pendingAvatarBytes != null) ...[
-                      const SizedBox(height: 10),
-                      Text(
-                        l10n.selectedImageNotice,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
-                    const SizedBox(height: 24),
-                    Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .outlineVariant
-                          .withValues(alpha: 0.55),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      l10n.securityTitle,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      hasPin ? l10n.pinEnabled : l10n.pinDisabled,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    const SizedBox(height: 14),
-                    _ProfileActionButton(
-                      primary: true,
-                      onPressed: savingPin ? null : _showPinFlow,
-                      label: savingPin
-                          ? l10n.pinSaving
-                          : hasPin
-                              ? l10n.pinChange
-                              : l10n.pinSet,
-                    ),
-                    if (hasPin) ...[
-                      const SizedBox(height: 10),
-                      _ProfileActionButton(
-                        primary: false,
-                        onPressed: savingPin ? null : _removePin,
-                        label: l10n.pinRemove,
-                      ),
-                    ],
-                    const SizedBox(height: 16),
-                    _LanguagePreferenceRow(
-                      currentLocale: LocaleController.instance.locale,
-                    ),
-                    const SizedBox(height: 16),
-                    _BiometricPreferenceRow(
-                      enabled: biometricEnabled,
-                      interactive: hasPin && !savingBiometric,
-                      onChanged: (value) => _toggleBiometric(value),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+                if (errorMessage != null) ...[
+                  const SizedBox(height: 14),
+                  _ProfilePanel(
+                    child: Text(errorMessage!),
+                  ),
+                ],
+                const SizedBox(height: 12),
+              ],
             ),
-            if (errorMessage != null) ...[
-              const SizedBox(height: 14),
-              _ProfilePanel(
-                child: Text(errorMessage!),
-              ),
-            ],
-            const SizedBox(height: 12),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -579,47 +588,105 @@ class _LanguagePreferenceRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.languageTitle,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                l10n.languageBody,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: () async {
+        final picked = await showModalBottomSheet<Locale>(
+          context: context,
+          useSafeArea: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) {
+            return SafeArea(
+              top: false,
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: scheme.surfaceContainerLow,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(28),
                     ),
+                    border: Border.all(
+                      color: scheme.outlineVariant.withValues(alpha: 0.7),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.languageTitle,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 14),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(l10n.uzbek),
+                          trailing: currentLocale.languageCode == 'uz'
+                              ? Icon(Icons.check_rounded, color: scheme.primary)
+                              : null,
+                          onTap: () =>
+                              Navigator.of(context).pop(const Locale('uz')),
+                        ),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(l10n.english),
+                          trailing: currentLocale.languageCode == 'en'
+                              ? Icon(Icons.check_rounded, color: scheme.primary)
+                              : null,
+                          onTap: () =>
+                              Navigator.of(context).pop(const Locale('en')),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 16),
-        SegmentedButton<Locale>(
-          segments: [
-            ButtonSegment<Locale>(
-              value: const Locale('uz'),
-              label: Text(l10n.uzbek),
-            ),
-            ButtonSegment<Locale>(
-              value: const Locale('en'),
-              label: Text(l10n.english),
-            ),
-          ],
-          selected: {currentLocale},
-          onSelectionChanged: (values) {
-            final next = values.first;
-            LocaleController.instance.setLocale(next);
+            );
           },
-          showSelectedIcon: false,
-        ),
-      ],
+        );
+        if (picked == null) {
+          return;
+        }
+        await LocaleController.instance.setLocale(picked);
+      },
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.languageTitle,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  l10n.languageBody,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              currentLocale.languageCode == 'uz' ? l10n.uzbek : l10n.english,
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
