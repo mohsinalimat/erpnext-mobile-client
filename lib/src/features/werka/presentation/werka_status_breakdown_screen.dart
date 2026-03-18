@@ -259,32 +259,37 @@ class _WerkaBreakdownRow extends StatelessWidget {
       bottomLeft: Radius.circular(isLast ? 28 : 0),
       bottomRight: Radius.circular(isLast ? 28 : 0),
     );
-    return InkWell(
-      borderRadius: borderRadius,
-      onTap: onTap,
-      child: SizedBox(
-        width: double.infinity,
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                entry.supplierName,
-                style: theme.textTheme.titleLarge,
-              ),
-              const SizedBox(height: 10),
-              Text(
-                metricLabel,
-                style: theme.textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                AppLocalizations.of(context)
-                    .receiptCountLabel(entry.receiptCount),
-                style: theme.textTheme.bodySmall,
-              ),
-            ],
+    return Material(
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: borderRadius),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        customBorder: RoundedRectangleBorder(borderRadius: borderRadius),
+        onTap: onTap,
+        child: SizedBox(
+          width: double.infinity,
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  entry.supplierName,
+                  style: theme.textTheme.titleLarge,
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  metricLabel,
+                  style: theme.textTheme.headlineMedium,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  AppLocalizations.of(context)
+                      .receiptCountLabel(entry.receiptCount),
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
+            ),
           ),
         ),
       ),
