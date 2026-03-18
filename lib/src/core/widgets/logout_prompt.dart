@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import '../api/mobile_api.dart';
+import '../localization/app_localizations.dart';
 import '../security/security_controller.dart';
 import 'package:flutter/material.dart';
 
@@ -9,6 +10,7 @@ Future<void> showLogoutPrompt(BuildContext context) async {
     context: context,
     barrierColor: Colors.transparent,
     builder: (context) {
+      final l10n = context.l10n;
       return Stack(
         children: [
           Positioned.fill(
@@ -39,11 +41,11 @@ Future<void> showLogoutPrompt(BuildContext context) async {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Logout',
+                        l10n.logoutTitle,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 8),
-                      const Text('Logout qilaymi?'),
+                      Text(l10n.logoutPrompt),
                       const SizedBox(height: 18),
                       Row(
                         children: [
@@ -56,7 +58,7 @@ Future<void> showLogoutPrompt(BuildContext context) async {
                                 foregroundColor:
                                     Theme.of(context).colorScheme.onPrimary,
                               ),
-                              child: const Text('Yo‘q'),
+                              child: Text(l10n.no),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -69,7 +71,7 @@ Future<void> showLogoutPrompt(BuildContext context) async {
                                 foregroundColor:
                                     Theme.of(context).colorScheme.onSurface,
                               ),
-                              child: const Text('Ha'),
+                              child: Text(l10n.yes),
                             ),
                           ),
                         ],

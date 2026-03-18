@@ -83,6 +83,9 @@ class AppLocalizations {
       : 'Biometric verification did not complete';
 
   String get clearTitle => isUzbek ? 'Tozalash' : 'Clear';
+  String get logoutTitle => isUzbek ? 'Chiqish' : 'Logout';
+  String get logoutPrompt =>
+      isUzbek ? 'Dasturdan chiqaymi?' : 'Do you want to log out?';
   String get yes => isUzbek ? 'Ha' : 'Yes';
   String get no => isUzbek ? 'Yo‘q' : 'No';
   String get retry => isUzbek ? 'Qayta urinish' : 'Retry';

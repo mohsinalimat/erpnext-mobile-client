@@ -40,15 +40,15 @@ class ErpnextStockMobileApp extends StatelessWidget {
             if (AppPreview.enabled) {
               current = DevicePreview.appBuilder(context, current);
             }
-            current = Localizations.override(
-              context: context,
-              locale: LocaleController.instance.locale,
-              child: current,
-            );
-            return NetworkRequirementRuntime(
+            final wrapped = NetworkRequirementRuntime(
               child: NotificationRuntime(
                 child: AppLockGate(child: current),
               ),
+            );
+            return Localizations.override(
+              context: context,
+              locale: LocaleController.instance.locale,
+              child: wrapped,
             );
           },
           theme: AppTheme.light(),
