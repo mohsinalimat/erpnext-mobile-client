@@ -1,5 +1,7 @@
 import '../../../app/app_router.dart';
+import '../../../core/notifications/notification_unread_store.dart';
 import '../../../core/notifications/refresh_hub.dart';
+import '../../../core/session/app_session.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/motion_widgets.dart';
@@ -61,6 +63,41 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
     return AppShell(
       title: 'Supplier',
       subtitle: 'Jo‘natmalar holati va oqimlari',
+      actions: [
+        AnimatedBuilder(
+          animation: NotificationUnreadStore.instance,
+          builder: (context, _) {
+            final showBadge =
+                NotificationUnreadStore.instance.hasUnreadForProfile(
+              AppSession.instance.profile,
+            );
+            return Stack(
+              clipBehavior: Clip.none,
+              children: [
+                IconButton.filledTonal(
+                  onPressed: () => Navigator.of(context).pushNamed(
+                    AppRoutes.supplierNotifications,
+                  ),
+                  icon: const Icon(Icons.notifications_none_rounded),
+                ),
+                if (showBadge)
+                  Positioned(
+                    right: 9,
+                    top: 9,
+                    child: Container(
+                      height: 9,
+                      width: 9,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFE53935),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ],
       bottom: const SupplierDock(activeTab: SupplierDockTab.home),
       child: AnimatedBuilder(
         animation: SupplierStore.instance,
