@@ -3,6 +3,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../shared/models/app_models.dart';
 import '../state/supplier_store.dart';
+import 'supplier_submitted_category_detail_screen.dart';
 import 'supplier_status_detail_screen.dart';
 import 'widgets/supplier_dock.dart';
 import 'package:flutter/material.dart';
@@ -26,9 +27,16 @@ class _SupplierStatusBreakdownScreenState
   void initState() {
     super.initState();
     SupplierStore.instance.bootstrapBreakdown(widget.kind);
+    if (widget.kind == SupplierStatusKind.submitted) {
+      SupplierStore.instance.bootstrapHistory();
+    }
   }
 
   Future<void> _reload() async {
+    if (widget.kind == SupplierStatusKind.submitted) {
+      await SupplierStore.instance.refreshHistory();
+      return;
+    }
     await SupplierStore.instance.refreshBreakdown(widget.kind);
   }
 
@@ -82,6 +90,73 @@ class _SupplierStatusBreakdownScreenState
         animation: SupplierStore.instance,
         builder: (context, _) {
           final store = SupplierStore.instance;
+          if (widget.kind == SupplierStatusKind.submitted) {
+            if (store.loadingHistory && !store.loadedHistory) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (store.historyError != null && !store.loadedHistory) {
+              return Center(
+                child: Card.filled(
+                  margin: EdgeInsets.zero,
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Text('${store.historyError}'),
+                  ),
+                ),
+              );
+            }
+            final accepted = store.historyItems.where(
+              (item) => item.status == DispatchStatus.accepted,
+            );
+            final acceptedByWerka = accepted
+                .where((item) => item.eventType != 'werka_unannounced_approved')
+                .length;
+            final approvedUnannounced = accepted
+                .where((item) => item.eventType == 'werka_unannounced_approved')
+                .length;
+            return RefreshIndicator(
+              onRefresh: _reload,
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  Card.filled(
+                    margin: EdgeInsets.zero,
+                    color: Theme.of(context).colorScheme.surfaceContainerLow,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
+                    ),
+                    child: Column(
+                      children: [
+                        _SupplierAcceptedCategoryRow(
+                          title: context.l10n.supplierAcceptedByWerkaTitle,
+                          count: acceptedByWerka,
+                          onTap: () => Navigator.of(context).pushNamed(
+                            AppRoutes.supplierSubmittedCategoryDetail,
+                            arguments: const SupplierSubmittedCategoryArgs(
+                              category:
+                                  SupplierSubmittedCategory.acceptedByWerka,
+                            ),
+                          ),
+                        ),
+                        const Divider(height: 1, thickness: 1),
+                        _SupplierAcceptedCategoryRow(
+                          title: context.l10n.supplierAcceptedUnannouncedTitle,
+                          count: approvedUnannounced,
+                          onTap: () => Navigator.of(context).pushNamed(
+                            AppRoutes.supplierSubmittedCategoryDetail,
+                            arguments: const SupplierSubmittedCategoryArgs(
+                              category:
+                                  SupplierSubmittedCategory.approvedUnannounced,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
           if (store.loadingBreakdown(widget.kind) &&
               store.breakdownItems(widget.kind).isEmpty) {
             return const Center(child: CircularProgressIndicator());
@@ -179,6 +254,56 @@ class _SupplierStatusBreakdownScreenState
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _SupplierAcceptedCategoryRow extends StatelessWidget {
+  const _SupplierAcceptedCategoryRow({
+    required this.title,
+    required this.count,
+    required this.onTap,
+  });
+
+  final String title;
+  final int count;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: theme.textTheme.titleLarge,
+              ),
+            ),
+            Container(
+              constraints: const BoxConstraints(minWidth: 58),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                '$count',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

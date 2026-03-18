@@ -28,6 +28,7 @@ import '../features/supplier/presentation/supplier_home_screen.dart';
 import '../features/supplier/presentation/supplier_item_picker_screen.dart';
 import '../features/supplier/presentation/supplier_notifications_screen.dart';
 import '../features/supplier/presentation/supplier_status_breakdown_screen.dart';
+import '../features/supplier/presentation/supplier_submitted_category_detail_screen.dart';
 import '../features/supplier/presentation/supplier_status_detail_screen.dart';
 import '../features/supplier/presentation/supplier_qty_screen.dart';
 import '../features/supplier/presentation/supplier_recent_screen.dart';
@@ -49,6 +50,8 @@ class AppRoutes {
   static const String login = '/';
   static const String supplierHome = '/supplier-home';
   static const String supplierStatusBreakdown = '/supplier-status-breakdown';
+  static const String supplierSubmittedCategoryDetail =
+      '/supplier-submitted-category-detail';
   static const String supplierStatusDetail = '/supplier-status-detail';
   static const String supplierItemPicker = '/supplier-item-picker';
   static const String supplierQty = '/supplier-qty';
@@ -124,6 +127,13 @@ class AppRouter {
         return _buildRoute(
           settings,
           SupplierStatusBreakdownScreen(kind: kind),
+        );
+      case AppRoutes.supplierSubmittedCategoryDetail:
+        final SupplierSubmittedCategoryArgs args =
+            settings.arguments as SupplierSubmittedCategoryArgs;
+        return _buildRoute(
+          settings,
+          SupplierSubmittedCategoryDetailScreen(args: args),
         );
       case AppRoutes.supplierStatusDetail:
         final SupplierStatusDetailArgs args =

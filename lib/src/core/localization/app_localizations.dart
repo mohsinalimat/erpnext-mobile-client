@@ -289,6 +289,13 @@ class AppLocalizations {
   String get supplierRoleName => _t('Ta\'minotchi', 'Supplier', 'Поставщик');
   String get adminRoleName => _t('Admin', 'Admin', 'Админ');
   String get submittedStatus => _t('Qabul qilingan', 'Accepted', 'Принято');
+  String get supplierAcceptedByWerkaTitle => _t(
+      'Omborchi qabul qilganlar', 'Accepted by Werka', 'Принято кладовщиком');
+  String get supplierAcceptedUnannouncedTitle => _t(
+        'Aytilmagan mol tasdiqlanganlar',
+        'Approved unannounced items',
+        'Подтвержденные незаявленные товары',
+      );
   String get supplierHomeLoadFailed => _t(
       'Home yuklanmadi', 'Home failed to load', 'Не удалось загрузить главную');
   String get noSupplierReceiptsYet =>
