@@ -44,15 +44,25 @@ class WerkaStore extends ChangeNotifier {
       WerkaRuntimeStore.instance.applyPendingItems(_pendingItems);
   List<DispatchRecord> get historyItems => _historyItems;
   List<WerkaStatusBreakdownEntry> breakdownItems(WerkaStatusKind kind) =>
-      _breakdownItems[kind] ?? const <WerkaStatusBreakdownEntry>[];
-  bool loadingBreakdown(WerkaStatusKind kind) => _loadingBreakdown[kind] == true;
-  Object? breakdownError(WerkaStatusKind kind) => _breakdownErrors[kind];
+      kind == WerkaStatusKind.pending
+          ? _pendingBreakdownItems()
+          : _breakdownItems[kind] ?? const <WerkaStatusBreakdownEntry>[];
+  bool loadingBreakdown(WerkaStatusKind kind) =>
+      kind == WerkaStatusKind.pending ? _loadingHome : _loadingBreakdown[kind] == true;
+  Object? breakdownError(WerkaStatusKind kind) =>
+      kind == WerkaStatusKind.pending ? _homeError : _breakdownErrors[kind];
   List<DispatchRecord> detailItems(WerkaStatusKind kind, String supplierRef) =>
-      _detailItems[_detailKey(kind, supplierRef)] ?? const <DispatchRecord>[];
+      kind == WerkaStatusKind.pending
+          ? _pendingDetailItems(supplierRef)
+          : _detailItems[_detailKey(kind, supplierRef)] ?? const <DispatchRecord>[];
   bool loadingDetail(WerkaStatusKind kind, String supplierRef) =>
-      _loadingDetail[_detailKey(kind, supplierRef)] == true;
+      kind == WerkaStatusKind.pending
+          ? _loadingHome
+          : _loadingDetail[_detailKey(kind, supplierRef)] == true;
   Object? detailError(WerkaStatusKind kind, String supplierRef) =>
-      _detailErrors[_detailKey(kind, supplierRef)];
+      kind == WerkaStatusKind.pending
+          ? _homeError
+          : _detailErrors[_detailKey(kind, supplierRef)];
 
   Future<void> bootstrapHome({bool force = false}) async {
     if (_loadingHome) return;
@@ -112,12 +122,20 @@ class WerkaStore extends ChangeNotifier {
 
   Future<void> bootstrapBreakdown(WerkaStatusKind kind,
       {bool force = false}) async {
+    if (kind == WerkaStatusKind.pending) {
+      await bootstrapHome(force: force);
+      return;
+    }
     if (loadingBreakdown(kind)) return;
     if (_breakdownItems.containsKey(kind) && !force) return;
     await refreshBreakdown(kind);
   }
 
   Future<void> refreshBreakdown(WerkaStatusKind kind) async {
+    if (kind == WerkaStatusKind.pending) {
+      await refreshHome();
+      return;
+    }
     if (loadingBreakdown(kind)) return;
     _loadingBreakdown[kind] = true;
     _breakdownErrors[kind] = null;
@@ -134,6 +152,10 @@ class WerkaStore extends ChangeNotifier {
 
   Future<void> bootstrapDetail(WerkaStatusKind kind, String supplierRef,
       {bool force = false}) async {
+    if (kind == WerkaStatusKind.pending) {
+      await bootstrapHome(force: force);
+      return;
+    }
     final key = _detailKey(kind, supplierRef);
     if (_loadingDetail[key] == true) return;
     if (_detailItems.containsKey(key) && !force) return;
@@ -141,6 +163,10 @@ class WerkaStore extends ChangeNotifier {
   }
 
   Future<void> refreshDetail(WerkaStatusKind kind, String supplierRef) async {
+    if (kind == WerkaStatusKind.pending) {
+      await refreshHome();
+      return;
+    }
     final key = _detailKey(kind, supplierRef);
     if (_loadingDetail[key] == true) return;
     _loadingDetail[key] = true;
@@ -174,6 +200,58 @@ class WerkaStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  List<WerkaStatusBreakdownEntry> _pendingBreakdownItems() {
+    final grouped = <String, _PendingSupplierAggregate>{};
+    for (final item in pendingItems) {
+      final supplierRef = item.supplierRef.trim();
+      final key = supplierRef.isEmpty ? item.supplierName.trim() : supplierRef;
+      final current = grouped[key];
+      if (current == null) {
+        grouped[key] = _PendingSupplierAggregate(
+          supplierRef: item.supplierRef,
+          supplierName: item.supplierName,
+          uom: item.uom,
+          receiptCount: 1,
+          totalSentQty: item.sentQty,
+          latestCreatedLabel: item.createdLabel,
+        );
+        continue;
+      }
+      current.receiptCount += 1;
+      current.totalSentQty += item.sentQty;
+      if (item.createdLabel.compareTo(current.latestCreatedLabel) > 0) {
+        current.latestCreatedLabel = item.createdLabel;
+      }
+      if (current.supplierName.trim().isEmpty && item.supplierName.trim().isNotEmpty) {
+        current.supplierName = item.supplierName;
+      }
+      if (current.uom.trim().isEmpty && item.uom.trim().isNotEmpty) {
+        current.uom = item.uom;
+      }
+    }
+
+    final items = grouped.values.toList()
+      ..sort((a, b) => b.latestCreatedLabel.compareTo(a.latestCreatedLabel));
+    return items
+        .map(
+          (item) => WerkaStatusBreakdownEntry(
+            supplierRef: item.supplierRef,
+            supplierName: item.supplierName,
+            receiptCount: item.receiptCount,
+            totalSentQty: item.totalSentQty,
+            totalAcceptedQty: 0,
+            totalReturnedQty: 0,
+            uom: item.uom,
+          ),
+        )
+        .toList();
+  }
+
+  List<DispatchRecord> _pendingDetailItems(String supplierRef) {
+    final expectedRef = supplierRef.trim();
+    return pendingItems.where((item) => item.supplierRef.trim() == expectedRef).toList();
+  }
+
   String _detailKey(WerkaStatusKind kind, String supplierRef) =>
       '${kind.name}:${supplierRef.trim()}';
 
@@ -199,4 +277,22 @@ class WerkaStore extends ChangeNotifier {
     _historyItems = const <DispatchRecord>[];
     notifyListeners();
   }
+}
+
+class _PendingSupplierAggregate {
+  _PendingSupplierAggregate({
+    required this.supplierRef,
+    required this.supplierName,
+    required this.uom,
+    required this.receiptCount,
+    required this.totalSentQty,
+    required this.latestCreatedLabel,
+  });
+
+  final String supplierRef;
+  String supplierName;
+  String uom;
+  int receiptCount;
+  double totalSentQty;
+  String latestCreatedLabel;
 }
