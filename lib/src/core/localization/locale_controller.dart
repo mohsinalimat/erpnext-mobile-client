@@ -19,7 +19,9 @@ class LocaleController extends ChangeNotifier {
         ? const Locale('en')
         : saved == 'ru'
             ? const Locale('ru')
-            : const Locale('uz');
+            : saved == 'zh'
+                ? const Locale('zh')
+                : const Locale('uz');
     notifyListeners();
   }
 
