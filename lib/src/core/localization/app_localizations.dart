@@ -384,9 +384,9 @@ class AppLocalizations {
   String get rejectTitle => _t('Rad etish', 'Reject', 'Отклонить');
   String get reasonLabel => _t('Sabab', 'Reason', 'Причина');
   String get rejectReasonRequired => _t(
-      'Rad etish uchun sabab tanlang',
-      'Select a reason before rejecting',
-      'Выберите причину перед отклонением');
+      'Sabab tanlang yoki kamida 3 harf izoh yozing',
+      'Select a reason or enter at least 3 characters',
+      'Выберите причину или введите минимум 3 символа');
   String get rejectReasonDefective =>
       _t('Yaroqsiz', 'Defective', 'Брак');
   String get rejectReasonWrongItem =>

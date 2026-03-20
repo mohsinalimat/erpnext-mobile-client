@@ -26,6 +26,7 @@ class _CustomerDeliveryDetailScreenState
     extends State<CustomerDeliveryDetailScreen> {
   late Future<CustomerDeliveryDetail> _future;
   bool _submitting = false;
+  static const int _minRejectCommentLength = 3;
 
   List<String> _rejectReasons(AppLocalizations l10n) => <String>[
         l10n.rejectReasonDefective,
@@ -59,7 +60,11 @@ class _CustomerDeliveryDetailScreenState
           final reasons = _rejectReasons(l10n);
           return StatefulBuilder(
             builder: (context, setLocalState) {
-              final canConfirm = (selectedReason ?? '').trim().isNotEmpty;
+              final trimmedComment = commentController.text.trim();
+              final hasReason = (selectedReason ?? '').trim().isNotEmpty;
+              final hasLongEnoughComment =
+                  trimmedComment.runes.length >= _minRejectCommentLength;
+              final canConfirm = hasReason || hasLongEnoughComment;
               return BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                 child: Dialog(
@@ -123,6 +128,7 @@ class _CustomerDeliveryDetailScreenState
                           controller: commentController,
                           minLines: 2,
                           maxLines: 4,
+                          onChanged: (_) => setLocalState(() {}),
                           decoration: InputDecoration(
                             labelText: l10n.extraCommentLabel,
                             hintText: l10n.optionalReasonHint,
@@ -160,17 +166,23 @@ class _CustomerDeliveryDetailScreenState
       if (confirmed != true) {
         return;
       }
-      if ((selectedReason ?? '').trim().isEmpty) {
+      final trimmedComment = commentController.text.trim();
+      if ((selectedReason ?? '').trim().isEmpty &&
+          trimmedComment.runes.length < _minRejectCommentLength) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.rejectReasonRequired)),
         );
         return;
       }
-      reason = selectedReason!.trim();
-      final extraComment = commentController.text.trim();
-      if (extraComment.isNotEmpty) {
-        reason = '$reason. $extraComment';
+      final selected = (selectedReason ?? '').trim();
+      if (selected.isNotEmpty) {
+        reason = selected;
+        if (trimmedComment.isNotEmpty) {
+          reason = '$reason. $trimmedComment';
+        }
+      } else {
+        reason = trimmedComment;
       }
     } else {
       final bool? confirmed = await showM3ConfirmDialog(
