@@ -1,5 +1,6 @@
-import '../../../core/theme/app_theme.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../app/app_router.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/werka_dock.dart';
 import 'package:flutter/material.dart';
@@ -158,6 +159,20 @@ class WerkaCustomerDeliveryDetailScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (record.status == DispatchStatus.accepted ||
+                      record.status == DispatchStatus.rejected) ...[
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.of(context).pushNamed(
+                          AppRoutes.notificationDetail,
+                          arguments: customerDeliveryResultEventId(record.id),
+                        ),
+                        child: Text(l10n.openDiscussionAction),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

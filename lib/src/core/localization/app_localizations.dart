@@ -380,6 +380,9 @@ class AppLocalizations {
   String get shipmentInfoTitle =>
       _t('Jo‘natma ma’lumoti', 'Shipment details', 'Информация об отправке');
   String get noteTitle => _t('Izoh', 'Note', 'Примечание');
+  String get commentsTitle => _t('Izohlar', 'Comments', 'Комментарии');
+  String get openDiscussionAction =>
+      _t('Muhokamani ochish', 'Open discussion', 'Открыть обсуждение');
   String get responseTitle => _t('Javob', 'Response', 'Ответ');
   String get rejectTitle => _t('Rad etish', 'Reject', 'Отклонить');
   String get reasonLabel => _t('Sabab', 'Reason', 'Причина');

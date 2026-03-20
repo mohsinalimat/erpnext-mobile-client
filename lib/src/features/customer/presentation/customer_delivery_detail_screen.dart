@@ -1,3 +1,4 @@
+import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/notifications/refresh_hub.dart';
@@ -45,6 +46,15 @@ class _CustomerDeliveryDetailScreenState
         MobileApi.instance.customerDeliveryDetail(widget.deliveryNoteID);
     setState(() => _future = future);
     await future;
+  }
+
+  Future<void> _openDiscussion() async {
+    await Navigator.of(context).pushNamed(
+      AppRoutes.notificationDetail,
+      arguments: customerDeliveryResultEventId(widget.deliveryNoteID),
+    );
+    if (!mounted) return;
+    await _reload();
   }
 
   Future<void> _respond(bool approve) async {
@@ -329,6 +339,30 @@ class _CustomerDeliveryDetailScreenState
                           child: Text(
                             record.note,
                             style: theme.textTheme.bodyMedium,
+                          ),
+                        ),
+                      ],
+                      if (record.status == DispatchStatus.accepted ||
+                          record.status == DispatchStatus.rejected) ...[
+                        Divider(
+                          height: 1,
+                          thickness: 1,
+                          indent: 18,
+                          endIndent: 18,
+                          color: scheme.outlineVariant.withValues(alpha: 0.55),
+                        ),
+                        _CustomerDetailSectionHeader(
+                          label: context.l10n.commentsTitle,
+                          topRounded: false,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(18, 18, 18, 0),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton(
+                              onPressed: _openDiscussion,
+                              child: Text(context.l10n.openDiscussionAction),
+                            ),
                           ),
                         ),
                       ],

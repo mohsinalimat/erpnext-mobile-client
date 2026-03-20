@@ -14,6 +14,11 @@ enum DispatchStatus {
   cancelled,
 }
 
+const String customerDeliveryResultEventPrefix = 'customer_delivery_result:';
+
+String customerDeliveryResultEventId(String deliveryNoteID) =>
+    '$customerDeliveryResultEventPrefix${deliveryNoteID.trim()}';
+
 class SupplierItem {
   const SupplierItem({
     required this.code,
