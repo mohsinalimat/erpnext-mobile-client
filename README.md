@@ -345,9 +345,9 @@ Current release backend domain:
 
 `https://core.wspace.sbs`
 
-## GitHub Actions APK Build
+## GitHub Actions Mobile Artifact Build
 
-The repository now includes a GitHub Actions workflow for Android APK builds:
+The repository now includes a GitHub Actions workflow for mobile artifacts:
 
 - `.github/workflows/build-android-apk.yml`
 
@@ -358,10 +358,13 @@ What it does:
 - writes `android/app/google-services.json` from a GitHub secret
 - runs `flutter analyze`
 - runs `flutter test`
-- builds a release APK with:
+- builds a release Android APK with:
   - `MOBILE_API_BASE_URL=https://core.wspace.sbs`
-- uploads the APK as a workflow artifact
-- optionally publishes the APK to a GitHub release when started manually
+- builds an iOS `.ipa` artifact with:
+  - `flutter build ios --release --no-codesign`
+  - wraps the generated `.app` into an unsigned `.ipa`
+- uploads both Android and iOS artifacts
+- optionally publishes both artifacts to a GitHub release when started manually
 
 Required repository secret:
 
@@ -381,6 +384,15 @@ Artifact output:
 - contains both:
   - `app-release.apk`
   - `accord.apk`
+- `accord-ios-ipa`
+  - contains:
+    - `accord-ios-unsigned.ipa`
+
+Important iOS note:
+
+- the workflow-generated iOS artifact is built with `--no-codesign`
+- it is useful as an `.ipa` artifact for external signing/re-signing workflows
+- it is not an App Store/TestFlight-signed install package by itself
 
 ## Operational Notes
 
