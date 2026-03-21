@@ -345,6 +345,43 @@ Current release backend domain:
 
 `https://core.wspace.sbs`
 
+## GitHub Actions APK Build
+
+The repository now includes a GitHub Actions workflow for Android APK builds:
+
+- `.github/workflows/build-android-apk.yml`
+
+What it does:
+
+- checks out the repository
+- restores Flutter and Gradle caches
+- writes `android/app/google-services.json` from a GitHub secret
+- runs `flutter analyze`
+- runs `flutter test`
+- builds a release APK with:
+  - `MOBILE_API_BASE_URL=https://core.wspace.sbs`
+- uploads the APK as a workflow artifact
+- optionally publishes the APK to a GitHub release when started manually
+
+Required repository secret:
+
+- `ANDROID_GOOGLE_SERVICES_JSON`
+  - store the raw contents of `android/app/google-services.json` as the secret value
+
+Manual release flow:
+
+1. Open the `Build Android APK` workflow in the Actions tab
+2. Click `Run workflow`
+3. Set `publish_release=true`
+4. Provide a `release_tag` such as `v0.1.0-apk`
+
+Artifact output:
+
+- `accord-apk`
+- contains both:
+  - `app-release.apk`
+  - `accord.apk`
+
 ## Operational Notes
 
 - Do not ship release APKs pointing to `127.0.0.1` or `localhost`
