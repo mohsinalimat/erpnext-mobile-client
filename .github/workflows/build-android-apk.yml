@@ -45,6 +45,16 @@ jobs:
         run: |
           printf '%s' "${ANDROID_GOOGLE_SERVICES_JSON}" > android/app/google-services.json
 
+      - name: Write GoogleService-Info.plist when available
+        env:
+          IOS_GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.IOS_GOOGLE_SERVICE_INFO_PLIST }}
+        run: |
+          if [ -n "${IOS_GOOGLE_SERVICE_INFO_PLIST}" ]; then
+            printf '%s' "${IOS_GOOGLE_SERVICE_INFO_PLIST}" > ios/Runner/GoogleService-Info.plist
+          else
+            echo "IOS_GOOGLE_SERVICE_INFO_PLIST is not set; continuing without it."
+          fi
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -116,6 +126,16 @@ jobs:
           ANDROID_GOOGLE_SERVICES_JSON: ${{ secrets.ANDROID_GOOGLE_SERVICES_JSON }}
         run: |
           printf '%s' "${ANDROID_GOOGLE_SERVICES_JSON}" > android/app/google-services.json
+
+      - name: Write GoogleService-Info.plist when available
+        env:
+          IOS_GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.IOS_GOOGLE_SERVICE_INFO_PLIST }}
+        run: |
+          if [ -n "${IOS_GOOGLE_SERVICE_INFO_PLIST}" ]; then
+            printf '%s' "${IOS_GOOGLE_SERVICE_INFO_PLIST}" > ios/Runner/GoogleService-Info.plist
+          else
+            echo "IOS_GOOGLE_SERVICE_INFO_PLIST is not set; continuing without it."
+          fi
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2

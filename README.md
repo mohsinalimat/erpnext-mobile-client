@@ -370,6 +370,9 @@ Required repository secret:
 
 - `ANDROID_GOOGLE_SERVICES_JSON`
   - store the raw contents of `android/app/google-services.json` as the secret value
+- `IOS_GOOGLE_SERVICE_INFO_PLIST`
+  - optional but recommended for iOS/Firebase integration
+  - store the raw contents of `ios/Runner/GoogleService-Info.plist` as the secret value when you have it
 
 Manual release flow:
 
