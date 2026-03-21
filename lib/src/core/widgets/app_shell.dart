@@ -242,15 +242,16 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
     }
 
     setState(() {
-      if (status != RefreshIndicatorStatus.done &&
-          status != RefreshIndicatorStatus.canceled &&
-          status != null) {
+      if (status == RefreshIndicatorStatus.snap ||
+          status == RefreshIndicatorStatus.refresh) {
         _showOverlay = true;
       }
     });
 
     if (status == RefreshIndicatorStatus.done ||
         status == RefreshIndicatorStatus.canceled ||
+        status == RefreshIndicatorStatus.drag ||
+        status == RefreshIndicatorStatus.armed ||
         status == null) {
       Future<void>.delayed(AppMotion.fast, () {
         if (!mounted || token != _statusToken) {
