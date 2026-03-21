@@ -80,12 +80,15 @@ class CustomerStore extends ChangeNotifier {
         MobileApi.instance.customerStatusDetails(CustomerStatusKind.pending),
         MobileApi.instance.customerStatusDetails(CustomerStatusKind.confirmed),
         MobileApi.instance.customerStatusDetails(CustomerStatusKind.rejected),
-        MobileApi.instance.customerHistory(),
       ]);
       _pendingItems = results[0] as List<DispatchRecord>;
       _confirmedItems = results[1] as List<DispatchRecord>;
       _rejectedItems = results[2] as List<DispatchRecord>;
-      _historyItems = results[3] as List<DispatchRecord>;
+      _historyItems = _mergeHistoryItems(
+        _pendingItems,
+        _confirmedItems,
+        _rejectedItems,
+      );
       _loaded = true;
       CustomerDeliveryRuntimeStore.instance.reconcileStatusLists(
         pendingItems: _pendingItems,
@@ -134,6 +137,21 @@ class CustomerStore extends ChangeNotifier {
 
   void _forwardRuntimeChange() {
     notifyListeners();
+  }
+
+  List<DispatchRecord> _mergeHistoryItems(
+    List<DispatchRecord> pendingItems,
+    List<DispatchRecord> confirmedItems,
+    List<DispatchRecord> rejectedItems,
+  ) {
+    final byId = <String, DispatchRecord>{
+      for (final item in pendingItems) item.id: item,
+      for (final item in confirmedItems) item.id: item,
+      for (final item in rejectedItems) item.id: item,
+    };
+    final result = byId.values.toList()
+      ..sort((a, b) => b.createdLabel.compareTo(a.createdLabel));
+    return result;
   }
 
   void clear() {
