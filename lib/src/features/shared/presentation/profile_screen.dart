@@ -535,7 +535,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       ],
                     ),
                   ),
-              ),
+                ),
               if (errorMessage != null) ...[
                 const SizedBox(height: 14),
                 _ProfilePanel(
