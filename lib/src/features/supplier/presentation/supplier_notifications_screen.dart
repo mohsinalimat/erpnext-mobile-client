@@ -182,6 +182,7 @@ class _SupplierNotificationsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.viewPaddingOf(context).bottom + 136.0;
     return AppShell(
       title: context.l10n.notificationsTitle,
       subtitle: '',
@@ -216,7 +217,7 @@ class _SupplierNotificationsScreenState
               allowRefreshOnShortContent: true,
               child: ListView(
                 physics: const TopRefreshScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(0, 0, 0, 116),
+                padding: EdgeInsets.fromLTRB(0, 0, 0, bottomPadding),
                 children: [
                   const SizedBox(height: 120),
                   Card.filled(
@@ -281,7 +282,7 @@ class _SupplierNotificationsScreenState
               onNotification: _handleScrollNotification,
               child: ListView(
                 physics: const TopRefreshScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(0, 0, 0, 116),
+                padding: EdgeInsets.fromLTRB(0, 0, 0, bottomPadding),
                 children: [
                   TweenAnimationBuilder<double>(
                     tween: Tween<double>(

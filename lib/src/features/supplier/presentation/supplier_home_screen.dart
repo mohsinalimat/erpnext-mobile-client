@@ -63,6 +63,7 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.viewPaddingOf(context).bottom + 136.0;
     return AppShell(
       title: context.l10n.supplierRoleName,
       subtitle: '',
@@ -169,7 +170,7 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
             allowRefreshOnShortContent: true,
             child: ListView(
               physics: const TopRefreshScrollPhysics(),
-              padding: EdgeInsets.zero,
+              padding: EdgeInsets.only(bottom: bottomPadding),
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),

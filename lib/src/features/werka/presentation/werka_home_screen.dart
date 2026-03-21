@@ -62,6 +62,7 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.viewPaddingOf(context).bottom + 136.0;
     return AppShell(
       title: context.l10n.werkaRoleName,
       subtitle: '',
@@ -165,7 +166,7 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
                   allowRefreshOnShortContent: true,
                   child: ListView(
                     physics: const TopRefreshScrollPhysics(),
-                    padding: EdgeInsets.zero,
+                    padding: EdgeInsets.only(bottom: bottomPadding),
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4),

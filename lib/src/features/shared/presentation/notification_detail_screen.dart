@@ -329,6 +329,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final role = AppSession.instance.profile?.role;
+    final bottomPadding = MediaQuery.viewPaddingOf(context).bottom + 136.0;
     if (_accountKey != _currentAccountKey()) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _reloadForAccountChange();
@@ -436,7 +437,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
             onRefresh: _reload,
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(0, 0, 0, 116),
+              padding: EdgeInsets.fromLTRB(0, 0, 0, bottomPadding),
               children: [
                 _NotificationSummaryCard(record: record),
                 if (record.note.trim().isNotEmpty) ...[

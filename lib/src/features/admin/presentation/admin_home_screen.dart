@@ -55,6 +55,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.viewPaddingOf(context).bottom + 136.0;
     return AppShell(
       title: context.l10n.adminRoleName,
       subtitle: '',
@@ -94,7 +95,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           return AppRefreshIndicator(
             onRefresh: _reload,
             child: ListView(
-              padding: EdgeInsets.zero,
+              padding: EdgeInsets.only(bottom: bottomPadding),
               children: [
                 SmoothAppear(
                   delay: const Duration(milliseconds: 20),

@@ -334,6 +334,8 @@ class _ProfileScreenState extends State<ProfileScreen>
         final l10n = context.l10n;
         final current = profile;
         final role = current.role;
+        final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+        final bottomPadding = bottomInset + 136.0;
         final subtitle = role == UserRole.supplier
             ? l10n.supplierAccount
             : role == UserRole.werka
@@ -362,7 +364,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             onRefresh: _refreshProfile,
             child: ListView(
               physics: const TopRefreshScrollPhysics(),
-              padding: EdgeInsets.zero,
+              padding: EdgeInsets.fromLTRB(0, 0, 0, bottomPadding),
               children: [
                 SmoothAppear(
                   delay: const Duration(milliseconds: 20),

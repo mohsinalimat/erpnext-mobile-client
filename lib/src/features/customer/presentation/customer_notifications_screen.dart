@@ -180,6 +180,7 @@ class _CustomerNotificationsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.viewPaddingOf(context).bottom + 136.0;
     final content = AnimatedBuilder(
       animation: CustomerStore.instance,
       builder: (context, _) {
@@ -204,7 +205,7 @@ class _CustomerNotificationsScreenState
             allowRefreshOnShortContent: true,
             child: ListView(
               physics: const TopRefreshScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
+              padding: EdgeInsets.fromLTRB(0, 8, 0, bottomPadding),
               children: [
                 _NotificationPanel(
                   child: Text('${store.error}'),
@@ -219,7 +220,7 @@ class _CustomerNotificationsScreenState
             allowRefreshOnShortContent: true,
             child: ListView(
               physics: const TopRefreshScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
+              padding: EdgeInsets.fromLTRB(0, 8, 0, bottomPadding),
               children: [
                 _NotificationPanel(
                   child: Text(context.l10n.noRecordsYet),
@@ -234,7 +235,7 @@ class _CustomerNotificationsScreenState
           allowRefreshOnShortContent: true,
           child: ListView(
             physics: const TopRefreshScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
+            padding: EdgeInsets.fromLTRB(0, 8, 0, bottomPadding),
             children: [
               SmoothAppear(
                 delay: const Duration(milliseconds: 20),
