@@ -219,6 +219,7 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
   double _pullExtent = 0.0;
   bool _refreshing = false;
   bool _userPulling = false;
+  bool _refreshArmed = false;
 
   static const double _edgeTolerance = 0.5;
 
@@ -265,6 +266,7 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
     setState(() {
       _refreshing = true;
       _userPulling = false;
+      _refreshArmed = false;
       _pullExtent = 0.0;
     });
     _settleTopEdge(forceJump: true);
@@ -275,6 +277,7 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
         setState(() {
           _refreshing = false;
           _userPulling = false;
+          _refreshArmed = false;
           _pullExtent = 0.0;
         });
         _settleTopEdge();
@@ -313,6 +316,15 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
     });
   }
 
+  void _setRefreshArmed(bool nextValue) {
+    if (_refreshArmed == nextValue) {
+      return;
+    }
+    setState(() {
+      _refreshArmed = nextValue;
+    });
+  }
+
   void _settleTopEdge({bool forceJump = false}) {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted || !_scrollController.hasClients) {
@@ -345,11 +357,27 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
   }
 
   bool _handleScrollNotification(ScrollNotification notification) {
-    if (!_matchesRefreshContext(notification)) {
+    if (_refreshing) {
       return false;
     }
 
-    if (_refreshing) {
+    if (notification is ScrollEndNotification && _pullExtent > 0) {
+      _setUserPulling(false);
+      if (_refreshArmed) {
+        _startRefresh();
+      } else {
+        _setPullExtent(0.0);
+        if (_scrollController.hasClients) {
+          final position = _scrollController.position;
+          if (position.pixels < position.minScrollExtent - _edgeTolerance) {
+            _scheduleHardSettleBursts();
+          }
+        }
+      }
+      return false;
+    }
+
+    if (!_matchesRefreshContext(notification)) {
       return false;
     }
 
@@ -361,9 +389,7 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
       final nextPull = (_pullExtent + (-notification.overscroll))
           .clamp(0.0, _maxPullDistance);
       _setPullExtent(nextPull);
-      if (nextPull >= _triggerDistance) {
-        _startRefresh();
-      }
+      _setRefreshArmed(nextPull >= _triggerDistance);
       return false;
     }
 
@@ -372,25 +398,17 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
         _pullExtent > 0) {
       _setUserPulling(true);
       final delta = notification.scrollDelta ?? 0.0;
+      late final double nextPull;
       if (delta > 0) {
-        _setPullExtent(_pullExtent - delta);
+        nextPull = (_pullExtent - delta).clamp(0.0, _maxPullDistance);
       } else if (_isNearTop(notification.metrics) && delta < 0) {
-        _setPullExtent(_pullExtent + (-delta));
+        nextPull = (_pullExtent + (-delta)).clamp(0.0, _maxPullDistance);
+      } else {
+        nextPull = _pullExtent;
       }
+      _setPullExtent(nextPull);
+      _setRefreshArmed(nextPull >= _triggerDistance);
       return false;
-    }
-
-    if (notification is ScrollEndNotification) {
-      _setUserPulling(false);
-      if (_pullExtent > 0) {
-        _setPullExtent(0.0);
-      }
-      if (_scrollController.hasClients) {
-        final position = _scrollController.position;
-        if (position.pixels < position.minScrollExtent - _edgeTolerance) {
-          _scheduleHardSettleBursts();
-        }
-      }
     }
 
     return false;
