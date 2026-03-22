@@ -1,4 +1,5 @@
 import Flutter
+import SwiftUI
 import UIKit
 
 @main
@@ -61,7 +62,7 @@ private final class AccordLiquidDockPlatformView: NSObject, FlutterPlatformView 
   }
 }
 
-private struct AccordLiquidDockItem {
+private struct AccordLiquidDockItem: Hashable {
   let id: String
   let active: Bool
   let primary: Bool
@@ -113,6 +114,11 @@ private final class AccordLiquidDockView: UIView {
   }
 
   private func setupViewHierarchy() {
+    if #available(iOS 26.0, *) {
+      setupOriginalLiquidGlassView()
+      return
+    }
+
     let hostHeight: CGFloat = compact ? 76 : 84
     let horizontalInset: CGFloat = tightToEdges ? 4 : 14
     let buttonInset: CGFloat = tightToEdges ? 10 : 16
@@ -230,6 +236,34 @@ private final class AccordLiquidDockView: UIView {
       layer.cornerRadius = borderView.layer.cornerRadius
     }
   }
+
+  @available(iOS 26.0, *)
+  private func setupOriginalLiquidGlassView() {
+    let root = AccordLiquidGlassDockRoot(
+      items: items,
+      compact: compact,
+      tightToEdges: tightToEdges,
+      onTap: { [weak self] id in
+        self?.channel.invokeMethod("tap", arguments: ["id": id])
+      },
+      onLongPress: { [weak self] id in
+        self?.channel.invokeMethod("longPress", arguments: ["id": id])
+      }
+    )
+
+    let hostingController = UIHostingController(rootView: root)
+    let hostingView = hostingController.view!
+    hostingView.translatesAutoresizingMaskIntoConstraints = false
+    hostingView.backgroundColor = .clear
+
+    addSubview(hostingView)
+    NSLayoutConstraint.activate([
+      hostingView.leadingAnchor.constraint(equalTo: leadingAnchor),
+      hostingView.trailingAnchor.constraint(equalTo: trailingAnchor),
+      hostingView.topAnchor.constraint(equalTo: topAnchor),
+      hostingView.bottomAnchor.constraint(equalTo: bottomAnchor),
+    ])
+  }
 }
 
 private final class AccordLiquidDockButton: UIControl {
@@ -323,6 +357,102 @@ private final class AccordLiquidDockButton: UIControl {
   }
 
   private func symbolName(for item: AccordLiquidDockItem) -> String {
+    switch item.id {
+      case "home":
+        return item.active ? "house.fill" : "house"
+      case "notifications":
+        return item.active ? "bell.fill" : "bell"
+      case "profile":
+        return item.active ? "person.crop.circle.fill" : "person.crop.circle"
+      case "recent":
+        return item.active ? "clock.fill" : "clock"
+      case "suppliers":
+        return item.active ? "person.2.fill" : "person.2"
+      case "activity":
+        return item.active ? "waveform.path.ecg.rectangle.fill" : "waveform.path.ecg.rectangle"
+      case "create":
+        return "plus"
+      default:
+        return item.active ? "circle.fill" : "circle"
+    }
+  }
+}
+
+@available(iOS 26.0, *)
+private struct AccordLiquidGlassDockRoot: View {
+  let items: [AccordLiquidDockItem]
+  let compact: Bool
+  let tightToEdges: Bool
+  let onTap: (String) -> Void
+  let onLongPress: (String) -> Void
+
+  var body: some View {
+    HStack(spacing: compact ? 8 : 10) {
+      ForEach(items, id: \.self) { item in
+        AccordLiquidGlassDockButton(
+          item: item,
+          onTap: { onTap(item.id) },
+          onLongPress: { onLongPress(item.id) }
+        )
+      }
+    }
+    .padding(.horizontal, tightToEdges ? 14 : 20)
+    .padding(.top, compact ? 10 : 8)
+    .padding(.bottom, compact ? 6 : 4)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    .background {
+      Capsule(style: .continuous)
+        .fill(.clear)
+        .glassEffect()
+        .shadow(color: .black.opacity(0.18), radius: 18, x: 0, y: 10)
+    }
+    .padding(.horizontal, tightToEdges ? 4 : 14)
+  }
+}
+
+@available(iOS 26.0, *)
+private struct AccordLiquidGlassDockButton: View {
+  let item: AccordLiquidDockItem
+  let onTap: () -> Void
+  let onLongPress: () -> Void
+
+  var body: some View {
+    let frameWidth: CGFloat = item.primary ? 72 : 60
+    let pillWidth: CGFloat = item.primary ? 72 : (item.active ? 64 : 46)
+    let tint: Color = item.primary
+      ? .white.opacity(0.98)
+      : (item.active ? .white.opacity(0.96) : .white.opacity(0.72))
+
+    Image(systemName: symbolName)
+      .font(.system(size: item.primary ? 20 : 19, weight: item.primary ? .semibold : .medium))
+      .foregroundStyle(tint)
+      .frame(width: frameWidth, height: 50)
+      .background {
+        if item.active || item.primary {
+          Capsule(style: .continuous)
+            .fill(.clear)
+            .frame(width: pillWidth, height: item.primary ? 50 : 44)
+            .glassEffect()
+        }
+      }
+      .overlay(alignment: .topTrailing) {
+        if item.showBadge {
+          Circle()
+            .fill(Color(red: 1.0, green: 0.25, blue: 0.28))
+            .frame(width: 9, height: 9)
+            .offset(x: -10, y: 8)
+        }
+      }
+      .contentShape(Rectangle())
+      .onTapGesture(perform: onTap)
+      .onLongPressGesture(minimumDuration: 0.65) {
+        if item.allowLongPress {
+          onLongPress()
+        }
+      }
+  }
+
+  private var symbolName: String {
     switch item.id {
       case "home":
         return item.active ? "house.fill" : "house"
