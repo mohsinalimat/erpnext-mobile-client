@@ -38,8 +38,8 @@ private final class AccordLiquidDockWindowController {
     NSLayoutConstraint.activate([
       overlayView.leadingAnchor.constraint(equalTo: window.leadingAnchor),
       overlayView.trailingAnchor.constraint(equalTo: window.trailingAnchor),
-      overlayView.bottomAnchor.constraint(equalTo: window.safeAreaLayoutGuide.bottomAnchor),
-      overlayView.heightAnchor.constraint(equalToConstant: 88),
+      overlayView.bottomAnchor.constraint(equalTo: window.bottomAnchor),
+      overlayView.heightAnchor.constraint(equalToConstant: 120),
     ])
   }
 }
@@ -47,7 +47,6 @@ private final class AccordLiquidDockWindowController {
 private final class AccordLiquidDockOverlayView: UIView, UITabBarDelegate {
   private let channel: FlutterMethodChannel
   private let tabBar = UITabBar()
-  private var widthConstraint: NSLayoutConstraint?
   private var items: [AccordLiquidDockItem] = []
 
   init(messenger: FlutterBinaryMessenger) {
@@ -73,9 +72,13 @@ private final class AccordLiquidDockOverlayView: UIView, UITabBarDelegate {
     tabBar.delegate = self
     tabBar.tintColor = UIColor.white.withAlphaComponent(0.98)
     tabBar.unselectedItemTintColor = UIColor.white.withAlphaComponent(0.72)
-    tabBar.itemPositioning = .centered
-    tabBar.itemWidth = 58
-    tabBar.itemSpacing = 4
+    if #available(iOS 26.0, *) {
+      tabBar.itemPositioning = .automatic
+    } else {
+      tabBar.itemPositioning = .centered
+      tabBar.itemWidth = 64
+      tabBar.itemSpacing = 8
+    }
 
     if #available(iOS 26.0, *) {
       let appearance = UITabBarAppearance()
@@ -96,14 +99,12 @@ private final class AccordLiquidDockOverlayView: UIView, UITabBarDelegate {
       tabBar.isTranslucent = true
     }
 
-    widthConstraint = tabBar.widthAnchor.constraint(equalToConstant: 240)
     NSLayoutConstraint.activate([
       tabBar.centerXAnchor.constraint(equalTo: centerXAnchor),
-      tabBar.bottomAnchor.constraint(equalTo: bottomAnchor),
+      tabBar.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor),
       tabBar.heightAnchor.constraint(equalToConstant: 64),
-      widthConstraint!,
-      tabBar.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 20),
-      tabBar.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -20),
+      tabBar.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
+      tabBar.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
     ])
 
     let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleTabBarLongPress(_:)))
@@ -138,9 +139,6 @@ private final class AccordLiquidDockOverlayView: UIView, UITabBarDelegate {
         allowLongPress: item["allowLongPress"] as? Bool ?? false
       )
     }
-
-    widthConstraint?.constant = (CGFloat(items.count) * 58) +
-      (CGFloat(max(items.count - 1, 0)) * 4) + 32
 
     let tabItems = items.enumerated().map { index, item in
       let tabBarItem = UITabBarItem(
