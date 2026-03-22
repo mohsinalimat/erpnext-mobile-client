@@ -38,10 +38,17 @@ private struct AccordLiquidDockItem: Hashable {
   let allowLongPress: Bool
 }
 
+private let accordShellBackgroundColor = UIColor(
+  red: 0x1C / 255.0,
+  green: 0x1B / 255.0,
+  blue: 0x1F / 255.0,
+  alpha: 1.0
+)
+
 private final class AccordLiquidDockPlaceholderController: UIViewController {
   override func loadView() {
     view = UIView()
-    view.backgroundColor = .clear
+    view.backgroundColor = accordShellBackgroundColor
   }
 }
 
@@ -74,7 +81,7 @@ private final class AccordLiquidDockHostController: UITabBarController, UITabBar
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    view.backgroundColor = .clear
+    view.backgroundColor = accordShellBackgroundColor
 
     let seedController = AccordLiquidDockPlaceholderController()
     setViewControllers([seedController], animated: false)
