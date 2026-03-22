@@ -82,6 +82,7 @@ private final class AccordLiquidDockHostController: UITabBarController, UITabBar
   override func viewDidLoad() {
     super.viewDidLoad()
     view.backgroundColor = accordShellBackgroundColor
+    view.clipsToBounds = false
 
     let seedController = AccordLiquidDockPlaceholderController()
     setViewControllers([seedController], animated: false)
@@ -104,6 +105,8 @@ private final class AccordLiquidDockHostController: UITabBarController, UITabBar
       tabBar.itemWidth = 64
       tabBar.itemSpacing = 8
     }
+    tabBar.clipsToBounds = false
+    tabBar.layer.masksToBounds = false
 
     if #available(iOS 26.0, *) {
       // Keep the iOS 26 tab bar on the system default appearance path.
@@ -123,6 +126,8 @@ private final class AccordLiquidDockHostController: UITabBarController, UITabBar
 
   override func viewDidLayoutSubviews() {
     super.viewDidLayoutSubviews()
+    tabBar.superview?.clipsToBounds = false
+    tabBar.superview?.layer.masksToBounds = false
     view.bringSubviewToFront(tabBar)
   }
 
