@@ -278,13 +278,19 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
           _pullExtent = 0.0;
         });
         _settleTopEdge();
-        Future<void>.delayed(AppMotion.medium, () {
-          if (!mounted) {
-            return;
-          }
-          _settleTopEdge(forceJump: true);
-        });
+        _scheduleHardSettleBursts();
       }
+    }
+  }
+
+  void _scheduleHardSettleBursts() {
+    for (final delayMs in <int>[16, 32, 64, 96, 140, 220]) {
+      Future<void>.delayed(Duration(milliseconds: delayMs), () {
+        if (!mounted) {
+          return;
+        }
+        _settleTopEdge(forceJump: true);
+      });
     }
   }
 
@@ -393,14 +399,14 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
     }
 
     if (notification is ScrollEndNotification) {
-      final position = _activePosition;
       if (_pullExtent > 0) {
         _setPullExtent(0.0);
       }
-      if (position != null &&
-          position.hasPixels &&
-          position.pixels < position.minScrollExtent - _edgeTolerance) {
-        _settleTopEdge(forceJump: true);
+      if (_scrollController.hasClients) {
+        final position = _scrollController.position;
+        if (position.pixels < position.minScrollExtent - _edgeTolerance) {
+          _scheduleHardSettleBursts();
+        }
       }
     }
 
