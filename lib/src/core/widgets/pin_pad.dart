@@ -439,32 +439,32 @@ class _PinGlyph extends StatelessWidget {
   }
 
   ShapeBorder _shapeAt(double t) {
-    if (t < 0.46) {
+    if (t < 0.56) {
       return _startShape();
     }
-    if (t < 0.78) {
-      final local = AppMotion.standardDecelerate
-          .transform(((t - 0.46) / 0.32).clamp(0.0, 1.0));
+    if (t < 0.84) {
+      final local = AppMotion.emphasizedDecelerate
+          .transform(((t - 0.56) / 0.28).clamp(0.0, 1.0));
       return ShapeBorder.lerp(_startShape(), _midShape(), local)!;
     }
-    final local = AppMotion.standardDecelerate
-        .transform(((t - 0.78) / 0.22).clamp(0.0, 1.0));
+    final local = AppMotion.emphasizedDecelerate
+        .transform(((t - 0.84) / 0.16).clamp(0.0, 1.0));
     return ShapeBorder.lerp(_midShape(), _settledShape(), local)!;
   }
 
   double _sizeAt(double t) {
     if (t < 0.18) {
-      final local = AppMotion.standardDecelerate
+      final local = AppMotion.emphasizedDecelerate
           .transform((t / 0.18).clamp(0.0, 1.0));
       return 20.0 + (18.0 * local);
     }
-    if (t < 0.46) {
-      final local = AppMotion.standardDecelerate
-          .transform(((t - 0.18) / 0.28).clamp(0.0, 1.0));
+    if (t < 0.56) {
+      final local = AppMotion.emphasizedDecelerate
+          .transform(((t - 0.18) / 0.38).clamp(0.0, 1.0));
       return 38.0 - (2.0 * local);
     }
-    final local = AppMotion.standardDecelerate
-        .transform(((t - 0.46) / 0.54).clamp(0.0, 1.0));
+    final local = AppMotion.emphasizedDecelerate
+        .transform(((t - 0.56) / 0.44).clamp(0.0, 1.0));
     return 34.0 - (14.0 * local);
   }
 
@@ -526,10 +526,10 @@ class _PinGlyph extends StatelessWidget {
     return TweenAnimationBuilder<double>(
       key: ValueKey<String>('glyph-$variant-$animateTick'),
       tween: Tween(begin: 0, end: 1),
-      duration: const Duration(milliseconds: 2280),
-      curve: AppMotion.standardDecelerate,
+      duration: const Duration(milliseconds: 2760),
+      curve: AppMotion.emphasizedDecelerate,
       builder: (context, value, _) {
-        final eased = AppMotion.standardDecelerate.transform(value);
+        final eased = AppMotion.emphasizedDecelerate.transform(value);
         final size = _sizeAt(value);
         return SizedBox(
           width: 40,
