@@ -8,6 +8,7 @@ enum AppThemeVariant {
   moss,
   violet,
   slate,
+  ocean,
 }
 
 class ThemeController extends ChangeNotifier {
@@ -39,6 +40,8 @@ class ThemeController extends ChangeNotifier {
                     ? AppThemeVariant.violet
                     : savedVariant == 'slate'
                         ? AppThemeVariant.slate
+                        : savedVariant == 'ocean'
+                            ? AppThemeVariant.ocean
             : AppThemeVariant.earthy;
     notifyListeners();
   }
@@ -73,6 +76,8 @@ class ThemeController extends ChangeNotifier {
                       ? 'violet'
                       : nextVariant == AppThemeVariant.slate
                           ? 'slate'
+                          : nextVariant == AppThemeVariant.ocean
+                              ? 'ocean'
               : 'earthy',
     );
   }

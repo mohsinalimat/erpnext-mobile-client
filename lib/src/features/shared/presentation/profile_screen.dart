@@ -854,6 +854,15 @@ class _ThemePreferenceRow extends StatelessWidget {
                           onTap: () =>
                               Navigator.of(context).pop(AppThemeVariant.slate),
                         ),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(l10n.themeOceanLabel),
+                          trailing: variant == AppThemeVariant.ocean
+                              ? Icon(Icons.check_rounded, color: scheme.primary)
+                              : null,
+                          onTap: () =>
+                              Navigator.of(context).pop(AppThemeVariant.ocean),
+                        ),
                       ],
                     ),
                   ),
@@ -906,6 +915,8 @@ class _ThemePreferenceRow extends StatelessWidget {
                               ? l10n.themeVioletLabel
                               : variant == AppThemeVariant.slate
                                   ? l10n.themeSlateLabel
+                                  : variant == AppThemeVariant.ocean
+                                      ? l10n.themeOceanLabel
                       : l10n.themeEarthLabel,
               style: Theme.of(context).textTheme.labelLarge,
             ),
