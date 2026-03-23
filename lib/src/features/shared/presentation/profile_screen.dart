@@ -842,15 +842,15 @@ class _ThemePreferenceRow extends StatelessWidget {
                             onTap: () =>
                                 Navigator.of(context).pop(AppThemeVariant.moss),
                           ),
-                          ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: Text(l10n.themeVioletLabel),
-                            trailing: variant == AppThemeVariant.violet
-                                ? Icon(Icons.check_rounded, color: scheme.primary)
-                                : null,
-                            onTap: () =>
-                                Navigator.of(context).pop(AppThemeVariant.violet),
-                          ),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(l10n.themeLavenderLabel),
+                          trailing: variant == AppThemeVariant.lavender
+                              ? Icon(Icons.check_rounded, color: scheme.primary)
+                              : null,
+                          onTap: () =>
+                              Navigator.of(context).pop(AppThemeVariant.lavender),
+                        ),
                           ListTile(
                             contentPadding: EdgeInsets.zero,
                             title: Text(l10n.themeSlateLabel),
@@ -918,8 +918,8 @@ class _ThemePreferenceRow extends StatelessWidget {
                       ? l10n.themeBlushLabel
                       : variant == AppThemeVariant.moss
                           ? l10n.themeMossLabel
-                          : variant == AppThemeVariant.violet
-                              ? l10n.themeVioletLabel
+                          : variant == AppThemeVariant.lavender
+                              ? l10n.themeLavenderLabel
                               : variant == AppThemeVariant.slate
                                   ? l10n.themeSlateLabel
                                   : variant == AppThemeVariant.ocean

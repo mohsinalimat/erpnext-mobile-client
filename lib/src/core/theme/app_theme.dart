@@ -10,7 +10,7 @@ class AppTheme {
       AppThemeVariant.earthy => _earthyDarkScheme(),
       AppThemeVariant.blush => _blushDarkScheme(),
       AppThemeVariant.moss => _mossDarkScheme(),
-      AppThemeVariant.violet => _violetDarkScheme(),
+      AppThemeVariant.lavender => _lavenderDarkScheme(),
       AppThemeVariant.slate => _slateDarkScheme(),
       AppThemeVariant.ocean => _oceanDarkScheme(),
     };
@@ -34,7 +34,7 @@ class AppTheme {
       AppThemeVariant.earthy => _earthyLightScheme(),
       AppThemeVariant.blush => _blushLightScheme(),
       AppThemeVariant.moss => _mossLightScheme(),
-      AppThemeVariant.violet => _violetLightScheme(),
+      AppThemeVariant.lavender => _lavenderLightScheme(),
       AppThemeVariant.slate => _slateLightScheme(),
       AppThemeVariant.ocean => _oceanLightScheme(),
     };
@@ -308,68 +308,68 @@ class AppTheme {
     return colorScheme;
   }
 
-  static ColorScheme _violetDarkScheme() {
-    const seed = Color(0xFF982598);
+  static ColorScheme _lavenderDarkScheme() {
+    const seed = Color(0xFF827397);
     final colorScheme = ColorScheme.fromSeed(
       seedColor: seed,
       brightness: Brightness.dark,
     ).copyWith(
-      primary: const Color(0xFFE491C9),
-      onPrimary: const Color(0xFF3D163D),
-      primaryContainer: const Color(0xFF982598),
-      onPrimaryContainer: const Color(0xFFFFF1FC),
-      secondary: const Color(0xFFF1E9E9),
-      onSecondary: const Color(0xFF2B242B),
-      secondaryContainer: const Color(0xFF6A5B66),
-      onSecondaryContainer: const Color(0xFFFFF6F8),
-      tertiary: const Color(0xFF15173D),
-      onTertiary: const Color(0xFFE4E6FF),
-      tertiaryContainer: const Color(0xFF2B2D62),
-      onTertiaryContainer: const Color(0xFFF0F1FF),
-      surface: const Color(0xFF15131A),
-      onSurface: const Color(0xFFF1E9EF),
-      surfaceDim: const Color(0xFF100D14),
-      surfaceBright: const Color(0xFF312A35),
-      surfaceContainerLowest: const Color(0xFF0C0910),
-      surfaceContainerLow: const Color(0xFF1B1720),
-      surfaceContainer: const Color(0xFF221D28),
-      surfaceContainerHigh: const Color(0xFF2A2430),
-      surfaceContainerHighest: const Color(0xFF352E3B),
-      outline: const Color(0xFFB7A5B5),
-      outlineVariant: const Color(0xFF5E505D),
+      primary: const Color(0xFFD8B9C3),
+      onPrimary: const Color(0xFF432F37),
+      primaryContainer: const Color(0xFF827397),
+      onPrimaryContainer: const Color(0xFFFFF5F8),
+      secondary: const Color(0xFF4D4C7D),
+      onSecondary: const Color(0xFFEDEBFF),
+      secondaryContainer: const Color(0xFF636291),
+      onSecondaryContainer: const Color(0xFFF6F4FF),
+      tertiary: const Color(0xFF363062),
+      onTertiary: const Color(0xFFE7E3FF),
+      tertiaryContainer: const Color(0xFF4A4478),
+      onTertiaryContainer: const Color(0xFFF2EFFF),
+      surface: const Color(0xFF15131D),
+      onSurface: const Color(0xFFF0ECF4),
+      surfaceDim: const Color(0xFF100E15),
+      surfaceBright: const Color(0xFF302C38),
+      surfaceContainerLowest: const Color(0xFF0B0910),
+      surfaceContainerLow: const Color(0xFF1A1721),
+      surfaceContainer: const Color(0xFF211D29),
+      surfaceContainerHigh: const Color(0xFF2A2533),
+      surfaceContainerHighest: const Color(0xFF35303E),
+      outline: const Color(0xFFB3A8BB),
+      outlineVariant: const Color(0xFF5F586C),
     );
     return colorScheme;
   }
 
-  static ColorScheme _violetLightScheme() {
-    const seed = Color(0xFF982598);
+  static ColorScheme _lavenderLightScheme() {
+    const seed = Color(0xFF827397);
     final colorScheme = ColorScheme.fromSeed(
       seedColor: seed,
       brightness: Brightness.light,
     ).copyWith(
-      primary: const Color(0xFF982598),
+      primary: const Color(0xFF4D4C7D),
       onPrimary: const Color(0xFFFFFFFF),
-      primaryContainer: const Color(0xFFE491C9),
-      onPrimaryContainer: const Color(0xFF4E1C4E),
-      secondary: const Color(0xFFF1E9E9),
-      onSecondary: const Color(0xFF4B3E49),
-      secondaryContainer: const Color(0xFFF6F0F2),
-      onSecondaryContainer: const Color(0xFF584A55),
-      tertiary: const Color(0xFF15173D),
+      primaryContainer: const Color(0xFFD8B9C3),
+      onPrimaryContainer: const Color(0xFF4A3D55),
+      secondary: const Color(0xFF827397),
+      onSecondary: const Color(0xFFFFFFFF),
+      secondaryContainer: const Color(0xFFE3D8E8),
+      onSecondaryContainer: const Color(0xFF544B63),
+      tertiary: const Color(0xFF363062),
       onTertiary: const Color(0xFFFFFFFF),
-      tertiaryContainer: const Color(0xFFC9CDFC),
-      onTertiaryContainer: const Color(0xFF26285B),
-      surface: const Color(0xFFF1E9E9),
-      onSurface: const Color(0xFF241E25),
-      surfaceDim: const Color(0xFFE0D4D9),
+      tertiaryContainer: const Color(0xFFD6D2EE),
+      onTertiaryContainer: const Color(0xFF302B52),
+      surface: const Color(0xFFF7F3F6),
+      onSurface: const Color(0xFF24212A),
+      surfaceDim: const Color(0xFFE5DEE6),
       surfaceBright: const Color(0xFFFFFFFF),
       surfaceContainerLowest: const Color(0xFFFFFFFF),
-      surfaceContainerLow: const Color(0xFFF8F1F3),
-      surfaceContainer: const Color(0xFFF3EBED),
-      surfaceContainerHigh: const Color(0xFFECE2E6),
-      surfaceContainerHighest: const Color(0xFFE6DADF),
-      outline: const Color(0xFFB9A7B0),
-      outlineVariant: const Color(0xFFDCCFD5),
+      surfaceContainerLow: const Color(0xFFFAF7FA),
+      surfaceContainer: const Color(0xFFF4EEF4),
+      surfaceContainerHigh: const Color(0xFFEDE5EC),
+      surfaceContainerHighest: const Color(0xFFE7DDE7),
+      outline: const Color(0xFFB9AFBE),
+      outlineVariant: const Color(0xFFD9CFDD),
     );
     return colorScheme;
   }
