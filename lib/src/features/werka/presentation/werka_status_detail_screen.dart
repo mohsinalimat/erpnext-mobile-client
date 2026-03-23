@@ -1,6 +1,7 @@
 import '../../../app/app_router.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_retry_state.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../shared/models/app_models.dart';
 import '../state/werka_store.dart';
@@ -104,27 +105,9 @@ class _WerkaStatusDetailScreenState extends State<WerkaStatusDetailScreen> {
                             .detailItems(
                                 widget.args.kind, widget.args.supplierRef)
                             .isEmpty) {
-                      return Center(
-                        child: Card.filled(
-                          margin: EdgeInsets.zero,
-                          color: scheme.surfaceContainerLow,
-                          child: Padding(
-                            padding: const EdgeInsets.all(18),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(context.l10n
-                                    .recordsLoadFailedWith(error)),
-                                const SizedBox(height: 12),
-                                FilledButton(
-                                  onPressed: _reload,
-                                  child: Text(context.l10n.retry),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                      return AppRetryState(
+                        onRetry: _reload,
+                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
                       );
                     }
 

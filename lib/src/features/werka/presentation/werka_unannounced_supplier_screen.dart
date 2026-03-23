@@ -5,6 +5,7 @@ import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/notifications/werka_runtime_store.dart';
 import '../../../core/search/search_normalizer.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_retry_state.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/m3_picker_sheet.dart';
 import 'widgets/werka_dock.dart';
@@ -327,24 +328,7 @@ class _WerkaUnannouncedSupplierScreenState
                 children: [
                   _WerkaUnannouncedHeader(theme: theme),
                   const SizedBox(height: 20),
-                  Card.filled(
-                    margin: EdgeInsets.zero,
-                    child: Padding(
-                      padding: const EdgeInsets.all(18),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(context.l10n
-                              .unannouncedSuppliersFailed(snapshot.error!)),
-                          const SizedBox(height: 12),
-                          FilledButton(
-                            onPressed: _reloadSuppliers,
-                            child: Text(context.l10n.retry),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  AppRetryState(onRetry: _reloadSuppliers, padding: EdgeInsets.zero),
                 ],
               );
             }

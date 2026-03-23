@@ -191,6 +191,11 @@ class AppLocalizations {
   String get pendingStatus => _t('Jarayonda', 'In progress', 'В процессе');
   String get confirmedStatus => _t('Tasdiqlangan', 'Confirmed', 'Подтверждено');
   String get returnedStatus => _t('Qaytarilgan', 'Returned', 'Возвращено');
+  String get serverDisconnectedRetry => _t(
+        'Server uzilgan. Qayta urining.',
+        'Server disconnected. Try again.',
+        'Сервер отключен. Повторите попытку.',
+      );
   String get inProgressItemsTitle =>
       _t('Jarayondagi mahsulotlar', 'Items in progress', 'Товары в процессе');
   String get recordsLoadFailed => _t('Yozuvlar yuklanmadi',
@@ -242,12 +247,10 @@ class AppLocalizations {
   String get detailsStateTitle => _t('Holat', 'State', 'Состояние');
 
   String statusWithName(String name, String status) => '$status • $name';
-  String recordsLoadFailedWith(Object error) => '$recordsLoadFailed: $error';
-  String statusListLoadFailedWith(Object error) =>
-      '$statusListLoadFailed: $error';
-  String notificationsLoadFailedWith(Object error) =>
-      '$notificationsLoadFailed: $error';
-  String recentLoadFailedWith(Object error) => '$recentLoadFailed: $error';
+  String recordsLoadFailedWith(Object error) => serverDisconnectedRetry;
+  String statusListLoadFailedWith(Object error) => serverDisconnectedRetry;
+  String notificationsLoadFailedWith(Object error) => serverDisconnectedRetry;
+  String recentLoadFailedWith(Object error) => serverDisconnectedRetry;
   String sentQtyStatus(num qty, String uom, String statusWord) =>
       '${qty.toStringAsFixed(0)} $uom $statusWord';
   String receiptCountLabel(int count) =>
@@ -279,19 +282,19 @@ class AppLocalizations {
         '${qty.toStringAsFixed(2)} $uom принято',
       );
   String customerIssueFailed(Object error) => _t(
-        'Mol jo‘natish bo‘lmadi: $error',
-        'Sending item failed: $error',
-        'Не удалось отправить товар: $error',
+        'Server uzilgan. Qayta urining.',
+        'Server disconnected. Try again.',
+        'Сервер отключен. Повторите попытку.',
       );
   String unannouncedSuppliersFailed(Object error) => _t(
-        'Ta\'minotchilar yuklanmadi: $error',
-        'Suppliers failed to load: $error',
-        'Не удалось загрузить поставщиков: $error',
+        'Server uzilgan. Qayta urining.',
+        'Server disconnected. Try again.',
+        'Сервер отключен. Повторите попытку.',
       );
   String customersLoadFailed(Object error) => _t(
-        'Haridorlar yuklanmadi: $error',
-        'Customers failed to load: $error',
-        'Не удалось загрузить покупателей: $error',
+        'Server uzilgan. Qayta urining.',
+        'Server disconnected. Try again.',
+        'Сервер отключен. Повторите попытку.',
       );
 
   String get werkaRoleName => _t('Omborchi', 'Werka', 'Кладовщик');

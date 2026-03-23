@@ -4,6 +4,7 @@ import '../../../app/app_router.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/widgets/app_shell.dart';
+import '../../../core/widgets/app_retry_state.dart';
 import '../../shared/models/app_models.dart';
 import '../state/werka_store.dart';
 import 'werka_customer_issue_customer_screen.dart';
@@ -186,9 +187,6 @@ class _WerkaRecentScreenState extends State<WerkaRecentScreen>
         padding: const EdgeInsets.only(bottom: 110),
         children: [
           _RecentMessageCard(
-            title: context.l10n.recentLoadFailed,
-            body: context.l10n.recentLoadFailedWith(store.historyError!),
-            actionLabel: context.l10n.retry,
             onPressed: _reload,
           ),
         ],
@@ -262,40 +260,16 @@ class _WerkaRecentScreenState extends State<WerkaRecentScreen>
 
 class _RecentMessageCard extends StatelessWidget {
   const _RecentMessageCard({
-    required this.title,
-    required this.body,
-    required this.actionLabel,
     required this.onPressed,
   });
 
-  final String title;
-  final String body;
-  final String actionLabel;
-  final VoidCallback onPressed;
+  final Future<void> Function() onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    return Card.filled(
-      margin: EdgeInsets.zero,
-      color: scheme.surfaceContainerLow,
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: theme.textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Text(body),
-            const SizedBox(height: 14),
-            FilledButton(
-              onPressed: onPressed,
-              child: Text(actionLabel),
-            ),
-          ],
-        ),
-      ),
+    return AppRetryState(
+      onRetry: onPressed,
+      padding: const EdgeInsets.fromLTRB(20, 120, 20, 24),
     );
   }
 }

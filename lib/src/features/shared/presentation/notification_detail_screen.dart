@@ -3,6 +3,7 @@ import '../../../core/api/mobile_api.dart';
 import '../../../core/notifications/notification_unread_store.dart';
 import '../../../core/session/app_session.dart';
 import '../../../core/widgets/app_shell.dart';
+import '../../../core/widgets/app_retry_state.dart';
 import '../../supplier/presentation/widgets/supplier_dock.dart';
 import '../../supplier/state/supplier_store.dart';
 import '../../werka/presentation/widgets/werka_dock.dart';
@@ -363,24 +364,9 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(
-              child: Card.filled(
-                margin: EdgeInsets.zero,
-                child: Padding(
-                  padding: const EdgeInsets.all(18),
-                  child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('Detail yuklanmadi: ${snapshot.error}'),
-                    const SizedBox(height: 12),
-                    OutlinedButton(
-                      onPressed: _reload,
-                      child: const Text('Qayta urinish'),
-                    ),
-                  ],
-                ),
-                ),
-              ),
+            return AppRetryState(
+              onRetry: () async => _reload(),
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
             );
           }
 

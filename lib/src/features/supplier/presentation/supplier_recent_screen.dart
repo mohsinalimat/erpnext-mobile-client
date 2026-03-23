@@ -4,6 +4,7 @@ import '../../../app/app_router.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/widgets/app_shell.dart';
+import '../../../core/widgets/app_retry_state.dart';
 import '../../shared/models/app_models.dart';
 import '../state/supplier_store.dart';
 import 'supplier_qty_screen.dart';
@@ -109,36 +110,7 @@ class _SupplierRecentScreenState extends State<SupplierRecentScreen>
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: EdgeInsets.zero,
                 children: [
-                  const SizedBox(height: 120),
-                  Card.filled(
-                    margin: EdgeInsets.zero,
-                    color: Theme.of(context).colorScheme.surfaceContainerLow,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          context.l10n.recentLoadFailed,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '${store.historyError}',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        const SizedBox(height: 14),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton(
-                            onPressed: _reload,
-                            child: Text(context.l10n.retry),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  AppRetryState(onRetry: _reload),
                 ],
               ),
             );

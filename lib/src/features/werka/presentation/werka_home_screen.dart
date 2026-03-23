@@ -4,6 +4,7 @@ import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/notifications/notification_unread_store.dart';
 import '../../../core/session/app_session.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_retry_state.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/top_refresh_scroll_physics.dart';
@@ -114,43 +115,13 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
                   return const Center(child: CircularProgressIndicator());
                 }
                 if (store.homeError != null && !store.loadedHome) {
-                  final l10n = context.l10n;
                   return AppRefreshIndicator(
                     onRefresh: _reload,
                     allowRefreshOnShortContent: true,
                     child: ListView(
                       physics: const TopRefreshScrollPhysics(),
                       children: [
-                        const SizedBox(height: 120),
-                        Card.filled(
-                          margin: EdgeInsets.zero,
-                          child: Padding(
-                            padding: const EdgeInsets.all(18),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  l10n.recordsLoadFailed,
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  '${store.homeError}',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                                const SizedBox(height: 14),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: OutlinedButton(
-                                    onPressed: _reload,
-                                    child: Text(l10n.retry),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                        AppRetryState(onRetry: _reload),
                       ],
                     ),
                   );

@@ -4,6 +4,7 @@ import '../../../core/notifications/notification_unread_store.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/session/app_session.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_retry_state.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../../core/widgets/top_refresh_scroll_physics.dart';
@@ -112,7 +113,6 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
             return const Center(child: CircularProgressIndicator());
           }
           if (store.historyError != null && !store.loadedHistory) {
-            final scheme = Theme.of(context).colorScheme;
             return AppRefreshIndicator(
               onRefresh: _reload,
               allowRefreshOnShortContent: true,
@@ -120,37 +120,7 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
                 physics: const TopRefreshScrollPhysics(),
                 padding: EdgeInsets.zero,
                 children: [
-                  const SizedBox(height: 120),
-                  Card.filled(
-                    margin: EdgeInsets.zero,
-                    color: scheme.surfaceContainerLow,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(18),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(context.l10n.supplierHomeLoadFailed,
-                              style: Theme.of(context).textTheme.titleMedium),
-                          const SizedBox(height: 8),
-                          Text(
-                            '${store.historyError}',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          const SizedBox(height: 14),
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton(
-                              onPressed: _reload,
-                              child: Text(context.l10n.retry),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  AppRetryState(onRetry: _reload),
                 ],
               ),
             );

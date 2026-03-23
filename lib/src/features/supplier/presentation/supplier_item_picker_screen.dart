@@ -4,7 +4,7 @@ import '../../../core/theme/app_motion.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/search/search_normalizer.dart';
 import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/common_widgets.dart';
+import '../../../core/widgets/app_retry_state.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/supplier_dock.dart';
@@ -110,31 +110,7 @@ class _SupplierItemPickerScreenState extends State<SupplierItemPickerScreen>
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       children: [
-                        const SizedBox(height: 120),
-                        SoftCard(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Mahsulotlar yuklanmadi',
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '${snapshot.error}',
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                              const SizedBox(height: 14),
-                              SizedBox(
-                                width: double.infinity,
-                                child: OutlinedButton(
-                                  onPressed: _reload,
-                                  child: const Text('Qayta urinish'),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        AppRetryState(onRetry: _reload),
                       ],
                     ),
                   );

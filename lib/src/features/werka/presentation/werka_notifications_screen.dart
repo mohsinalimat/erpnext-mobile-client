@@ -8,6 +8,7 @@ import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/notifications/notification_unread_store.dart';
 import '../../../core/session/app_session.dart';
 import '../../../core/widgets/app_shell.dart';
+import '../../../core/widgets/app_retry_state.dart';
 import '../../../core/widgets/m3_confirm_dialog.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../../core/widgets/top_refresh_scroll_physics.dart';
@@ -255,36 +256,7 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
                 physics: const TopRefreshScrollPhysics(),
                 padding: EdgeInsets.fromLTRB(0, 0, 0, bottomPadding),
                 children: [
-                  const SizedBox(height: 120),
-                  Card.filled(
-                    margin: EdgeInsets.zero,
-                    child: Padding(
-                      padding: const EdgeInsets.all(18),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            context.l10n.notificationsLoadFailed,
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            context.l10n
-                                .notificationsLoadFailedWith(store.historyError!),
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          const SizedBox(height: 14),
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton(
-                              onPressed: _reload,
-                              child: Text(context.l10n.retry),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  AppRetryState(onRetry: _reload),
                 ],
               ),
             );
