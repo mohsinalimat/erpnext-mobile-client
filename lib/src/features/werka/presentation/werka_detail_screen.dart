@@ -166,7 +166,7 @@ class _WerkaDetailScreenState extends State<WerkaDetailScreen> {
       (label: 'Supplier', value: widget.record.supplierName),
       (
         label: 'Mahsulot',
-        value: '${widget.record.itemCode} • ${widget.record.itemName}',
+        value: widget.record.itemName,
       ),
       (
         label: 'Jo‘natilgan',
@@ -221,13 +221,6 @@ class _WerkaDetailScreenState extends State<WerkaDetailScreen> {
                           Text(
                             widget.record.itemName,
                             style: textTheme.headlineSmall,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            widget.record.itemCode,
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                            ),
                           ),
                           const SizedBox(height: 18),
                           Card.filled(
