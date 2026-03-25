@@ -29,6 +29,7 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    SupplierStore.instance.bootstrapSummary();
     SupplierStore.instance.bootstrapHistory();
     RefreshHub.instance.addListener(_handlePushRefresh);
   }
@@ -59,7 +60,7 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
   }
 
   Future<void> _reload() async {
-    await SupplierStore.instance.refreshHistory();
+    await SupplierStore.instance.refreshAll();
   }
 
   @override

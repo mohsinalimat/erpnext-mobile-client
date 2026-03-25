@@ -39,6 +39,9 @@ class SupplierStore extends ChangeNotifier {
   Object? get historyError => _historyError;
 
   SupplierHomeSummary get summary {
+    if (_loadedSummary) {
+      return SupplierRuntimeStore.instance.applySummary(_summary);
+    }
     if (loadedHistory) {
       var pending = 0;
       var submitted = 0;
