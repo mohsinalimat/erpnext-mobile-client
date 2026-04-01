@@ -438,19 +438,23 @@ extension MobileApiWerka on MobileApi {
     CustomerDirectoryEntry customer,
     String normalizedQuery,
   ) {
-    return customer.name.toLowerCase().contains(normalizedQuery) ||
-        customer.phone.toLowerCase().contains(normalizedQuery) ||
-        customer.ref.toLowerCase().contains(normalizedQuery);
+    return searchMatches(normalizedQuery, [
+      customer.name,
+      customer.phone,
+      customer.ref,
+    ]);
   }
 
   bool _matchesCustomerItemOption(
     CustomerItemOption option,
     String normalizedQuery,
   ) {
-    return option.itemName.toLowerCase().contains(normalizedQuery) ||
-        option.itemCode.toLowerCase().contains(normalizedQuery) ||
-        option.customerName.toLowerCase().contains(normalizedQuery) ||
-        option.customerPhone.toLowerCase().contains(normalizedQuery) ||
-        option.customerRef.toLowerCase().contains(normalizedQuery);
+    return searchMatches(normalizedQuery, [
+      option.itemName,
+      option.itemCode,
+      option.customerName,
+      option.customerPhone,
+      option.customerRef,
+    ]);
   }
 }

@@ -12,6 +12,7 @@ String normalizeForSearch(String input) {
   return buffer
       .toString()
       .replaceAll(RegExp(r"['`ʻʼ’]"), '')
+      .replaceAll('x', 'h')
       .replaceAll('ғ', 'g')
       .replaceAll('қ', 'q')
       .replaceAll('ҳ', 'h')
