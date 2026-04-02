@@ -51,6 +51,25 @@ class NativeBackButtonBridge extends NavigatorObserver {
   }
 
   @override
+  void didStartUserGesture(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didStartUserGesture(route, previousRoute);
+    if (!_initialized) {
+      return;
+    }
+    unawaited(_setGestureActive(true));
+  }
+
+  @override
+  void didStopUserGesture() {
+    super.didStopUserGesture();
+    if (!_initialized) {
+      return;
+    }
+    unawaited(_setGestureActive(false));
+    _scheduleSync();
+  }
+
+  @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPop(route, previousRoute);
     _scheduleSync();
@@ -124,6 +143,12 @@ class NativeBackButtonBridge extends NavigatorObserver {
   Future<void> _setTheme(bool isDark) async {
     try {
       await _channel.invokeMethod('setBackButtonIsDark', isDark);
+    } catch (_) {}
+  }
+
+  Future<void> _setGestureActive(bool active) async {
+    try {
+      await _channel.invokeMethod('setBackButtonGestureActive', active);
     } catch (_) {}
   }
 
