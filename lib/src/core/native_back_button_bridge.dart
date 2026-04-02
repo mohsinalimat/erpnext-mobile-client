@@ -15,7 +15,6 @@ class NativeBackButtonBridge extends NavigatorObserver {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   bool _initialized = false;
-
   Future<void> initialize() async {
     if (_initialized || !_isSupportedPlatform) {
       return;
@@ -33,7 +32,9 @@ class NativeBackButtonBridge extends NavigatorObserver {
       return false;
     }
     final navigator = Navigator.maybeOf(context);
-    return navigator?.canPop() ?? false;
+    final visible = navigator?.canPop() ?? false;
+    instance._syncVisibleFromBuild(visible);
+    return visible;
   }
 
   @override
@@ -74,6 +75,21 @@ class NativeBackButtonBridge extends NavigatorObserver {
     } catch (_) {}
   }
 
+  void _syncVisibleFromBuild(bool visible) {
+    if (!_initialized) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_setVisible(visible));
+    });
+  }
+
+  Future<void> _setVisible(bool visible) async {
+    try {
+      await _channel.invokeMethod('setBackButtonVisible', visible);
+    } catch (_) {}
+  }
+
   void _scheduleSync() {
     if (!_initialized) {
       return;
@@ -85,6 +101,9 @@ class NativeBackButtonBridge extends NavigatorObserver {
 
   Future<dynamic> _handleMethodCall(MethodCall call) async {
     switch (call.method) {
+      case 'nativeBackButtonReady':
+        _scheduleSync();
+        return null;
       case 'nativeBackPressed':
         navigatorKey.currentState?.maybePop();
         return null;

@@ -12,159 +12,75 @@ class SceneDelegate: FlutterSceneDelegate {
     guard
       let window,
       let flutterViewController = window.rootViewController as? FlutterViewController,
-      !(window.rootViewController is NativeBackButtonContainerViewController)
+      !(window.rootViewController is NativeBackNavigationController)
     else {
       return
     }
 
-    let container = NativeBackButtonContainerViewController(
+    let navigationController = NativeBackNavigationController(
       flutterViewController: flutterViewController
     )
-    window.rootViewController = container
+    window.rootViewController = navigationController
     window.makeKeyAndVisible()
   }
 }
 
-final class NativeBackButtonContainerViewController: UIViewController {
-  private let flutterViewController: FlutterViewController
+final class NativeBackNavigationController: UINavigationController {
+  private let rootFlutterViewController: FlutterViewController
   private lazy var bridge = NativeBackButtonChannelBridge(
-    messenger: flutterViewController.binaryMessenger,
+    messenger: flutterBinaryMessenger,
     onVisibilityChanged: { [weak self] visible in
-      self?.setBackButtonVisible(visible, animated: true)
+      self?.setBackButtonVisible(visible)
     }
   )
 
-  private lazy var backButtonEffectView: UIVisualEffectView = {
-    let view = UIVisualEffectView(effect: Self.makeBackButtonEffect())
-    view.translatesAutoresizingMaskIntoConstraints = false
-    view.clipsToBounds = true
-    view.layer.cornerRadius = 26
-    view.layer.cornerCurve = .continuous
-    view.isHidden = true
-    view.alpha = 0
-    if #available(iOS 26.0, *) {
-      view.effect = Self.makeBackButtonEffect()
-    } else {
-      view.layer.borderWidth = 0.5
-      view.layer.borderColor = UIColor.white.withAlphaComponent(0.18).cgColor
-    }
-    return view
-  }()
-
-  private lazy var backButton: UIButton = {
-    let button = UIButton(type: .system)
-    button.translatesAutoresizingMaskIntoConstraints = false
-    button.tintColor = .label
-    button.addTarget(self, action: #selector(handleBackButtonTap), for: .touchUpInside)
-    let configuration = UIImage.SymbolConfiguration(pointSize: 19, weight: .semibold)
-    button.setImage(UIImage(systemName: "chevron.backward", withConfiguration: configuration), for: .normal)
-    button.accessibilityLabel = "Back"
-    return button
-  }()
+  private var flutterBinaryMessenger: FlutterBinaryMessenger {
+    rootFlutterViewController.binaryMessenger
+  }
 
   init(flutterViewController: FlutterViewController) {
-    self.flutterViewController = flutterViewController
-    super.init(nibName: nil, bundle: nil)
+    self.rootFlutterViewController = flutterViewController
+    super.init(rootViewController: flutterViewController)
   }
 
   @available(*, unavailable)
-  required init?(coder: NSCoder) {
+  required init?(coder aDecoder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
   }
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    view.backgroundColor = .systemBackground
-    embedFlutterViewController()
-    configureBackButton()
+    _ = bridge
+    navigationBar.prefersLargeTitles = false
+    navigationBar.tintColor = .label
+    topViewController?.navigationItem.leftBarButtonItem = makeBackBarButtonItem()
+    setNavigationBarHidden(true, animated: false)
   }
 
-  override var childForStatusBarStyle: UIViewController? {
-    flutterViewController
+  private func setBackButtonVisible(_ visible: Bool) {
+    UIView.performWithoutAnimation {
+      topViewController?.navigationItem.leftBarButtonItem = visible
+        ? makeBackBarButtonItem()
+        : nil
+      setNavigationBarHidden(!visible, animated: false)
+      navigationBar.layoutIfNeeded()
+    }
   }
 
-  override var childForStatusBarHidden: UIViewController? {
-    flutterViewController
-  }
-
-  override var childForHomeIndicatorAutoHidden: UIViewController? {
-    flutterViewController
-  }
-
-  override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-    flutterViewController.supportedInterfaceOrientations
-  }
-
-  private func embedFlutterViewController() {
-    addChild(flutterViewController)
-    flutterViewController.view.translatesAutoresizingMaskIntoConstraints = false
-    view.addSubview(flutterViewController.view)
-    NSLayoutConstraint.activate([
-      flutterViewController.view.topAnchor.constraint(equalTo: view.topAnchor),
-      flutterViewController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-      flutterViewController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-      flutterViewController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-    ])
-    flutterViewController.didMove(toParent: self)
-  }
-
-  private func configureBackButton() {
-    view.addSubview(backButtonEffectView)
-    backButtonEffectView.contentView.addSubview(backButton)
-
-    NSLayoutConstraint.activate([
-      backButtonEffectView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 12),
-      backButtonEffectView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-      backButtonEffectView.widthAnchor.constraint(equalToConstant: 52),
-      backButtonEffectView.heightAnchor.constraint(equalToConstant: 52),
-
-      backButton.centerXAnchor.constraint(equalTo: backButtonEffectView.contentView.centerXAnchor),
-      backButton.centerYAnchor.constraint(equalTo: backButtonEffectView.contentView.centerYAnchor),
-      backButton.widthAnchor.constraint(equalToConstant: 44),
-      backButton.heightAnchor.constraint(equalToConstant: 44),
-    ])
+  private func makeBackBarButtonItem() -> UIBarButtonItem {
+    let configuration = UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold)
+    let image = UIImage(systemName: "chevron.backward", withConfiguration: configuration)
+    return UIBarButtonItem(
+      image: image,
+      style: .plain,
+      target: self,
+      action: #selector(handleBackButtonTap)
+    )
   }
 
   @objc
   private func handleBackButtonTap() {
     bridge.sendBackPressed()
-  }
-
-  private func setBackButtonVisible(_ visible: Bool, animated: Bool) {
-    let changes = {
-      self.backButtonEffectView.isHidden = false
-      self.backButtonEffectView.alpha = visible ? 1 : 0
-      self.backButtonEffectView.transform = visible
-        ? .identity
-        : CGAffineTransform(scaleX: 0.92, y: 0.92)
-    }
-
-    let completion: (Bool) -> Void = { _ in
-      self.backButtonEffectView.isHidden = !visible
-    }
-
-    if animated {
-      UIView.animate(
-        withDuration: 0.22,
-        delay: 0,
-        options: [.curveEaseInOut, .beginFromCurrentState],
-        animations: changes,
-        completion: completion
-      )
-    } else {
-      changes()
-      completion(true)
-    }
-  }
-
-  private static func makeBackButtonEffect() -> UIVisualEffect {
-    if #available(iOS 26.0, *) {
-      let effect = UIGlassEffect(style: .regular)
-      effect.isInteractive = true
-      effect.tintColor = UIColor.white.withAlphaComponent(0.08)
-      return effect
-    }
-    return UIBlurEffect(style: .systemUltraThinMaterial)
   }
 }
 
@@ -183,6 +99,7 @@ private final class NativeBackButtonChannelBridge: NSObject {
     self.onVisibilityChanged = onVisibilityChanged
     super.init()
     channel.setMethodCallHandler(handleMethodCall)
+    channel.invokeMethod("nativeBackButtonReady", arguments: nil)
   }
 
   func sendBackPressed() {
