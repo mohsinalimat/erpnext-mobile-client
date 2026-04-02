@@ -34,7 +34,10 @@ class AppShell extends StatelessWidget {
     final theme = Theme.of(context);
     final shouldHideLeading =
         leading != null && NativeBackButtonBridge.shouldUseNativeBackButton(context);
-    if (bottom == null) {
+    final preserveNativeDock =
+        NativeDockBridge.isSupportedPlatform &&
+        NativeDockBridge.instance.supportsSystemDock;
+    if (bottom == null && !preserveNativeDock) {
       NativeDockBridge.instance.clearFromBuild();
     }
 

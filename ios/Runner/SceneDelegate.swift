@@ -230,9 +230,6 @@ final class NativeTabBarController: UITabBarController, UITabBarControllerDelega
   }
 
   private func applyDockState(_ state: NativeDockState) {
-    currentState = state
-    let tabItems = state.items
-
     isApplyingState = true
     defer { isApplyingState = false }
 
@@ -241,6 +238,13 @@ final class NativeTabBarController: UITabBarController, UITabBarControllerDelega
       setSystemTabBarHidden(true)
       return
     }
+
+    if currentState == state {
+      return
+    }
+
+    currentState = state
+    let tabItems = state.items
 
     guard state.visible, !tabItems.isEmpty else {
       view.isHidden = true
@@ -395,7 +399,7 @@ private final class NativeDockChannelBridge: NSObject {
   }
 }
 
-private struct NativeDockState {
+private struct NativeDockState: Equatable {
   let visible: Bool
   let compact: Bool
   let tightToEdges: Bool
@@ -410,7 +414,7 @@ private struct NativeDockState {
   }
 }
 
-private struct NativeDockItem {
+private struct NativeDockItem: Equatable {
   let id: String
   let symbol: String
   let selectedSymbol: String?

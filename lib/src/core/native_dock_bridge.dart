@@ -16,6 +16,7 @@ class NativeDockBridge extends NavigatorObserver with ChangeNotifier {
   bool _systemDockSupported = false;
   bool _supportCheckInFlight = false;
   NativeDockState? _pendingState;
+  NativeDockState? _lastSyncedState;
   NativeDockState? _lastVisibleState;
   final Map<String, VoidCallback> _tapHandlers = <String, VoidCallback>{};
   final Map<String, VoidCallback> _holdHandlers = <String, VoidCallback>{};
@@ -48,6 +49,9 @@ class NativeDockBridge extends NavigatorObserver with ChangeNotifier {
     }
     if (!_nativeReady && !_supportCheckInFlight) {
       _querySupport();
+    }
+    if (_pendingState == state && _lastSyncedState == state) {
+      return;
     }
     _pendingState = state;
     _tapHandlers
@@ -84,7 +88,11 @@ class NativeDockBridge extends NavigatorObserver with ChangeNotifier {
     if (!isSupportedPlatform) {
       return;
     }
-    _pendingState = const NativeDockState.hidden();
+    const hiddenState = NativeDockState.hidden();
+    if (_pendingState == hiddenState && _lastSyncedState == hiddenState) {
+      return;
+    }
+    _pendingState = hiddenState;
     _tapHandlers.clear();
     _holdHandlers.clear();
     _itemsById.clear();
@@ -131,11 +139,16 @@ class NativeDockBridge extends NavigatorObserver with ChangeNotifier {
     if (!_initialized) {
       return;
     }
+    final nextState = _pendingState ?? const NativeDockState.hidden();
+    if (_lastSyncedState == nextState) {
+      return;
+    }
     try {
       await _channel.invokeMethod(
         'setDockState',
-        (_pendingState ?? const NativeDockState.hidden()).toMap(),
+        nextState.toMap(),
       );
+      _lastSyncedState = nextState;
     } catch (_) {}
   }
 
@@ -227,6 +240,23 @@ class NativeDockState {
       'items': items.map((item) => item.toMap()).toList(),
     };
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is NativeDockState &&
+        other.visible == visible &&
+        other.compact == compact &&
+        other.tightToEdges == tightToEdges &&
+        listEquals(other.items, items);
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        visible,
+        compact,
+        tightToEdges,
+        Object.hashAll(items),
+      );
 }
 
 class NativeDockItem {
@@ -267,4 +297,31 @@ class NativeDockItem {
       'replaceStack': replaceStack,
     };
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is NativeDockItem &&
+        other.id == id &&
+        other.symbol == symbol &&
+        other.selectedSymbol == selectedSymbol &&
+        other.active == active &&
+        other.primary == primary &&
+        other.showBadge == showBadge &&
+        other.routeName == routeName &&
+        other.replaceStack == replaceStack &&
+        (other.onHoldComplete != null) == (onHoldComplete != null);
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        id,
+        symbol,
+        selectedSymbol,
+        active,
+        primary,
+        showBadge,
+        routeName,
+        replaceStack,
+        onHoldComplete != null,
+      );
 }
