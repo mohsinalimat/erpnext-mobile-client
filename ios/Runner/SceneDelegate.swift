@@ -259,7 +259,9 @@ final class NativeTabBarController: UITabBarController, UITabBarControllerDelega
     view.isHidden = false
 
     if let selectedIndex = tabItems.firstIndex(where: \.active) {
-      self.selectedIndex = selectedIndex
+      if self.selectedIndex != selectedIndex {
+        self.selectedIndex = selectedIndex
+      }
     } else if selectedIndex >= tabItems.count {
       self.selectedIndex = 0
     }

@@ -102,6 +102,9 @@ class NativeDockBridge extends NavigatorObserver with ChangeNotifier {
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPop(route, previousRoute);
+    if (supportsSystemDock) {
+      return;
+    }
     _restoreLastVisibleDock();
   }
 
