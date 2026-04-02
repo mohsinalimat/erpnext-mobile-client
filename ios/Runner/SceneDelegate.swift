@@ -197,6 +197,12 @@ final class NativeTabBarController: UITabBarController, UITabBarControllerDelega
   private var currentState = NativeDockState(arguments: [:])
   private var placeholderControllers: [NativeTabPlaceholderViewController] = []
   private var isApplyingState = false
+  private var supportsLiquidDock: Bool {
+    if #available(iOS 26.0, *) {
+      return true
+    }
+    return false
+  }
 
   init(messenger: FlutterBinaryMessenger) {
     self.messenger = messenger
@@ -212,6 +218,8 @@ final class NativeTabBarController: UITabBarController, UITabBarControllerDelega
     super.viewDidLoad()
     delegate = self
     view.backgroundColor = .clear
+    view.isHidden = true
+    setSystemTabBarHidden(true)
     _ = dockBridge
     if #available(iOS 18.0, *) {
       mode = .tabBar
@@ -227,6 +235,12 @@ final class NativeTabBarController: UITabBarController, UITabBarControllerDelega
 
     isApplyingState = true
     defer { isApplyingState = false }
+
+    guard supportsLiquidDock else {
+      view.isHidden = true
+      setSystemTabBarHidden(true)
+      return
+    }
 
     guard state.visible, !tabItems.isEmpty else {
       view.isHidden = true
@@ -344,7 +358,13 @@ private final class NativeDockChannelBridge: NSObject {
     self.onStateChanged = onStateChanged
     super.init()
     channel.setMethodCallHandler(handleMethodCall)
-    channel.invokeMethod("nativeDockReady", arguments: nil)
+    let isSupported: Bool
+    if #available(iOS 26.0, *) {
+      isSupported = true
+    } else {
+      isSupported = false
+    }
+    channel.invokeMethod("nativeDockReady", arguments: isSupported)
   }
 
   func sendTap(id: String) {

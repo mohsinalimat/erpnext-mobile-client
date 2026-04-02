@@ -203,13 +203,15 @@ class ActionDock extends StatelessWidget {
 
         final double hostHeight = _hostHeightForDevice(deviceClass);
         final nativeItems = _buildNativeItems(buttons);
-        final shouldUseNativeDock =
+        final bridge = NativeDockBridge.instance;
+        final supportsNativeDock =
             NativeDockBridge.isSupportedPlatform &&
             nativeItems != null &&
-            NativeDockBridge.instance.isReady;
+            bridge.supportsSystemDock;
+        final shouldUseNativeDock = supportsNativeDock && bridge.isReady;
 
-        if (NativeDockBridge.isSupportedPlatform && nativeItems != null) {
-          NativeDockBridge.instance.register(
+        if (supportsNativeDock) {
+          bridge.register(
             NativeDockState(
               visible: true,
               compact: compact,
@@ -217,6 +219,8 @@ class ActionDock extends StatelessWidget {
               items: nativeItems,
             ),
           );
+        } else if (NativeDockBridge.isSupportedPlatform) {
+          bridge.clearFromBuild();
         }
 
         if (shouldUseNativeDock) {

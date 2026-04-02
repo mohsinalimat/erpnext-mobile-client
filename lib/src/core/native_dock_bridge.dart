@@ -13,6 +13,7 @@ class NativeDockBridge extends NavigatorObserver with ChangeNotifier {
 
   bool _initialized = false;
   bool _nativeReady = false;
+  bool _systemDockSupported = false;
   NativeDockState? _pendingState;
   NativeDockState? _lastVisibleState;
   final Map<String, VoidCallback> _tapHandlers = <String, VoidCallback>{};
@@ -29,6 +30,7 @@ class NativeDockBridge extends NavigatorObserver with ChangeNotifier {
       !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
 
   bool get isReady => _nativeReady;
+  bool get supportsSystemDock => _systemDockSupported;
 
   Future<void> initialize() async {
     if (_initialized || !isSupportedPlatform) {
@@ -136,6 +138,7 @@ class NativeDockBridge extends NavigatorObserver with ChangeNotifier {
     switch (call.method) {
       case 'nativeDockReady':
         _nativeReady = true;
+        _systemDockSupported = (call.arguments as bool?) ?? false;
         notifyListeners();
         _scheduleSync();
         return null;
