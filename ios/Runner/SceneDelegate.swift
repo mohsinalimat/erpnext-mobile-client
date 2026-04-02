@@ -37,6 +37,9 @@ final class NativeBackNavigationController: UINavigationController {
     },
     onTitleChanged: { [weak self] title in
       self?.setNavigationTitle(title)
+    },
+    onThemeChanged: { [weak self] isDark in
+      self?.applyNavigationAppearance(isDark: isDark)
     }
   )
 
@@ -58,23 +61,29 @@ final class NativeBackNavigationController: UINavigationController {
     super.viewDidLoad()
     _ = backBridge
     navigationBar.prefersLargeTitles = false
-    navigationBar.tintColor = .label
+    applyNavigationAppearance(isDark: true)
+    topViewController?.navigationItem.leftBarButtonItem = makeBackBarButtonItem()
+    setNavigationBarHidden(true, animated: false)
+    configureDockController()
+  }
+
+  private func applyNavigationAppearance(isDark: Bool) {
+    let titleColor: UIColor = isDark ? .white : .black
     let appearance = UINavigationBarAppearance()
     appearance.configureWithTransparentBackground()
     appearance.backgroundColor = .clear
     appearance.shadowColor = .clear
     appearance.titleTextAttributes = [
-      .foregroundColor: UIColor.label,
+      .foregroundColor: titleColor,
     ]
     appearance.largeTitleTextAttributes = [
-      .foregroundColor: UIColor.label,
+      .foregroundColor: titleColor,
     ]
     navigationBar.standardAppearance = appearance
     navigationBar.scrollEdgeAppearance = appearance
     navigationBar.compactAppearance = appearance
-    topViewController?.navigationItem.leftBarButtonItem = makeBackBarButtonItem()
-    setNavigationBarHidden(true, animated: false)
-    configureDockController()
+    navigationBar.tintColor = titleColor
+    overrideUserInterfaceStyle = isDark ? .dark : .light
   }
 
   private func setBackButtonVisible(_ visible: Bool) {
@@ -127,11 +136,13 @@ private final class NativeBackButtonChannelBridge: NSObject {
   private let channel: FlutterMethodChannel
   private let onVisibilityChanged: (Bool) -> Void
   private let onTitleChanged: (String?) -> Void
+  private let onThemeChanged: (Bool) -> Void
 
   init(
     messenger: FlutterBinaryMessenger,
     onVisibilityChanged: @escaping (Bool) -> Void,
-    onTitleChanged: @escaping (String?) -> Void
+    onTitleChanged: @escaping (String?) -> Void,
+    onThemeChanged: @escaping (Bool) -> Void
   ) {
     self.channel = FlutterMethodChannel(
       name: "accord/native_back_button",
@@ -139,6 +150,7 @@ private final class NativeBackButtonChannelBridge: NSObject {
     )
     self.onVisibilityChanged = onVisibilityChanged
     self.onTitleChanged = onTitleChanged
+    self.onThemeChanged = onThemeChanged
     super.init()
     channel.setMethodCallHandler(handleMethodCall)
     channel.invokeMethod("nativeBackButtonReady", arguments: nil)
@@ -160,6 +172,12 @@ private final class NativeBackButtonChannelBridge: NSObject {
       let title = call.arguments as? String
       DispatchQueue.main.async {
         self.onTitleChanged(title)
+      }
+      result(nil)
+    case "setBackButtonIsDark":
+      let isDark = (call.arguments as? Bool) ?? true
+      DispatchQueue.main.async {
+        self.onThemeChanged(isDark)
       }
       result(nil)
     default:

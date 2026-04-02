@@ -39,6 +39,7 @@ class NativeBackButtonBridge extends NavigatorObserver {
 
   static bool useNativeNavigationTitle(BuildContext context, String title) {
     final useNative = shouldUseNativeBackButton(context);
+    instance._syncThemeFromBuild(Theme.of(context).brightness == Brightness.dark);
     instance._syncTitleFromBuild(useNative ? title : null);
     return useNative;
   }
@@ -108,6 +109,21 @@ class NativeBackButtonBridge extends NavigatorObserver {
   Future<void> _setTitle(String? title) async {
     try {
       await _channel.invokeMethod('setBackButtonTitle', title);
+    } catch (_) {}
+  }
+
+  void _syncThemeFromBuild(bool isDark) {
+    if (!_initialized) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_setTheme(isDark));
+    });
+  }
+
+  Future<void> _setTheme(bool isDark) async {
+    try {
+      await _channel.invokeMethod('setBackButtonIsDark', isDark);
     } catch (_) {}
   }
 
