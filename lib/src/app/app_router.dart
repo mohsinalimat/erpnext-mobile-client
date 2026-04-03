@@ -34,6 +34,7 @@ import '../features/supplier/presentation/supplier_qty_screen.dart';
 import '../features/supplier/presentation/supplier_recent_screen.dart';
 import '../features/supplier/presentation/supplier_success_screen.dart';
 import '../features/werka/presentation/werka_detail_screen.dart';
+import '../features/werka/presentation/werka_archive_screen.dart';
 import '../features/werka/presentation/werka_home_screen.dart';
 import '../features/werka/presentation/werka_batch_dispatch_screen.dart';
 import '../features/werka/presentation/werka_create_hub_screen.dart';
@@ -70,6 +71,7 @@ class AppRoutes {
       '/werka-customer-issue-customer';
   static const String werkaUnannouncedSupplier = '/werka-unannounced-supplier';
   static const String werkaNotifications = '/werka-notifications';
+  static const String werkaArchive = '/werka-archive';
   static const String werkaStatusBreakdown = '/werka-status-breakdown';
   static const String werkaStatusDetail = '/werka-status-detail';
   static const String werkaDetail = '/werka-detail';
@@ -106,6 +108,7 @@ class AppRouter {
     AppRoutes.supplierRecent,
     AppRoutes.werkaHome,
     AppRoutes.werkaNotifications,
+    AppRoutes.werkaArchive,
     AppRoutes.adminHome,
     AppRoutes.adminActivity,
     AppRoutes.adminCreateHub,
@@ -231,6 +234,8 @@ class AppRouter {
         );
       case AppRoutes.werkaNotifications:
         return _buildRoute(settings, const WerkaNotificationsScreen());
+      case AppRoutes.werkaArchive:
+        return _buildRoute(settings, const WerkaArchiveScreen());
       case AppRoutes.werkaStatusBreakdown:
         final WerkaStatusKind kind = settings.arguments as WerkaStatusKind;
         return _buildRoute(
