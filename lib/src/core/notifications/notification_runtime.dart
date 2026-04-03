@@ -3,7 +3,7 @@ import '../session/app_session.dart';
 import '../../features/customer/state/customer_store.dart';
 import '../../features/shared/models/app_models.dart';
 import '../../features/supplier/state/supplier_store.dart';
-import '../../features/werka/state/werka_store.dart';
+import '../../features/werka/state/werka_notification_store.dart';
 import 'local_notification_service.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -147,8 +147,8 @@ class _NotificationRuntimeState extends State<NotificationRuntime>
         await SupplierStore.instance.refreshHistory();
         return SupplierStore.instance.historyItems;
       case UserRole.werka:
-        await WerkaStore.instance.refreshHome();
-        return WerkaStore.instance.historyItems;
+        await WerkaNotificationStore.instance.refresh();
+        return WerkaNotificationStore.instance.items;
       case UserRole.customer:
         await CustomerStore.instance.refresh();
         return CustomerStore.instance.historyItems;
@@ -177,6 +177,11 @@ class _NotificationRuntimeState extends State<NotificationRuntime>
     if (profile.role == UserRole.werka) {
       if (record.eventType == 'supplier_ack') {
         return true;
+      }
+      if (!hadPrevious &&
+          record.recordType == 'delivery_note' &&
+          record.status == DispatchStatus.pending) {
+        return false;
       }
       if (!hadPrevious && record.eventType == 'werka_unannounced_pending') {
         return false;

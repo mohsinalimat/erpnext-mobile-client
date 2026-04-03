@@ -3,6 +3,7 @@ import '../../features/customer/state/customer_store.dart';
 import '../../features/shared/data/profile_avatar_cache.dart';
 import '../../features/shared/models/app_models.dart';
 import '../../features/supplier/state/supplier_store.dart';
+import '../../features/werka/state/werka_notification_store.dart';
 import '../../features/werka/state/werka_store.dart';
 import '../notifications/customer_delivery_runtime_store.dart';
 import '../notifications/notification_hidden_store.dart';
@@ -22,6 +23,7 @@ class AppRuntimeReset {
     CustomerStore.instance.clear();
     SupplierStore.instance.clear();
     WerkaStore.instance.clear();
+    WerkaNotificationStore.instance.clear();
     AdminStore.instance.clear();
     CustomerDeliveryRuntimeStore.instance.clear();
     SupplierRuntimeStore.instance.clear();

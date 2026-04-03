@@ -14,7 +14,7 @@ import '../../../core/widgets/m3_confirm_dialog.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../../core/widgets/top_refresh_scroll_physics.dart';
 import '../../shared/models/app_models.dart';
-import '../state/werka_store.dart';
+import '../state/werka_notification_store.dart';
 import 'widgets/werka_dock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -40,7 +40,7 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    WerkaStore.instance.bootstrapHistory();
+    WerkaNotificationStore.instance.bootstrap();
     NotificationHiddenStore.instance.load().then((_) {
       if (mounted) setState(() {});
     });
@@ -51,7 +51,7 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
       _syncHighlightedUnreadIds();
     });
     _loadCache();
-    WerkaStore.instance.addListener(_handleStoreChanged);
+    WerkaNotificationStore.instance.addListener(_handleStoreChanged);
     RefreshHub.instance.addListener(_handlePushRefresh);
   }
 
@@ -67,7 +67,7 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
   }
 
   Future<void> _clearAll() async {
-    final current = WerkaStore.instance.historyItems;
+    final current = WerkaNotificationStore.instance.items;
     if (!mounted) {
       return;
     }
@@ -113,7 +113,7 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    WerkaStore.instance.removeListener(_handleStoreChanged);
+    WerkaNotificationStore.instance.removeListener(_handleStoreChanged);
     RefreshHub.instance.removeListener(_handlePushRefresh);
     super.dispose();
   }
@@ -129,20 +129,28 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
     _reload();
   }
 
-  Future<void> _openDetail(String receiptId) async {
+  Future<void> _openDetail(DispatchRecord record) async {
     await NotificationUnreadStore.instance.markSeen(
       profile: AppSession.instance.profile,
-      ids: [receiptId],
+      ids: [record.id],
     );
     if (!mounted) {
       return;
     }
     setState(() {
-      _highlightedUnreadIds.remove(receiptId);
+      _highlightedUnreadIds.remove(record.id);
     });
+    if (record.recordType == 'delivery_note' ||
+        record.eventType.startsWith('customer_delivery_')) {
+      await Navigator.of(context).pushNamed(
+        AppRoutes.werkaCustomerDeliveryDetail,
+        arguments: record,
+      );
+      return;
+    }
     await Navigator.of(context).pushNamed(
       AppRoutes.notificationDetail,
-      arguments: receiptId,
+      arguments: record.id,
     );
   }
 
@@ -154,7 +162,7 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
   }
 
   Future<void> _syncFromStore() async {
-    final items = WerkaStore.instance.historyItems;
+    final items = WerkaNotificationStore.instance.items;
     final hidden = NotificationHiddenStore.instance.hiddenIdsForProfile(
       AppSession.instance.profile,
     );
@@ -189,8 +197,8 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
   }
 
   void _syncHighlightedUnreadIds() {
-    final items = WerkaStore.instance.loadedHistory
-        ? WerkaStore.instance.historyItems
+    final items = WerkaNotificationStore.instance.loaded
+        ? WerkaNotificationStore.instance.items
         : (_cachedItems ?? const <DispatchRecord>[]);
     final unread = NotificationUnreadStore.instance.unreadIdsForProfile(
       AppSession.instance.profile,
@@ -210,7 +218,7 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
   }
 
   Future<void> _reload() async {
-    await WerkaStore.instance.refreshHistory();
+    await WerkaNotificationStore.instance.refresh();
     await _syncFromStore();
   }
 
@@ -257,14 +265,14 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
       ],
       bottom: const WerkaDock(activeTab: WerkaDockTab.notifications),
       child: AnimatedBuilder(
-        animation: WerkaStore.instance,
+        animation: WerkaNotificationStore.instance,
         builder: (context, _) {
-          final store = WerkaStore.instance;
+          final store = WerkaNotificationStore.instance;
           final hidden = NotificationHiddenStore.instance.hiddenIdsForProfile(
             AppSession.instance.profile,
           );
-          final items = ((store.loadedHistory
-                  ? store.historyItems
+          final items = ((store.loaded
+                  ? store.items
                   : (_cachedItems ?? <DispatchRecord>[])))
               .where((item) => !hidden.contains(item.id))
               .toList();
@@ -272,12 +280,10 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
             ...items.where((item) => _highlightedUnreadIds.contains(item.id)),
             ...items.where((item) => !_highlightedUnreadIds.contains(item.id)),
           ];
-          if (store.loadingHistory && !store.loadedHistory && items.isEmpty) {
+          if (store.loading && !store.loaded && items.isEmpty) {
             return const Center(child: AppLoadingIndicator());
           }
-          if (store.historyError != null &&
-              !store.loadedHistory &&
-              items.isEmpty) {
+          if (store.error != null && !store.loaded && items.isEmpty) {
             return AppRefreshIndicator(
               onRefresh: _reload,
               allowRefreshOnShortContent: true,
@@ -343,7 +349,12 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
                       child: _WerkaNotificationsSection(
                         items: orderedItems,
                         highlightedUnreadIds: _highlightedUnreadIds,
-                        onTapRecord: _openDetail,
+                        onTapRecord: (id) {
+                          final record = orderedItems.firstWhere(
+                            (item) => item.id == id,
+                          );
+                          _openDetail(record);
+                        },
                       ),
                     ),
                   ),
@@ -419,7 +430,7 @@ class _WerkaNotificationRow extends StatelessWidget {
   final VoidCallback onTap;
 
   String _secondary(DispatchRecord record) {
-    if (record.eventType == 'supplier_ack') {
+    if (record.highlight.trim().isNotEmpty) {
       return record.highlight;
     }
     return record.itemName;

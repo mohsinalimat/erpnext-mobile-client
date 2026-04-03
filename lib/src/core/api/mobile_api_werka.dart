@@ -443,6 +443,22 @@ extension MobileApiWerka on MobileApi {
         .toList();
   }
 
+  Future<List<DispatchRecord>> werkaNotifications() async {
+    final http.Response response = await _sendAuthorized(
+      () => http.get(
+        Uri.parse('$baseUrl/v1/mobile/werka/notifications'),
+        headers: _headers(requireToken()),
+      ),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Werka notifications failed');
+    }
+    final List<dynamic> json = jsonDecode(response.body) as List<dynamic>;
+    return json
+        .map((item) => DispatchRecord.fromJson(item as Map<String, dynamic>))
+        .toList();
+  }
+
   Future<DispatchRecord> confirmReceipt({
     required String receiptID,
     required double acceptedQty,
