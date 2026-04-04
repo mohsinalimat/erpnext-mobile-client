@@ -1,0 +1,83 @@
+import 'package:erpnext_stock_mobile/src/app/app_router.dart';
+import 'package:erpnext_stock_mobile/src/core/localization/app_localizations.dart';
+import 'package:erpnext_stock_mobile/src/features/shared/models/app_models.dart';
+import 'package:erpnext_stock_mobile/src/features/werka/presentation/werka_archive_screen.dart';
+import 'package:erpnext_stock_mobile/src/features/werka/presentation/werka_archive_list_screen.dart';
+import 'package:erpnext_stock_mobile/src/features/werka/presentation/werka_archive_period_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+Widget _wrap(Widget child) {
+  return MaterialApp(
+    locale: const Locale('uz'),
+    supportedLocales: AppLocalizations.supportedLocales,
+    localizationsDelegates: const [
+      AppLocalizations.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+    ],
+    onGenerateRoute: AppRouter.onGenerateRoute,
+    home: child,
+  );
+}
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('monthly archive list screen builds without exception',
+      (tester) async {
+    await tester.pumpWidget(
+      _wrap(
+        const WerkaArchiveListScreen(
+          args: WerkaArchiveListArgs(
+            kind: WerkaArchiveKind.sent,
+            period: WerkaArchivePeriod.monthly,
+          ),
+        ),
+      ),
+    );
+
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('period screen opens monthly archive list without exception',
+      (tester) async {
+    await tester.pumpWidget(
+      _wrap(
+        const WerkaArchivePeriodScreen(kind: WerkaArchiveKind.sent),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Oylik'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 150));
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(WerkaArchiveListScreen), findsOneWidget);
+  });
+
+  testWidgets('archive screen opens sent monthly flow without exception',
+      (tester) async {
+    await tester.pumpWidget(
+      _wrap(
+        const WerkaArchiveScreen(),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Jo\'natilgan'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Oylik'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(WerkaArchiveListScreen), findsOneWidget);
+  });
+}

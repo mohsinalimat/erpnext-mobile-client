@@ -113,13 +113,7 @@ class _PeriodCard extends StatelessWidget {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(28),
-        onTap: () {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (context.mounted) {
-              onTap();
-            }
-          });
-        },
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(18),
           child: Row(
