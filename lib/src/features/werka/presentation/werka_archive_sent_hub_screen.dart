@@ -43,6 +43,8 @@ class _WerkaArchiveSentHubScreenState extends State<WerkaArchiveSentHubScreen> {
   Set<int> _activeMonths = <int>{};
   Set<int> _activeYears = <int>{};
 
+  bool get _anyCalendarOpen => _dailyOpen || _monthlyOpen || _yearlyOpen;
+
   void _toggleSection(WerkaArchivePeriod period) {
     setState(() {
       final currentlyOpen = switch (period) {
@@ -296,6 +298,9 @@ class _WerkaArchiveSentHubScreenState extends State<WerkaArchiveSentHubScreen> {
     return RefreshIndicator(
       onRefresh: _loadCurrent,
       child: ListView(
+        physics: _anyCalendarOpen
+            ? const NeverScrollableScrollPhysics()
+            : null,
         padding: const EdgeInsets.fromLTRB(4, 0, 4, 110),
         children: [
           _SentArchiveExpandableCard(
@@ -446,24 +451,24 @@ class _WerkaArchiveSentHubScreenState extends State<WerkaArchiveSentHubScreen> {
       child: Align(
         alignment: Alignment.topCenter,
         heightFactor: _dailyCalendarHeightFactor(context),
-        child: CalendarDatePicker(
-          initialDate: _selectedDate,
-          firstDate: DateTime(DateTime.now().year - 5),
-          lastDate: DateTime(DateTime.now().year + 1, 12, 31),
-          currentDate: DateTime.now(),
-          onDisplayedMonthChanged: (value) async {
-            final nextMonth = DateTime(value.year, value.month, 1);
-            if (nextMonth == _displayMonth) return;
-            setState(() => _displayMonth = nextMonth);
-            await _loadDaily();
-          },
-          onDateChanged: (value) {
-            final date = DateUtils.dateOnly(value);
-            setState(() => _selectedDate = date);
-            _openList(period: WerkaArchivePeriod.daily, from: date, to: date);
-          },
-        ),
-      ),
+            child: CalendarDatePicker(
+              initialDate: _selectedDate,
+              firstDate: DateTime(DateTime.now().year - 5),
+              lastDate: DateTime(DateTime.now().year + 1, 12, 31),
+              currentDate: DateTime.now(),
+              onDisplayedMonthChanged: (value) async {
+                final nextMonth = DateTime(value.year, value.month, 1);
+                if (nextMonth == _displayMonth) return;
+                setState(() => _displayMonth = nextMonth);
+                await _loadDaily();
+              },
+              onDateChanged: (value) {
+                final date = DateUtils.dateOnly(value);
+                setState(() => _selectedDate = date);
+                _openList(period: WerkaArchivePeriod.daily, from: date, to: date);
+              },
+            ),
+          ),
     );
   }
 }
@@ -589,11 +594,18 @@ class _AnimatedSentCalendarReveal extends StatelessWidget {
         heightFactor: open ? 1 : 0,
         child: IgnorePointer(
           ignoring: !open,
-          child: AnimatedOpacity(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOutCubic,
-            opacity: open ? 1 : 0,
-            child: child,
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onVerticalDragStart: (_) {},
+            onVerticalDragUpdate: (_) {},
+            onVerticalDragEnd: (_) {},
+            onVerticalDragCancel: () {},
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              opacity: open ? 1 : 0,
+              child: child,
+            ),
           ),
         ),
       ),
