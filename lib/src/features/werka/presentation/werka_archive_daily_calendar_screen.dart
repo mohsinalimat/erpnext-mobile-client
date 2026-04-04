@@ -180,6 +180,14 @@ class _WerkaArchiveDailyCalendarScreenState
     return '$count ta faol kun';
   }
 
+  String _monthAccentLabel(MaterialLocalizations localizations) {
+    return localizations
+        .formatMonthYear(_displayMonth)
+        .split(' ')
+        .first
+        .toUpperCase();
+  }
+
   void _shiftMonth(int delta) {
     setState(() {
       _displayMonth = DateTime(
@@ -272,6 +280,30 @@ class _WerkaArchiveDailyCalendarScreenState
                       ),
                     ],
                   ),
+                  const SizedBox(height: 10),
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: scheme.primaryContainer.withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: scheme.primary.withValues(alpha: 0.22),
+                        ),
+                      ),
+                      child: Text(
+                        _monthAccentLabel(localizations),
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: scheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.7,
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 14),
                   Row(
                     children: [
@@ -295,6 +327,21 @@ class _WerkaArchiveDailyCalendarScreenState
                         ),
                     ],
                   ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _CalendarLegendDot(
+                        color: scheme.primary,
+                        label: 'Faol',
+                      ),
+                      const SizedBox(width: 14),
+                      _CalendarLegendDot(
+                        color: scheme.outline,
+                        label: 'Bugun',
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 14),
                   Container(
                     decoration: BoxDecoration(
@@ -303,6 +350,13 @@ class _WerkaArchiveDailyCalendarScreenState
                       border: Border.all(
                         color: scheme.outlineVariant.withValues(alpha: 0.45),
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 16,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
                     ),
                     padding: const EdgeInsets.all(12),
                     child: SizedBox(
@@ -387,7 +441,7 @@ class _CalendarDayCell extends StatelessWidget {
     return Material(
       color: active
           ? scheme.primaryContainer
-          : scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+          : scheme.surfaceContainerHighest.withValues(alpha: 0.38),
       borderRadius: BorderRadius.circular(18),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -396,6 +450,16 @@ class _CalendarDayCell extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
+            gradient: active
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      scheme.primaryContainer,
+                      scheme.primaryContainer.withValues(alpha: 0.84),
+                    ],
+                  )
+                : null,
             border: Border.all(
               color: active
                   ? scheme.primary
@@ -414,7 +478,7 @@ class _CalendarDayCell extends StatelessWidget {
                   color: active
                       ? scheme.onPrimaryContainer
                       : scheme.onSurfaceVariant,
-                  fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                  fontWeight: active || isToday ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),
               if (active)
@@ -433,6 +497,42 @@ class _CalendarDayCell extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _CalendarLegendDot extends StatelessWidget {
+  const _CalendarLegendDot({
+    required this.color,
+    required this.label,
+  });
+
+  final Color color;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: scheme.onSurfaceVariant,
+          ),
+        ),
+      ],
     );
   }
 }
