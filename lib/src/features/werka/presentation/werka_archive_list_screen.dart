@@ -483,29 +483,45 @@ class _DailyFilterCard extends StatelessWidget {
                 ),
               ],
             ),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 280),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeInCubic,
-              transitionBuilder: (child, animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: SizeTransition(
-                    sizeFactor: animation,
-                    axisAlignment: -1,
-                    child: child,
-                  ),
-                );
-              },
-              child: !calendarOpen
-                  ? const SizedBox.shrink()
-                  : Padding(
-                      key: const ValueKey('daily_filter_calendar_open'),
-                      padding: const EdgeInsets.only(top: 14),
-                      child: calendar,
-                    ),
+            _AnimatedCalendarReveal(
+              open: calendarOpen,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 14),
+                child: calendar,
+              ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AnimatedCalendarReveal extends StatelessWidget {
+  const _AnimatedCalendarReveal({
+    required this.open,
+    required this.child,
+  });
+
+  final bool open;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRect(
+      child: AnimatedAlign(
+        alignment: Alignment.topCenter,
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+        heightFactor: open ? 1 : 0,
+        child: IgnorePointer(
+          ignoring: !open,
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            opacity: open ? 1 : 0,
+            child: child,
+          ),
         ),
       ),
     );

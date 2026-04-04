@@ -277,64 +277,49 @@ class _WerkaArchiveDailyCalendarScreenState
                             ),
                           ),
                         ),
-                        AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 280),
-                          switchInCurve: Curves.easeOutCubic,
-                          switchOutCurve: Curves.easeInCubic,
-                          transitionBuilder: (child, animation) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: SizeTransition(
-                                sizeFactor: animation,
-                                axisAlignment: -1,
-                                child: child,
-                              ),
-                            );
-                          },
-                          child: !_calendarOpen
-                              ? const SizedBox.shrink()
-                              : Padding(
-                                  key: const ValueKey('daily_calendar_open'),
-                                  padding: const EdgeInsets.only(top: 12),
-                                  child: Theme(
-                                    data: theme.copyWith(
-                                      colorScheme: scheme.copyWith(
-                                        primary: scheme.primary,
-                                        onPrimary: scheme.onPrimary,
-                                        surface: scheme.surfaceContainerHigh,
-                                        onSurface: scheme.onSurface,
-                                        onSurfaceVariant: scheme.onSurfaceVariant,
-                                      ),
-                                    ),
-                                    child: CalendarDatePicker(
-                                      initialDate: _selectedDate ?? _displayMonth,
-                                      firstDate: DateTime(DateTime.now().year - 5),
-                                      lastDate: DateTime(DateTime.now().year + 1, 12, 31),
-                                      currentDate: DateTime.now(),
-                                      onDisplayedMonthChanged: (value) {
-                                        final nextMonth = DateTime(
-                                          value.year,
-                                          value.month,
-                                          1,
-                                        );
-                                        if (nextMonth == _displayMonth) {
-                                          return;
-                                        }
-                                        setState(() {
-                                          _displayMonth = nextMonth;
-                                        });
-                                        _loadMonth();
-                                      },
-                                      onDateChanged: (value) {
-                                        setState(() {
-                                          _selectedDate = DateUtils.dateOnly(value);
-                                          _calendarOpen = false;
-                                        });
-                                        _openDay(value);
-                                      },
-                                    ),
-                                  ),
+                        _AnimatedCalendarReveal(
+                          open: _calendarOpen,
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: Theme(
+                              data: theme.copyWith(
+                                colorScheme: scheme.copyWith(
+                                  primary: scheme.primary,
+                                  onPrimary: scheme.onPrimary,
+                                  surface: scheme.surfaceContainerHigh,
+                                  onSurface: scheme.onSurface,
+                                  onSurfaceVariant: scheme.onSurfaceVariant,
                                 ),
+                              ),
+                              child: CalendarDatePicker(
+                                initialDate: _selectedDate ?? _displayMonth,
+                                firstDate: DateTime(DateTime.now().year - 5),
+                                lastDate: DateTime(DateTime.now().year + 1, 12, 31),
+                                currentDate: DateTime.now(),
+                                onDisplayedMonthChanged: (value) {
+                                  final nextMonth = DateTime(
+                                    value.year,
+                                    value.month,
+                                    1,
+                                  );
+                                  if (nextMonth == _displayMonth) {
+                                    return;
+                                  }
+                                  setState(() {
+                                    _displayMonth = nextMonth;
+                                  });
+                                  _loadMonth();
+                                },
+                                onDateChanged: (value) {
+                                  setState(() {
+                                    _selectedDate = DateUtils.dateOnly(value);
+                                    _calendarOpen = false;
+                                  });
+                                  _openDay(value);
+                                },
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -344,6 +329,37 @@ class _WerkaArchiveDailyCalendarScreenState
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AnimatedCalendarReveal extends StatelessWidget {
+  const _AnimatedCalendarReveal({
+    required this.open,
+    required this.child,
+  });
+
+  final bool open;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRect(
+      child: AnimatedAlign(
+        alignment: Alignment.topCenter,
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+        heightFactor: open ? 1 : 0,
+        child: IgnorePointer(
+          ignoring: !open,
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            opacity: open ? 1 : 0,
+            child: child,
+          ),
+        ),
       ),
     );
   }
