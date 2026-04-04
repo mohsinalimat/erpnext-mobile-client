@@ -254,19 +254,17 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
         padding: const EdgeInsets.fromLTRB(4, 0, 4, 110),
         children: [
           if (showDailyFilter) ...[
-            _ArchiveFilterCard(
+            _DailyFilterCard(
               title: context.l10n.archiveDateTitle,
               value: _selectedDateLabel(context),
               actionLabel: context.l10n.archiveSelectDateAction,
-              onTap: _toggleDailyCalendar,
-            ),
-            if (_showDateCalendar) ...[
-              const SizedBox(height: 10),
-              _DailyCalendarCard(
+              calendarOpen: _showDateCalendar,
+              onToggle: _toggleDailyCalendar,
+              calendar: _DailyCalendarCard(
                 initialDate: _from ?? DateUtils.dateOnly(DateTime.now()),
                 onChanged: _setDailyDate,
               ),
-            ],
+            ),
             const SizedBox(height: 14),
           ],
           Card.filled(
@@ -293,19 +291,17 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
         padding: const EdgeInsets.fromLTRB(4, 0, 4, 110),
         children: [
           if (showDailyFilter) ...[
-            _ArchiveFilterCard(
+            _DailyFilterCard(
               title: context.l10n.archiveDateTitle,
               value: _selectedDateLabel(context),
               actionLabel: context.l10n.archiveSelectDateAction,
-              onTap: _toggleDailyCalendar,
-            ),
-            if (_showDateCalendar) ...[
-              const SizedBox(height: 10),
-              _DailyCalendarCard(
+              calendarOpen: _showDateCalendar,
+              onToggle: _toggleDailyCalendar,
+              calendar: _DailyCalendarCard(
                 initialDate: _from ?? DateUtils.dateOnly(DateTime.now()),
                 onChanged: _setDailyDate,
               ),
-            ],
+            ),
             const SizedBox(height: 14),
           ],
           Card.filled(
@@ -419,18 +415,22 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
   }
 }
 
-class _ArchiveFilterCard extends StatelessWidget {
-  const _ArchiveFilterCard({
+class _DailyFilterCard extends StatelessWidget {
+  const _DailyFilterCard({
     required this.title,
     required this.value,
     required this.actionLabel,
-    required this.onTap,
+    required this.calendarOpen,
+    required this.onToggle,
+    required this.calendar,
   });
 
   final String title;
   final String value;
   final String actionLabel;
-  final VoidCallback onTap;
+  final bool calendarOpen;
+  final VoidCallback onToggle;
+  final Widget calendar;
 
   @override
   Widget build(BuildContext context) {
@@ -444,35 +444,66 @@ class _ArchiveFilterCard extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(18),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: scheme.onSurfaceVariant,
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(value, style: theme.textTheme.titleLarge),
+                    ],
+                  ),
+                ),
+                FilledButton.tonalIcon(
+                  onPressed: onToggle,
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(0, 48),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(value, style: theme.textTheme.titleLarge),
-                ],
-              ),
-            ),
-            FilledButton.tonalIcon(
-              onPressed: onTap,
-              style: FilledButton.styleFrom(
-                minimumSize: const Size(0, 48),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 12,
+                  icon: Icon(
+                    calendarOpen
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.calendar_month_outlined,
+                  ),
+                  label: Text(actionLabel),
                 ),
-              ),
-              icon: const Icon(Icons.calendar_month_outlined),
-              label: Text(actionLabel),
+              ],
+            ),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 280),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SizeTransition(
+                    sizeFactor: animation,
+                    axisAlignment: -1,
+                    child: child,
+                  ),
+                );
+              },
+              child: !calendarOpen
+                  ? const SizedBox.shrink()
+                  : Padding(
+                      key: const ValueKey('daily_filter_calendar_open'),
+                      padding: const EdgeInsets.only(top: 14),
+                      child: calendar,
+                    ),
             ),
           ],
         ),
