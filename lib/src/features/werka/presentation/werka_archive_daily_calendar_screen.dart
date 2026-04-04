@@ -165,6 +165,32 @@ class _WerkaArchiveDailyCalendarScreenState
     );
   }
 
+  bool _isToday(int day) {
+    final now = DateTime.now();
+    return now.year == _displayMonth.year &&
+        now.month == _displayMonth.month &&
+        now.day == day;
+  }
+
+  String _monthSummaryLabel(AppLocalizations l10n) {
+    final count = _activeDays.length;
+    if (count == 0) {
+      return l10n.archiveCalendarEmptyMonth;
+    }
+    return '$count ta faol kun';
+  }
+
+  void _shiftMonth(int delta) {
+    setState(() {
+      _displayMonth = DateTime(
+        _displayMonth.year,
+        _displayMonth.month + delta,
+        1,
+      );
+    });
+    _loadMonth();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -191,12 +217,12 @@ class _WerkaArchiveDailyCalendarScreenState
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final localizations = MaterialLocalizations.of(context);
+    final l10n = context.l10n;
     final cells = _buildCells(localizations);
     final weekdayLabels = _weekdayLabels(localizations);
     final rowCount = (cells.length / 7).ceil();
     const gridSpacing = 8.0;
-    const availableWidth = 7 * 48.0 + 6 * gridSpacing;
-    const cellHeight = 48.0;
+    const cellHeight = 50.0;
     final gridHeight = rowCount * cellHeight + (rowCount - 1) * gridSpacing;
 
     return RefreshIndicator(
@@ -213,85 +239,97 @@ class _WerkaArchiveDailyCalendarScreenState
             child: Padding(
               padding: const EdgeInsets.all(18),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _displayMonth = DateTime(
-                              _displayMonth.year,
-                              _displayMonth.month - 1,
-                              1,
-                            );
-                          });
-                          _loadMonth();
-                        },
-                        icon: const Icon(Icons.chevron_left_rounded),
+                      _CalendarNavButton(
+                        icon: Icons.chevron_left_rounded,
+                        onTap: () => _shiftMonth(-1),
                       ),
                       Expanded(
-                        child: Text(
-                          localizations.formatMonthYear(_displayMonth),
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.titleLarge,
+                        child: Column(
+                          children: [
+                            Text(
+                              localizations.formatMonthYear(_displayMonth),
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _monthSummaryLabel(l10n),
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _displayMonth = DateTime(
-                              _displayMonth.year,
-                              _displayMonth.month + 1,
-                              1,
-                            );
-                          });
-                          _loadMonth();
-                        },
-                        icon: const Icon(Icons.chevron_right_rounded),
+                      _CalendarNavButton(
+                        icon: Icons.chevron_right_rounded,
+                        onTap: () => _shiftMonth(1),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 14),
                   Row(
                     children: [
                       for (final label in weekdayLabels)
                         Expanded(
-                          child: Center(
+                          child: Container(
+                            height: 34,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: scheme.surface.withValues(alpha: 0.45),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             child: Text(
                               label,
-                              style: theme.textTheme.labelLarge?.copyWith(
+                              style: theme.textTheme.labelMedium?.copyWith(
                                 color: scheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
                         ),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: availableWidth,
-                    height: gridHeight,
-                    child: GridView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: cells.length,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 7,
-                        mainAxisSpacing: gridSpacing,
-                        crossAxisSpacing: gridSpacing,
-                        childAspectRatio: 1,
+                  const SizedBox(height: 14),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: scheme.surface.withValues(alpha: 0.22),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: scheme.outlineVariant.withValues(alpha: 0.45),
                       ),
-                      itemBuilder: (context, index) {
-                        final cell = cells[index];
-                        if (!cell.hasDay) {
-                          return const SizedBox.shrink();
-                        }
-                        return _CalendarDayCell(
-                          day: cell.day!,
-                          active: cell.active,
-                          onTap: () => _openDay(cell.day!),
-                        );
-                      },
+                    ),
+                    padding: const EdgeInsets.all(12),
+                    child: SizedBox(
+                      height: gridHeight,
+                      child: GridView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: cells.length,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 7,
+                          mainAxisSpacing: gridSpacing,
+                          crossAxisSpacing: gridSpacing,
+                          childAspectRatio: 1,
+                        ),
+                        itemBuilder: (context, index) {
+                          final cell = cells[index];
+                          if (!cell.hasDay) {
+                            return const SizedBox.shrink();
+                          }
+                          return _CalendarDayCell(
+                            day: cell.day!,
+                            active: cell.active,
+                            isToday: _isToday(cell.day!),
+                            onTap: () => _openDay(cell.day!),
+                          );
+                        },
+                      ),
                     ),
                   ),
                   if (_activeDays.isEmpty) ...[
@@ -333,11 +371,13 @@ class _CalendarDayCell extends StatelessWidget {
   const _CalendarDayCell({
     required this.day,
     required this.active,
+    required this.isToday,
     required this.onTap,
   });
 
   final int day;
   final bool active;
+  final bool isToday;
   final VoidCallback? onTap;
 
   @override
@@ -356,19 +396,76 @@ class _CalendarDayCell extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            border: active
-                ? Border.all(color: scheme.primary, width: 1.2)
-                : null,
-          ),
-          child: Text(
-            '$day',
-            style: theme.textTheme.titleMedium?.copyWith(
+            border: Border.all(
               color: active
-                  ? scheme.onPrimaryContainer
-                  : scheme.onSurfaceVariant,
-              fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                  ? scheme.primary
+                  : isToday
+                      ? scheme.outline
+                      : Colors.transparent,
+              width: active || isToday ? 1.2 : 0,
             ),
           ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Text(
+                '$day',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: active
+                      ? scheme.onPrimaryContainer
+                      : scheme.onSurfaceVariant,
+                  fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+              if (active)
+                Positioned(
+                  bottom: 6,
+                  child: Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: scheme.primary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CalendarNavButton extends StatelessWidget {
+  const _CalendarNavButton({
+    required this.icon,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: scheme.surface.withValues(alpha: 0.48),
+      borderRadius: BorderRadius.circular(16),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Container(
+          width: 44,
+          height: 44,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: scheme.outlineVariant.withValues(alpha: 0.55),
+            ),
+          ),
+          child: Icon(icon, color: scheme.onSurfaceVariant),
         ),
       ),
     );
