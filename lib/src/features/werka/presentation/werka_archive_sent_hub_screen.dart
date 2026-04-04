@@ -292,7 +292,7 @@ class _WerkaArchiveSentHubScreenState extends State<WerkaArchiveSentHubScreen> {
             open: _dailyOpen,
             onToggle: () => _toggleSection(WerkaArchivePeriod.daily),
             child: Padding(
-              padding: const EdgeInsets.only(top: 6),
+              padding: EdgeInsets.zero,
               child: CalendarDatePicker(
                 initialDate: _selectedDate,
                 firstDate: DateTime(DateTime.now().year - 5),
