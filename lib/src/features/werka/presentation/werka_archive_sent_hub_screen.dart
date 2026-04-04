@@ -29,7 +29,6 @@ class WerkaArchiveSentHubScreen extends StatefulWidget {
 }
 
 class _WerkaArchiveSentHubScreenState extends State<WerkaArchiveSentHubScreen> {
-  WerkaArchivePeriod _period = WerkaArchivePeriod.daily;
   late DateTime _displayMonth;
   late DateTime _selectedDate;
   late int _displayYear;
@@ -37,6 +36,9 @@ class _WerkaArchiveSentHubScreenState extends State<WerkaArchiveSentHubScreen> {
 
   bool _loading = true;
   Object? _error;
+  bool _dailyOpen = true;
+  bool _monthlyOpen = false;
+  bool _yearlyOpen = false;
   Set<int> _activeDays = <int>{};
   Set<int> _activeMonths = <int>{};
   Set<int> _activeYears = <int>{};
@@ -75,19 +77,11 @@ class _WerkaArchiveSentHubScreenState extends State<WerkaArchiveSentHubScreen> {
   }
 
   Future<void> _loadCurrent() async {
-    switch (_period) {
-      case WerkaArchivePeriod.daily:
-        await _loadDaily();
-        return;
-      case WerkaArchivePeriod.monthly:
-        await _loadMonthly();
-        return;
-      case WerkaArchivePeriod.yearly:
-        await _loadYearly();
-        return;
-      case WerkaArchivePeriod.custom:
-        return;
-    }
+    await Future.wait([
+      _loadDaily(),
+      _loadMonthly(),
+      _loadYearly(),
+    ]);
   }
 
   Future<void> _loadDaily() async {
@@ -218,6 +212,18 @@ class _WerkaArchiveSentHubScreenState extends State<WerkaArchiveSentHubScreen> {
     );
   }
 
+  String _selectedDateLabel(BuildContext context) {
+    final localizations = MaterialLocalizations.of(context);
+    return localizations.formatMediumDate(_selectedDate);
+  }
+
+  String _selectedMonthLabel(BuildContext context) {
+    final localizations = MaterialLocalizations.of(context);
+    return localizations.formatMonthYear(DateTime(_displayYear, 1, 1));
+  }
+
+  String _selectedYearLabel() => '$_startYear - ${_startYear + 11}';
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -249,215 +255,296 @@ class _WerkaArchiveSentHubScreenState extends State<WerkaArchiveSentHubScreen> {
 
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
 
     return RefreshIndicator(
       onRefresh: _loadCurrent,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(4, 0, 4, 110),
         children: [
-          Card.filled(
-            margin: EdgeInsets.zero,
-            color: scheme.surfaceContainerLow,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(28),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(18),
-              child: Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  for (final item in [
-                    (WerkaArchivePeriod.daily, l10n.archiveDailyTitle),
-                    (WerkaArchivePeriod.monthly, l10n.archiveMonthlyTitle),
-                    (WerkaArchivePeriod.yearly, l10n.archiveYearlyTitle),
-                  ])
-                    ChoiceChip(
-                      label: Text(item.$2),
-                      selected: _period == item.$1,
-                      onSelected: (_) async {
-                        setState(() => _period = item.$1);
-                        await _loadCurrent();
-                      },
-                    ),
-                ],
-              ),
+          _SentArchiveExpandableCard(
+            title: l10n.archiveDailyTitle,
+            value: _selectedDateLabel(context),
+            actionLabel: l10n.archiveSelectDateAction,
+            open: _dailyOpen,
+            onToggle: () => setState(() => _dailyOpen = !_dailyOpen),
+            child: CalendarDatePicker(
+              initialDate: _selectedDate,
+              firstDate: DateTime(DateTime.now().year - 5),
+              lastDate: DateTime(DateTime.now().year + 1, 12, 31),
+              currentDate: DateTime.now(),
+              onDisplayedMonthChanged: (value) async {
+                final nextMonth = DateTime(value.year, value.month, 1);
+                if (nextMonth == _displayMonth) return;
+                setState(() => _displayMonth = nextMonth);
+                await _loadDaily();
+              },
+              onDateChanged: (value) {
+                final date = DateUtils.dateOnly(value);
+                setState(() => _selectedDate = date);
+                _openList(period: WerkaArchivePeriod.daily, from: date, to: date);
+              },
             ),
           ),
           const SizedBox(height: 14),
-          _buildPanel(context),
+          _SentArchiveExpandableCard(
+            title: l10n.archiveMonthlyTitle,
+            value: _selectedMonthLabel(context),
+            actionLabel: l10n.archiveSelectMonthAction,
+            open: _monthlyOpen,
+            onToggle: () => setState(() => _monthlyOpen = !_monthlyOpen),
+            child: _buildMonthlyPanel(context),
+          ),
+          const SizedBox(height: 14),
+          _SentArchiveExpandableCard(
+            title: l10n.archiveYearlyTitle,
+            value: _selectedYearLabel(),
+            actionLabel: l10n.archiveSelectDateAction,
+            open: _yearlyOpen,
+            onToggle: () => setState(() => _yearlyOpen = !_yearlyOpen),
+            child: _buildYearlyPanel(context),
+          ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPanel(BuildContext context) {
-    switch (_period) {
-      case WerkaArchivePeriod.daily:
-        return _buildDailyPanel(context);
-      case WerkaArchivePeriod.monthly:
-        return _buildMonthlyPanel(context);
-      case WerkaArchivePeriod.yearly:
-        return _buildYearlyPanel(context);
-      case WerkaArchivePeriod.custom:
-        return const SizedBox.shrink();
-    }
-  }
-
-  Widget _buildDailyPanel(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Card.filled(
-      margin: EdgeInsets.zero,
-      color: scheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: CalendarDatePicker(
-          initialDate: _selectedDate,
-          firstDate: DateTime(DateTime.now().year - 5),
-          lastDate: DateTime(DateTime.now().year + 1, 12, 31),
-          currentDate: DateTime.now(),
-          onDisplayedMonthChanged: (value) {
-            final nextMonth = DateTime(value.year, value.month, 1);
-            if (nextMonth == _displayMonth) return;
-            setState(() => _displayMonth = nextMonth);
-            _loadDaily();
-          },
-          onDateChanged: (value) {
-            final date = DateUtils.dateOnly(value);
-            setState(() => _selectedDate = date);
-            _openList(period: WerkaArchivePeriod.daily, from: date, to: date);
-          },
-        ),
       ),
     );
   }
 
   Widget _buildMonthlyPanel(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     final localizations = MaterialLocalizations.of(context);
+    return Column(
+      children: [
+        Row(
+          children: [
+            IconButton(
+              onPressed: () async {
+                setState(() => _displayYear--);
+                await _loadMonthly();
+              },
+              icon: const Icon(Icons.chevron_left_rounded),
+            ),
+            Expanded(
+              child: Text(
+                '$_displayYear',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleLarge,
+              ),
+            ),
+            IconButton(
+              onPressed: () async {
+                setState(() => _displayYear++);
+                await _loadMonthly();
+              },
+              icon: const Icon(Icons.chevron_right_rounded),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            for (int month = 1; month <= 12; month++)
+              _SentHubMonthCell(
+                label: localizations
+                    .formatMonthYear(DateTime(_displayYear, month, 1))
+                    .split(' ')
+                    .first,
+                active: _activeMonths.contains(month),
+                onTap: () {
+                  final from = DateTime(_displayYear, month, 1);
+                  final to = DateTime(_displayYear, month + 1, 0);
+                  _openList(
+                    period: WerkaArchivePeriod.monthly,
+                    from: from,
+                    to: to,
+                  );
+                },
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildYearlyPanel(BuildContext context) {
+    final theme = Theme.of(context);
+    final years = [for (int year = _startYear; year <= _startYear + 11; year++) year];
+    return Column(
+      children: [
+        Row(
+          children: [
+            IconButton(
+              onPressed: () async {
+                setState(() => _startYear -= 12);
+                await _loadYearly();
+              },
+              icon: const Icon(Icons.chevron_left_rounded),
+            ),
+            Expanded(
+              child: Text(
+                '${years.first} - ${years.last}',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleLarge,
+              ),
+            ),
+            IconButton(
+              onPressed: () async {
+                setState(() => _startYear += 12);
+                await _loadYearly();
+              },
+              icon: const Icon(Icons.chevron_right_rounded),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            for (final year in years)
+              _SentHubYearCell(
+                year: year,
+                active: _activeYears.contains(year),
+                onTap: () {
+                  _openList(
+                    period: WerkaArchivePeriod.yearly,
+                    from: DateTime(year, 1, 1),
+                    to: DateTime(year, 12, 31),
+                  );
+                },
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _SentArchiveExpandableCard extends StatelessWidget {
+  const _SentArchiveExpandableCard({
+    required this.title,
+    required this.value,
+    required this.actionLabel,
+    required this.open,
+    required this.onToggle,
+    required this.child,
+  });
+
+  final String title;
+  final String value;
+  final String actionLabel;
+  final bool open;
+  final VoidCallback onToggle;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     return Card.filled(
       margin: EdgeInsets.zero,
       color: scheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () async {
-                    setState(() => _displayYear--);
-                    await _loadMonthly();
-                  },
-                  icon: const Icon(Icons.chevron_left_rounded),
+            Container(
+              decoration: BoxDecoration(
+                color: scheme.surface.withValues(alpha: 0.28),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: scheme.outlineVariant.withValues(alpha: 0.40),
                 ),
-                Expanded(
-                  child: Text(
-                    '$_displayYear',
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.titleLarge,
+              ),
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: theme.textTheme.labelLarge?.copyWith(
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              value,
+                              style: theme.textTheme.headlineSmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                      FilledButton.tonalIcon(
+                        onPressed: onToggle,
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size(0, 48),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                        ),
+                        icon: Icon(
+                          open
+                              ? Icons.keyboard_arrow_up_rounded
+                              : Icons.calendar_month_outlined,
+                        ),
+                        label: Text(actionLabel),
+                      ),
+                    ],
                   ),
-                ),
-                IconButton(
-                  onPressed: () async {
-                    setState(() => _displayYear++);
-                    await _loadMonthly();
-                  },
-                  icon: const Icon(Icons.chevron_right_rounded),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                for (int month = 1; month <= 12; month++)
-                  _SentHubMonthCell(
-                    label: localizations
-                        .formatMonthYear(DateTime(_displayYear, month, 1))
-                        .split(' ')
-                        .first,
-                    active: _activeMonths.contains(month),
-                    onTap: () {
-                      final from = DateTime(_displayYear, month, 1);
-                      final to = DateTime(_displayYear, month + 1, 0);
-                      _openList(
-                        period: WerkaArchivePeriod.monthly,
-                        from: from,
-                        to: to,
-                      );
-                    },
+                  _AnimatedSentCalendarReveal(
+                    open: open,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 14),
+                      child: child,
+                    ),
                   ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildYearlyPanel(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final years = [for (int year = _startYear; year <= _startYear + 11; year++) year];
-    return Card.filled(
-      margin: EdgeInsets.zero,
-      color: scheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () async {
-                    setState(() => _startYear -= 12);
-                    await _loadYearly();
-                  },
-                  icon: const Icon(Icons.chevron_left_rounded),
-                ),
-                Expanded(
-                  child: Text(
-                    '${years.first} - ${years.last}',
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.titleLarge,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () async {
-                    setState(() => _startYear += 12);
-                    await _loadYearly();
-                  },
-                  icon: const Icon(Icons.chevron_right_rounded),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                for (final year in years)
-                  _SentHubYearCell(
-                    year: year,
-                    active: _activeYears.contains(year),
-                    onTap: () {
-                      _openList(
-                        period: WerkaArchivePeriod.yearly,
-                        from: DateTime(year, 1, 1),
-                        to: DateTime(year, 12, 31),
-                      );
-                    },
-                  ),
-              ],
-            ),
-          ],
+class _AnimatedSentCalendarReveal extends StatelessWidget {
+  const _AnimatedSentCalendarReveal({
+    required this.open,
+    required this.child,
+  });
+
+  final bool open;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRect(
+      child: AnimatedAlign(
+        alignment: Alignment.topCenter,
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+        heightFactor: open ? 1 : 0,
+        child: IgnorePointer(
+          ignoring: !open,
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            opacity: open ? 1 : 0,
+            child: child,
+          ),
         ),
       ),
     );
