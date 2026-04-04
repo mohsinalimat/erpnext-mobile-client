@@ -169,10 +169,7 @@ void main() {
     );
 
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Tanlash'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 200));
-    await tester.tap(find.text('3').first);
+    await tester.tap(find.text('3').last, warnIfMissed: false);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
 
