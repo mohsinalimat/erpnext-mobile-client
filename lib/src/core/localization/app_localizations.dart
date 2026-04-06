@@ -307,6 +307,11 @@ class AppLocalizations {
         'Share',
         'Поделиться',
       );
+  String get batchViewListAction => _t(
+        'Ro‘yxatni ko‘rish',
+        'View list',
+        'Открыть список',
+      );
   String get archiveSavePhotoAction => _t(
         'Rasmga saqlash',
         'Save photo',
