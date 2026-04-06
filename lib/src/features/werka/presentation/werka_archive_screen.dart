@@ -15,35 +15,39 @@ class WerkaArchiveScreen extends StatelessWidget {
       title: context.l10n.archiveTitle,
       subtitle: '',
       bottom: const WerkaDock(activeTab: WerkaDockTab.archive),
+      contentPadding: const EdgeInsets.fromLTRB(10, 0, 12, 0),
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(4, 0, 4, 110),
+        padding: const EdgeInsets.only(bottom: 110),
         children: [
-          _ArchiveModuleGroup(
-            rows: [
-              _ArchiveModuleRowData(
-                title: context.l10n.archiveReceivedTitle,
-                icon: Icons.inventory_2_outlined,
-                onTap: () => Navigator.of(context).pushNamed(
-                  AppRoutes.werkaArchivePeriods,
-                  arguments: WerkaArchiveKind.received,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: _ArchiveModuleGroup(
+              rows: [
+                _ArchiveModuleRowData(
+                  title: context.l10n.archiveReceivedTitle,
+                  icon: Icons.inventory_2_outlined,
+                  onTap: () => Navigator.of(context).pushNamed(
+                    AppRoutes.werkaArchivePeriods,
+                    arguments: WerkaArchiveKind.received,
+                  ),
                 ),
-              ),
-              _ArchiveModuleRowData(
-                title: context.l10n.archiveSentTitle,
-                icon: Icons.outbox_outlined,
-                onTap: () => Navigator.of(context).pushNamed(
-                  AppRoutes.werkaArchiveSentHub,
+                _ArchiveModuleRowData(
+                  title: context.l10n.archiveSentTitle,
+                  icon: Icons.outbox_outlined,
+                  onTap: () => Navigator.of(context).pushNamed(
+                    AppRoutes.werkaArchiveSentHub,
+                  ),
                 ),
-              ),
-              _ArchiveModuleRowData(
-                title: context.l10n.archiveReturnedTitle,
-                icon: Icons.assignment_return_outlined,
-                onTap: () => Navigator.of(context).pushNamed(
-                  AppRoutes.werkaArchivePeriods,
-                  arguments: WerkaArchiveKind.returned,
+                _ArchiveModuleRowData(
+                  title: context.l10n.archiveReturnedTitle,
+                  icon: Icons.assignment_return_outlined,
+                  onTap: () => Navigator.of(context).pushNamed(
+                    AppRoutes.werkaArchivePeriods,
+                    arguments: WerkaArchiveKind.returned,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
