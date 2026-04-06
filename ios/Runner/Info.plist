@@ -26,8 +26,16 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Face ID is used to unlock the app securely and speed up sign-in for this device.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Saved archive pages are added to Photos so you can review and share them later.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>The app needs photo library access to save rendered archive pages into Photos.</string>
+	<key>UIFileSharingEnabled</key>
+	<true/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

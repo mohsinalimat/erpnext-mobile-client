@@ -293,9 +293,9 @@ class AppLocalizations {
         'PDF готов',
       );
   String get archivePdfReadyMessage => _t(
-        'Uni Files ga saqlashingiz yoki share qilishingiz mumkin.',
-        'You can save it to Files or share it.',
-        'Вы можете сохранить его в Files или поделиться им.',
+        'Uni Files ga, Photos ga saqlashingiz yoki share qilishingiz mumkin.',
+        'You can save it to Files, save it to Photos, or share it.',
+        'Вы можете сохранить его в Files, в Фото или поделиться им.',
       );
   String get archiveSaveToFilesAction => _t(
         'Files ga saqlash',
@@ -312,10 +312,15 @@ class AppLocalizations {
         'Save photo',
         'Сохранить как фото',
       );
-  String get archivePdfPhotoNotSupported => _t(
-        'PDF ni rasm sifatida saqlash hozircha qo‘llab-quvvatlanmaydi.',
-        'Saving this PDF as a photo is not supported yet.',
-        'Сохранение этого PDF как фото пока не поддерживается.',
+  String get archivePdfSavedToPhotos => _t(
+        'PDF birinchi sahifasi Photos ga saqlandi.',
+        'The first PDF page was saved to Photos.',
+        'Первая страница PDF сохранена в Фото.',
+      );
+  String get archivePdfPhotoFailed => _t(
+        'PDF ni rasm sifatida saqlab bo‘lmadi.',
+        'Failed to save the PDF as a photo.',
+        'Не удалось сохранить PDF как фото.',
       );
   String archivePdfSavedAt(String location) => _t(
         'PDF saqlandi: $location',

@@ -1,4 +1,5 @@
 import '../../../core/api/mobile_api.dart';
+import '../../../core/files/archive_pdf_photo_saver.dart';
 import '../../../core/files/archive_pdf_saver.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_loading_indicator.dart';
@@ -257,6 +258,18 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
                 const SizedBox(height: 10),
                 SizedBox(
                   width: double.infinity,
+                  child: FilledButton.tonalIcon(
+                    onPressed: () async {
+                      Navigator.of(sheetContext).pop();
+                      await _savePdfToPhotos(file);
+                    },
+                    icon: const Icon(Icons.photo_library_outlined),
+                    label: Text(sheetContext.l10n.archiveSavePhotoAction),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
                   child: FilledButton.icon(
                     onPressed: () async {
                       Navigator.of(sheetContext).pop();
@@ -312,6 +325,28 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
             : box.localToGlobal(Offset.zero) & box.size,
       ),
     );
+  }
+
+  Future<void> _savePdfToPhotos(DownloadedFile file) async {
+    try {
+      await saveArchivePdfFirstPageToPhotos(
+        pdfBytes: file.bytes,
+        filename: file.filename,
+      );
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.archivePdfSavedToPhotos)),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.archivePdfPhotoFailed)),
+      );
+    }
   }
 
   @override
