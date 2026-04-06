@@ -544,24 +544,16 @@ class _WerkaBatchDispatchScreenState extends State<WerkaBatchDispatchScreen> {
                           ),
                         ),
                         const SizedBox(width: 10),
-                        Expanded(
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: OutlinedButton.icon(
-                              onPressed: _openReview,
-                              style: OutlinedButton.styleFrom(
-                                minimumSize: const Size(0, 40),
-                                tapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
-                                visualDensity: VisualDensity.compact,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 10,
-                                ),
-                              ),
-                              icon: const Icon(Icons.list_alt_rounded, size: 18),
-                              label: Text(l10n.batchViewListAction),
+                        Tooltip(
+                          message: l10n.batchViewListAction,
+                          child: IconButton.filledTonal(
+                            onPressed: _openReview,
+                            style: IconButton.styleFrom(
+                              minimumSize: const Size(40, 40),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              visualDensity: VisualDensity.compact,
                             ),
+                            icon: const Icon(Icons.list_alt_rounded, size: 20),
                           ),
                         ),
                       ],
