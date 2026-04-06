@@ -257,24 +257,6 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
                 const SizedBox(height: 10),
                 SizedBox(
                   width: double.infinity,
-                  child: FilledButton.tonalIcon(
-                    onPressed: () {
-                      Navigator.of(sheetContext).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            context.l10n.archivePdfPhotoNotSupported,
-                          ),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.photo_library_outlined),
-                    label: Text(sheetContext.l10n.archiveSavePhotoAction),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
                   child: FilledButton.icon(
                     onPressed: () async {
                       Navigator.of(sheetContext).pop();
