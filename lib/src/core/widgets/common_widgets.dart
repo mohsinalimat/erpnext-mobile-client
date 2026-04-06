@@ -245,7 +245,7 @@ class ActionDock extends StatelessWidget {
                     color: isDark
                         ? scheme.surfaceContainerLow
                         : scheme.surfaceContainerLowest,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(28),
                     border: Border.all(color: AppTheme.cardBorder(context)),
                     boxShadow: [
                       BoxShadow(

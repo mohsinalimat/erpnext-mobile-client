@@ -192,7 +192,7 @@ class _WerkaDetailScreenState extends State<WerkaDetailScreen> {
                     color: scheme.surfaceContainerLow,
                     clipBehavior: Clip.antiAlias,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(28),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),

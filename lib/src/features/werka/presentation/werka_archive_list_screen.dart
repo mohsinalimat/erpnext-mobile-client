@@ -1,17 +1,13 @@
 import '../../../core/api/mobile_api.dart';
 import '../../../core/files/archive_pdf_saver.dart';
 import '../../../core/localization/app_localizations.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_loading_indicator.dart';
 import '../../../core/widgets/app_retry_state.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/native_back_button.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/werka_dock.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:share_plus/share_plus.dart';
 
 class WerkaArchiveListArgs {
   const WerkaArchiveListArgs({
@@ -195,16 +191,12 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
       if (!mounted) {
         return;
       }
-      if (kIsWeb) {
-        final message = savedAt == file.filename
-            ? context.l10n.archivePdfDownloadStartedWeb
-            : context.l10n.archivePdfSavedAt(savedAt);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
-        );
-        return;
-      }
-      await _showPdfActions(file);
+      final message = savedAt == file.filename
+          ? context.l10n.archivePdfDownloadStartedWeb
+          : context.l10n.archivePdfSavedAt(savedAt);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
     } catch (_) {
       if (!mounted) {
         return;
@@ -219,102 +211,6 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
     }
   }
 
-  Future<void> _showPdfActions(DownloadedFile file) async {
-    if (!mounted) {
-      return;
-    }
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (sheetContext) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  sheetContext.l10n.archivePdfReadyTitle,
-                  style: Theme.of(sheetContext).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  sheetContext.l10n.archivePdfReadyMessage,
-                  style: Theme.of(sheetContext).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 18),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.tonalIcon(
-                    onPressed: () async {
-                      Navigator.of(sheetContext).pop();
-                      await _savePdfToFiles(file);
-                    },
-                    icon: const Icon(Icons.folder_open_rounded),
-                    label: Text(sheetContext.l10n.archiveSaveToFilesAction),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () async {
-                      Navigator.of(sheetContext).pop();
-                      await _sharePdf(file);
-                    },
-                    icon: const Icon(Icons.ios_share_rounded),
-                    label: Text(sheetContext.l10n.archiveShareAction),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _savePdfToFiles(DownloadedFile file) async {
-    final outputFile = await FilePicker.platform.saveFile(
-      fileName: file.filename,
-      type: FileType.custom,
-      allowedExtensions: const ['pdf'],
-      bytes: Uint8List.fromList(file.bytes),
-    );
-    if (!mounted || outputFile == null || outputFile.trim().isEmpty) {
-      return;
-    }
-    final message = defaultTargetPlatform == TargetPlatform.iOS
-        ? context.l10n.archivePdfSavedOnIPhone
-        : outputFile == file.filename
-            ? context.l10n.archivePdfSavedToFiles
-            : context.l10n.archivePdfSavedAt(outputFile);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
-
-  Future<void> _sharePdf(DownloadedFile file) async {
-    final box = context.findRenderObject() as RenderBox?;
-    await SharePlus.instance.share(
-      ShareParams(
-        title: file.filename,
-        subject: file.filename,
-        files: [
-          XFile.fromData(
-            Uint8List.fromList(file.bytes),
-            mimeType: file.contentType,
-          ),
-        ],
-        fileNameOverrides: [file.filename],
-        sharePositionOrigin: box == null
-            ? null
-            : box.localToGlobal(Offset.zero) & box.size,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final title = '${_kindTitle(context.l10n)} • ${_periodTitle(context.l10n)}';
@@ -323,24 +219,14 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
       title: title,
       subtitle: _subtitle(context),
       actions: [
-        SizedBox(
-          height: AppTheme.headerActionSize,
-          width: AppTheme.headerActionSize,
-          child: IconButton.filledTonal(
-            onPressed: (_data?.items.isNotEmpty ?? false) && !_downloading
-                ? _downloadPdf
-                : null,
-            style: IconButton.styleFrom(
-              padding: EdgeInsets.zero,
-            ),
-            icon: Icon(
-              _downloading
-                  ? Icons.hourglass_top_rounded
-                  : Icons.download_rounded,
-              size: AppTheme.headerActionIconSize,
-            ),
-            tooltip: context.l10n.archiveDownloadPdfAction,
+        IconButton.filledTonal(
+          onPressed: (_data?.items.isNotEmpty ?? false) && !_downloading
+              ? _downloadPdf
+              : null,
+          icon: Icon(
+            _downloading ? Icons.hourglass_top_rounded : Icons.download_rounded,
           ),
+          tooltip: context.l10n.archiveDownloadPdfAction,
         ),
       ],
       leading: NativeBackButtonSlot(
@@ -385,7 +271,7 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
             margin: EdgeInsets.zero,
             color: scheme.surfaceContainerLow,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(28),
             ),
             child: Padding(
               padding: const EdgeInsets.all(18),
@@ -422,7 +308,7 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
             margin: EdgeInsets.zero,
             color: scheme.surfaceContainerLow,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(28),
             ),
             child: Padding(
               padding: const EdgeInsets.all(18),
@@ -462,7 +348,7 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
             margin: EdgeInsets.zero,
             color: scheme.surfaceContainerLow,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(28),
             ),
             child: Column(
               children: [
@@ -554,7 +440,7 @@ class _DailyFilterCard extends StatelessWidget {
       margin: EdgeInsets.zero,
       color: scheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(28),
       ),
       child: Padding(
         padding: const EdgeInsets.all(18),
@@ -658,7 +544,7 @@ class _DailyCalendarCard extends StatelessWidget {
       margin: EdgeInsets.zero,
       color: scheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(28),
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
