@@ -10,6 +10,7 @@ import '../../../core/search/search_normalizer.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/native_back_button.dart';
+import '../../../core/widgets/shared_header_title.dart';
 import '../../shared/models/app_models.dart';
 import 'dart:math';
 import 'widgets/m3_picker_sheet.dart';
@@ -466,204 +467,197 @@ class _WerkaBatchDispatchScreenState extends State<WerkaBatchDispatchScreen> {
     final scheme = theme.colorScheme;
     final hasSavedLines = _drafts.isNotEmpty;
 
-    return Scaffold(
-      backgroundColor: AppTheme.shellStart(context),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-          children: [
-            _BatchDispatchHeader(title: l10n.batchDispatchTitle, theme: theme),
-            const SizedBox(height: 20),
-            Card.filled(
-              margin: EdgeInsets.zero,
-              color: scheme.surfaceContainerLow,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28),
-                side: BorderSide(
-                  color: scheme.outlineVariant.withValues(alpha: 0.7),
-                ),
+    return AppShell(
+      title: l10n.batchDispatchTitle,
+      subtitle: '',
+      leading: NativeBackButtonSlot(
+        onPressed: () => Navigator.of(context).maybePop(),
+      ),
+      bottom: const WerkaDock(activeTab: null),
+      contentPadding: const EdgeInsets.fromLTRB(10, 0, 12, 0),
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(4, 0, 4, 24),
+        children: [
+          Card.filled(
+            margin: EdgeInsets.zero,
+            color: scheme.surfaceContainerLow,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+              side: BorderSide(
+                color: scheme.outlineVariant.withValues(alpha: 0.7),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.batchDispatchTitle,
-                      style: theme.textTheme.headlineMedium,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.batchDispatchTitle,
+                    style: theme.textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.batchDispatchDescription,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
                     ),
-                    const SizedBox(height: 8),
+                  ),
+                  if (_previewMode) ...[
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: scheme.tertiaryContainer,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        'Preview mode',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: scheme.onTertiaryContainer,
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (hasSavedLines) ...[
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: scheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        l10n.batchDraftCountLabel(_drafts.length),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 18),
+                  Text(l10n.itemLabel, style: theme.textTheme.bodySmall),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _pickItem,
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(_selectedItem?.name ?? l10n.selectItem),
+                          ),
+                        ),
+                      ),
+                      if (_selectedItem != null) ...[
+                        const SizedBox(width: 8),
+                        IconButton.filledTonal(
+                          tooltip: 'Clear item',
+                          onPressed: _clearSelectedItem,
+                          icon: const Icon(Icons.close_rounded),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Text(l10n.customerLabel, style: theme.textTheme.bodySmall),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _pickCustomer,
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              _selectedCustomer?.name ?? l10n.selectCustomer,
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (_selectedCustomer != null) ...[
+                        const SizedBox(width: 8),
+                        IconButton.filledTonal(
+                          tooltip: 'Clear customer',
+                          onPressed: _clearSelectedCustomer,
+                          icon: const Icon(Icons.close_rounded),
+                        ),
+                      ],
+                    ],
+                  ),
+                  if (_selectedCustomer != null &&
+                      _selectedItem == null &&
+                      _selectedCustomer!.phone.trim().isNotEmpty) ...[
+                    const SizedBox(height: 14),
                     Text(
-                      l10n.batchDispatchDescription,
+                      _selectedCustomer!.phone,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: scheme.onSurfaceVariant,
                       ),
                     ),
-                    if (_previewMode) ...[
-                      const SizedBox(height: 10),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: scheme.tertiaryContainer,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          'Preview mode',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: scheme.onTertiaryContainer,
-                          ),
-                        ),
-                      ),
-                    ],
-                    if (hasSavedLines) ...[
-                      const SizedBox(height: 14),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: scheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          l10n.batchDraftCountLabel(_drafts.length),
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 18),
-                    Text(l10n.itemLabel, style: theme.textTheme.bodySmall),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: _pickItem,
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child:
-                                  Text(_selectedItem?.name ?? l10n.selectItem),
-                            ),
-                          ),
-                        ),
-                        if (_selectedItem != null) ...[
-                          const SizedBox(width: 8),
-                          IconButton.filledTonal(
-                            tooltip: 'Clear item',
-                            onPressed: _clearSelectedItem,
-                            icon: const Icon(Icons.close_rounded),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Text(l10n.customerLabel, style: theme.textTheme.bodySmall),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: _pickCustomer,
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                _selectedCustomer?.name ?? l10n.selectCustomer,
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (_selectedCustomer != null) ...[
-                          const SizedBox(width: 8),
-                          IconButton.filledTonal(
-                            tooltip: 'Clear customer',
-                            onPressed: _clearSelectedCustomer,
-                            icon: const Icon(Icons.close_rounded),
-                          ),
-                        ],
-                      ],
-                    ),
-                    if (_selectedCustomer != null &&
-                        _selectedItem == null &&
-                        _selectedCustomer!.phone.trim().isNotEmpty) ...[
-                      const SizedBox(height: 14),
-                      Text(
-                        _selectedCustomer!.phone,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                    if (_selectedItem != null) ...[
-                      const SizedBox(height: 14),
-                      Text(l10n.amountLabel, style: theme.textTheme.bodySmall),
-                      const SizedBox(height: 6),
-                      TextField(
-                        controller: _qtyController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        onChanged: (_) => setState(() {}),
-                        decoration: InputDecoration(
-                          hintText: '0',
-                          suffixText: _selectedItem!.uom,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 18),
-                    if (!hasSavedLines)
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton(
-                          onPressed:
-                              _hasCurrentValidLine ? _saveCurrentLine : null,
-                          child: Text(l10n.nextItemAction),
-                        ),
-                      )
-                    else ...[
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: _hasCurrentValidLine
-                                  ? _saveCurrentLine
-                                  : null,
-                              child: Text(l10n.addAnotherAction),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: FilledButton(
-                              onPressed: _hasCurrentValidLine
-                                  ? () => _openReview(saveCurrentLine: true)
-                                  : _drafts.length >= 2
-                                      ? () => _openReview()
-                                      : null,
-                              child: Text(l10n.confirmTitle),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
                   ],
-                ),
+                  if (_selectedItem != null) ...[
+                    const SizedBox(height: 14),
+                    Text(l10n.amountLabel, style: theme.textTheme.bodySmall),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _qtyController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      onChanged: (_) => setState(() {}),
+                      decoration: InputDecoration(
+                        hintText: '0',
+                        suffixText: _selectedItem!.uom,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 18),
+                  if (!hasSavedLines)
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: _hasCurrentValidLine ? _saveCurrentLine : null,
+                        child: Text(l10n.nextItemAction),
+                      ),
+                    )
+                  else ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: _hasCurrentValidLine
+                                ? _saveCurrentLine
+                                : null,
+                            child: Text(l10n.addAnotherAction),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: _hasCurrentValidLine
+                                ? () => _openReview(saveCurrentLine: true)
+                                : _drafts.length >= 2
+                                    ? () => _openReview()
+                                    : null,
+                            child: Text(l10n.confirmTitle),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
               ),
             ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: const SafeArea(
-        top: false,
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: WerkaDock(activeTab: null),
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -863,7 +857,6 @@ class _WerkaBatchDispatchReviewScreenState
                 padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
                 child: _BatchDispatchHeader(
                   title: l10n.batchReviewTitle,
-                  theme: theme,
                   onBackPressed: () => Navigator.of(context).pop(_lines),
                 ),
               ),
@@ -1031,30 +1024,25 @@ class _WerkaBatchDraftLine {
 class _BatchDispatchHeader extends StatelessWidget {
   const _BatchDispatchHeader({
     required this.title,
-    required this.theme,
     this.onBackPressed,
   });
 
   final String title;
-  final ThemeData theme;
   final VoidCallback? onBackPressed;
 
   @override
   Widget build(BuildContext context) {
-    final showFlutterBackButton = !useNativeBackButton(context);
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (showFlutterBackButton) ...[
-          NativeBackButtonSlot(
+        HeaderLeadingTransition(
+          child: NativeBackButtonSlot(
             onPressed: onBackPressed ?? () => Navigator.of(context).maybePop(),
           ),
-          const SizedBox(width: 14),
-        ],
+        ),
+        const SizedBox(width: 14),
         Expanded(
-          child: Text(
-            title,
-            style: theme.textTheme.headlineMedium,
-          ),
+          child: SharedHeaderTitle(title: title),
         ),
       ],
     );
