@@ -99,20 +99,25 @@ class AppShell extends StatelessWidget {
               ],
               if (!useNativeTitle)
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SharedHeaderTitle(
-                        title: title,
-                      ),
-                      if (subtitle.trim().isNotEmpty) ...[
-                        const SizedBox(height: 6),
-                        Text(
-                          subtitle,
-                          style: theme.textTheme.bodyMedium,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minHeight: AppTheme.headerActionSize,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SharedHeaderTitle(
+                          title: title,
                         ),
+                        if (subtitle.trim().isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            subtitle,
+                            style: theme.textTheme.bodyMedium,
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
               if (useNativeTitle) const Spacer(),
