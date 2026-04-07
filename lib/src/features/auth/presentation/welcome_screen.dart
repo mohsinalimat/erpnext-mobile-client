@@ -1147,6 +1147,7 @@ class _SelectionSheet extends StatelessWidget {
 
     return SafeArea(
       top: false,
+      bottom: false,
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
