@@ -22,9 +22,11 @@ class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({
     super.key,
     required this.onGetStarted,
+    this.useSharedBackground = false,
   });
 
   final Future<void> Function() onGetStarted;
+  final bool useSharedBackground;
 
   @override
   State<WelcomeScreen> createState() => _WelcomeScreenState();
@@ -129,20 +131,26 @@ class _WelcomeScreenState extends State<WelcomeScreen>
         final currentVariant = ThemeController.instance.variant;
 
         return Scaffold(
+          backgroundColor: widget.useSharedBackground
+              ? Colors.transparent
+              : const Color(0xFF000000),
           body: DecoratedBox(
-            decoration: const BoxDecoration(
-              color: Color(0xFF000000),
+            decoration: BoxDecoration(
+              color: widget.useSharedBackground
+                  ? Colors.transparent
+                  : const Color(0xFF000000),
             ),
             child: Stack(
               children: [
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: _AmbientOutlineBackground(
-                      outlineColor: scheme.outlineVariant,
-                      accentColor: scheme.primary,
+                if (!widget.useSharedBackground)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: AuthAmbientOutlineBackground(
+                        outlineColor: scheme.outlineVariant,
+                        accentColor: scheme.primary,
+                      ),
                     ),
                   ),
-                ),
                 SafeArea(
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(
@@ -464,8 +472,9 @@ class _HeadlineMotionText extends StatelessWidget {
   }
 }
 
-class _AmbientOutlineBackground extends StatefulWidget {
-  const _AmbientOutlineBackground({
+class AuthAmbientOutlineBackground extends StatefulWidget {
+  const AuthAmbientOutlineBackground({
+    super.key,
     required this.outlineColor,
     required this.accentColor,
   });
@@ -474,11 +483,11 @@ class _AmbientOutlineBackground extends StatefulWidget {
   final Color accentColor;
 
   @override
-  State<_AmbientOutlineBackground> createState() =>
+  State<AuthAmbientOutlineBackground> createState() =>
       _AmbientOutlineBackgroundState();
 }
 
-class _AmbientOutlineBackgroundState extends State<_AmbientOutlineBackground>
+class _AmbientOutlineBackgroundState extends State<AuthAmbientOutlineBackground>
     with SingleTickerProviderStateMixin {
   late final Ticker _ticker = createTicker(_handleTick);
 

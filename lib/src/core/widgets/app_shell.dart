@@ -19,6 +19,7 @@ class AppShell extends StatelessWidget {
     this.bottomPadding = const EdgeInsets.symmetric(horizontal: 20),
     this.animateOnEnter = true,
     this.preferNativeTitle = false,
+    this.backgroundColor,
   });
 
   final String title;
@@ -31,20 +32,20 @@ class AppShell extends StatelessWidget {
   final EdgeInsets bottomPadding;
   final bool animateOnEnter;
   final bool preferNativeTitle;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final useNativeTitle = NativeBackButtonBridge
-        .useNativeNavigationTitleWhenPossible(
+    final useNativeTitle =
+        NativeBackButtonBridge.useNativeNavigationTitleWhenPossible(
       context,
       title,
       allowWithoutBackButton: preferNativeTitle,
     );
-    final shouldHideLeading =
-        leading != null && NativeBackButtonBridge.shouldUseNativeBackButton(context);
-    final preserveNativeDock =
-        NativeDockBridge.isSupportedPlatform &&
+    final shouldHideLeading = leading != null &&
+        NativeBackButtonBridge.shouldUseNativeBackButton(context);
+    final preserveNativeDock = NativeDockBridge.isSupportedPlatform &&
         NativeDockBridge.instance.supportsSystemDock;
     if (bottom == null && !preserveNativeDock) {
       NativeDockBridge.instance.clearFromBuild();
@@ -63,7 +64,7 @@ class AppShell extends StatelessWidget {
             ),
       body: DecoratedBox(
         decoration: BoxDecoration(
-          color: AppTheme.shellStart(context),
+          color: backgroundColor ?? AppTheme.shellStart(context),
         ),
         child: SafeArea(
           bottom: false,
@@ -279,12 +280,12 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
   }
 
   bool _contentCanActuallyScroll(ScrollMetrics metrics) {
-    return (metrics.maxScrollExtent - metrics.minScrollExtent) >
-        _edgeTolerance;
+    return (metrics.maxScrollExtent - metrics.minScrollExtent) > _edgeTolerance;
   }
 
   bool _canRefreshFromMetrics(ScrollMetrics metrics) {
-    return widget.allowRefreshOnShortContent || _contentCanActuallyScroll(metrics);
+    return widget.allowRefreshOnShortContent ||
+        _contentCanActuallyScroll(metrics);
   }
 
   bool _matchesRefreshContext(ScrollNotification notification) {
@@ -474,8 +475,9 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
         : _refreshing
             ? AppMotion.fast
             : _releaseSettleDuration;
-    final motionCurve =
-        _refreshing ? AppMotion.standardDecelerate : AppMotion.emphasizedDecelerate;
+    final motionCurve = _refreshing
+        ? AppMotion.standardDecelerate
+        : AppMotion.emphasizedDecelerate;
 
     return PrimaryScrollController(
       controller: _scrollController,
@@ -528,7 +530,8 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
                             scale: _refreshing ? 1 : (0.72 + (0.28 * progress)),
                             child: AnimatedOpacity(
                               duration: AppMotion.fast,
-                              opacity: _refreshing ? 1 : (0.35 + (0.65 * progress)),
+                              opacity:
+                                  _refreshing ? 1 : (0.35 + (0.65 * progress)),
                               child: const AppLoadingIndicator(
                                 size: 20,
                                 glyphSize: 20,

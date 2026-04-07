@@ -87,30 +87,63 @@ class _AppEntryScreenState extends State<AppEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_showWelcome) {
-      return WelcomeScreen(
-        onGetStarted: () async {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setBool(_welcomeSeenKey, true);
-          if (!mounted) {
-            return;
-          }
-          setState(() {
-            _showWelcome = false;
-            _showLogin = true;
-          });
-        },
-      );
-    }
+    if (_showWelcome || _showLogin) {
+      final scheme = Theme.of(context).colorScheme;
+      final Widget currentScreen = _showWelcome
+          ? WelcomeScreen(
+              key: const ValueKey<String>('welcome-screen'),
+              useSharedBackground: true,
+              onGetStarted: () async {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setBool(_welcomeSeenKey, true);
+                if (!mounted) {
+                  return;
+                }
+                setState(() {
+                  _showWelcome = false;
+                  _showLogin = true;
+                });
+              },
+            )
+          : LoginScreen(
+              key: const ValueKey<String>('login-screen'),
+              useSharedBackground: true,
+              onBack: () {
+                setState(() {
+                  _showLogin = false;
+                  _showWelcome = true;
+                });
+              },
+            );
 
-    if (_showLogin) {
-      return LoginScreen(
-        onBack: () {
-          setState(() {
-            _showLogin = false;
-            _showWelcome = true;
-          });
-        },
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          DecoratedBox(
+            decoration: const BoxDecoration(
+              color: Color(0xFF000000),
+            ),
+            child: IgnorePointer(
+              child: AuthAmbientOutlineBackground(
+                outlineColor: scheme.outlineVariant,
+                accentColor: scheme.primary,
+              ),
+            ),
+          ),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 340),
+            reverseDuration: const Duration(milliseconds: 280),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            transitionBuilder: (child, animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: child,
+              );
+            },
+            child: currentScreen,
+          ),
+        ],
       );
     }
 

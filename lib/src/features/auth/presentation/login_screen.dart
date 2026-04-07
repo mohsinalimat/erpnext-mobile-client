@@ -10,15 +10,18 @@ import '../../../core/theme/theme_controller.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
+import 'welcome_screen.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({
     super.key,
     this.onBack,
+    this.useSharedBackground = false,
   });
 
   final VoidCallback? onBack;
+  final bool useSharedBackground;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -185,6 +188,9 @@ class _LoginScreenState extends State<LoginScreen> {
           child: AppShell(
             title: '',
             subtitle: '',
+            backgroundColor: widget.useSharedBackground
+                ? Colors.transparent
+                : const Color(0xFF000000),
             leading: widget.onBack == null
                 ? null
                 : IconButton(
@@ -192,136 +198,155 @@ class _LoginScreenState extends State<LoginScreen> {
                     icon: const Icon(Icons.arrow_back_rounded),
                   ),
             contentPadding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final double topSpacing =
-                    constraints.maxHeight >= 760 ? 84 : 56;
-                return SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: 396,
-                        minHeight: constraints.maxHeight,
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(0, topSpacing, 0, 28),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            SmoothAppear(
-                              delay: const Duration(milliseconds: 20),
-                              offset: const Offset(0, 12),
-                              child: Text(
-                                l10n.signInTitle,
-                                style: theme.textTheme.displaySmall?.copyWith(
-                                  fontSize: 40,
-                                  letterSpacing: -1.4,
-                                  height: 1.02,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 28),
-                            SmoothAppear(
-                              delay: const Duration(milliseconds: 170),
-                              offset: const Offset(0, 12),
-                              child: AutofillGroup(
-                                child: Column(
-                                  children: [
-                                    TextField(
-                                      controller: phoneController,
-                                      focusNode: phoneFocusNode,
-                                      textInputAction: TextInputAction.next,
-                                      keyboardType: TextInputType.phone,
-                                      autocorrect: false,
-                                      enableSuggestions: true,
-                                      autofillHints: const [
-                                        AutofillHints.telephoneNumber,
-                                      ],
-                                      decoration: InputDecoration(
-                                        labelText: l10n.phoneLabel,
-                                        hintText: '+998901234567',
-                                        prefixIcon:
-                                            const Icon(Icons.phone_outlined),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 14),
-                                    TextField(
-                                      controller: codeController,
-                                      focusNode: codeFocusNode,
-                                      textInputAction: TextInputAction.done,
-                                      autocorrect: false,
-                                      enableSuggestions: false,
-                                      onSubmitted: (_) {
-                                        if (!loading) {
-                                          submitLogin(context);
-                                        }
-                                      },
-                                      decoration: InputDecoration(
-                                        labelText: l10n.codeLabel,
-                                        hintText: '10XXXXXXXXXX',
-                                        prefixIcon: const Icon(
-                                          Icons.password_outlined,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            if (errorText != null) ...[
-                              const SizedBox(height: 14),
-                              SmoothAppear(
-                                delay: const Duration(milliseconds: 210),
-                                offset: const Offset(0, 8),
-                                child: _LoginErrorBanner(message: errorText!),
-                              ),
-                            ],
-                            const SizedBox(height: 22),
-                            SmoothAppear(
-                              delay: const Duration(milliseconds: 220),
-                              offset: const Offset(0, 10),
-                              child: AnimatedOpacity(
-                                duration: const Duration(milliseconds: 260),
-                                curve: Curves.easeOutCubic,
-                                opacity: (_canSubmit || loading) ? 1 : 0,
-                                child: AnimatedSlide(
-                                  duration: const Duration(milliseconds: 260),
-                                  curve: Curves.easeOutCubic,
-                                  offset: (_canSubmit || loading)
-                                      ? Offset.zero
-                                      : const Offset(0, 0.08),
-                                  child: IgnorePointer(
-                                    ignoring: !_canSubmit && !loading,
-                                    child: FilledButton(
-                                      onPressed: loading
-                                          ? null
-                                          : _canSubmit
-                                              ? () => submitLogin(context)
-                                              : null,
-                                      child: loading
-                                          ? const SizedBox(
-                                              height: 18,
-                                              width: 18,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2.2,
-                                              ),
-                                            )
-                                          : Text(l10n.loginAction),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+            child: Stack(
+              children: [
+                if (!widget.useSharedBackground)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: AuthAmbientOutlineBackground(
+                        outlineColor: scheme.outlineVariant,
+                        accentColor: scheme.primary,
                       ),
                     ),
                   ),
-                );
-              },
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final double topSpacing =
+                        constraints.maxHeight >= 760 ? 84 : 56;
+                    return SingleChildScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      child: Align(
+                        alignment: Alignment.topCenter,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: 396,
+                            minHeight: constraints.maxHeight,
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(0, topSpacing, 0, 28),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                SmoothAppear(
+                                  delay: const Duration(milliseconds: 20),
+                                  offset: const Offset(0, 12),
+                                  child: Text(
+                                    l10n.signInTitle,
+                                    style:
+                                        theme.textTheme.displaySmall?.copyWith(
+                                      fontSize: 40,
+                                      letterSpacing: -1.4,
+                                      height: 1.02,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 28),
+                                SmoothAppear(
+                                  delay: const Duration(milliseconds: 170),
+                                  offset: const Offset(0, 12),
+                                  child: AutofillGroup(
+                                    child: Column(
+                                      children: [
+                                        TextField(
+                                          controller: phoneController,
+                                          focusNode: phoneFocusNode,
+                                          textInputAction: TextInputAction.next,
+                                          keyboardType: TextInputType.phone,
+                                          autocorrect: false,
+                                          enableSuggestions: true,
+                                          autofillHints: const [
+                                            AutofillHints.telephoneNumber,
+                                          ],
+                                          decoration: InputDecoration(
+                                            labelText: l10n.phoneLabel,
+                                            hintText: '+998901234567',
+                                            prefixIcon: const Icon(
+                                              Icons.phone_outlined,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 14),
+                                        TextField(
+                                          controller: codeController,
+                                          focusNode: codeFocusNode,
+                                          textInputAction: TextInputAction.done,
+                                          autocorrect: false,
+                                          enableSuggestions: false,
+                                          onSubmitted: (_) {
+                                            if (!loading) {
+                                              submitLogin(context);
+                                            }
+                                          },
+                                          decoration: InputDecoration(
+                                            labelText: l10n.codeLabel,
+                                            hintText: '10XXXXXXXXXX',
+                                            prefixIcon: const Icon(
+                                              Icons.password_outlined,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                if (errorText != null) ...[
+                                  const SizedBox(height: 14),
+                                  SmoothAppear(
+                                    delay: const Duration(milliseconds: 210),
+                                    offset: const Offset(0, 8),
+                                    child:
+                                        _LoginErrorBanner(message: errorText!),
+                                  ),
+                                ],
+                                const SizedBox(height: 22),
+                                SmoothAppear(
+                                  delay: const Duration(milliseconds: 220),
+                                  offset: const Offset(0, 10),
+                                  child: AnimatedOpacity(
+                                    duration: const Duration(milliseconds: 260),
+                                    curve: Curves.easeOutCubic,
+                                    opacity: (_canSubmit || loading) ? 1 : 0,
+                                    child: AnimatedSlide(
+                                      duration: const Duration(
+                                        milliseconds: 260,
+                                      ),
+                                      curve: Curves.easeOutCubic,
+                                      offset: (_canSubmit || loading)
+                                          ? Offset.zero
+                                          : const Offset(0, 0.08),
+                                      child: IgnorePointer(
+                                        ignoring: !_canSubmit && !loading,
+                                        child: FilledButton(
+                                          onPressed: loading
+                                              ? null
+                                              : _canSubmit
+                                                  ? () => submitLogin(context)
+                                                  : null,
+                                          child: loading
+                                              ? const SizedBox(
+                                                  height: 18,
+                                                  width: 18,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                    strokeWidth: 2.2,
+                                                  ),
+                                                )
+                                              : Text(l10n.loginAction),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
           ),
         );
