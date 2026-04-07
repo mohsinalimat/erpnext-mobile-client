@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:async';
 
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/localization/locale_controller.dart';
@@ -71,9 +72,8 @@ class WelcomeScreen extends StatelessWidget {
                         SmoothAppear(
                           delay: const Duration(milliseconds: 40),
                           offset: const Offset(0, 16),
-                          child: Text(
-                            l10n.welcomeToAccord,
-                            style: GoogleFonts.manrope(
+                          child: _CyclingWelcomeHeadline(
+                            textStyle: GoogleFonts.manrope(
                               fontSize: 46,
                               height: 1.02,
                               letterSpacing: -1.7,
@@ -271,6 +271,88 @@ class WelcomeScreen extends StatelessWidget {
       AppThemeVariant.slate => l10n.themeSlateLabel,
       AppThemeVariant.ocean => l10n.themeOceanLabel,
     };
+  }
+}
+
+class _CyclingWelcomeHeadline extends StatefulWidget {
+  const _CyclingWelcomeHeadline({
+    required this.textStyle,
+  });
+
+  final TextStyle textStyle;
+
+  @override
+  State<_CyclingWelcomeHeadline> createState() =>
+      _CyclingWelcomeHeadlineState();
+}
+
+class _CyclingWelcomeHeadlineState extends State<_CyclingWelcomeHeadline> {
+  static const List<Locale> _headlineLocales = <Locale>[
+    Locale('uz'),
+    Locale('en'),
+    Locale('ru'),
+  ];
+
+  Timer? _timer;
+  int _index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 2), (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _index = (_index + 1) % _headlineLocales.length;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final Locale locale = _headlineLocales[_index];
+    final String headline = AppLocalizations(locale).welcomeToAccord;
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 520),
+      reverseDuration: const Duration(milliseconds: 420),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      layoutBuilder: (currentChild, previousChildren) {
+        return Stack(
+          alignment: Alignment.topLeft,
+          children: <Widget>[
+            ...previousChildren,
+            if (currentChild != null) currentChild,
+          ],
+        );
+      },
+      transitionBuilder: (child, animation) {
+        final Animation<Offset> slide = Tween<Offset>(
+          begin: const Offset(0, 0.08),
+          end: Offset.zero,
+        ).animate(animation);
+        return FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: slide,
+            child: child,
+          ),
+        );
+      },
+      child: Text(
+        headline,
+        key: ValueKey<String>(locale.languageCode),
+        style: widget.textStyle,
+      ),
+    );
   }
 }
 
