@@ -212,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 LayoutBuilder(
                   builder: (context, constraints) {
                     final double topSpacing =
-                        constraints.maxHeight >= 760 ? 84 : 56;
+                        constraints.maxHeight >= 760 ? 28 : 16;
                     return SingleChildScrollView(
                       physics: const ClampingScrollPhysics(),
                       child: Align(
@@ -225,7 +225,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Padding(
                             padding: EdgeInsets.fromLTRB(0, topSpacing, 0, 28),
                             child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 SmoothAppear(
