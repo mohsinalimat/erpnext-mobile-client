@@ -6,7 +6,15 @@ import '../../../core/theme/theme_controller.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import 'package:androidx_graphics_shapes/material_shapes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+final _ShapeProfile _ambientOvalProfile = _ShapeProfile.fromPath(
+  MaterialShapes.oval.toPath(),
+);
+final _ShapeProfile _ambientCookieProfile = _ShapeProfile.fromPath(
+  MaterialShapes.cookie12Sided.toPath(),
+);
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({
@@ -282,25 +290,331 @@ class _AmbientOutlineBackground extends StatefulWidget {
 
 class _AmbientOutlineBackgroundState extends State<_AmbientOutlineBackground>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(seconds: 24),
-  )..repeat();
+  late final Ticker _ticker = createTicker(_handleTick);
+
+  Size _sceneSize = Size.zero;
+  Duration? _lastTick;
+  double _phase = 0;
+  double _impactEnergy = 0;
+  double _ovalBounceLift = 0;
+  double _cookieBounceLift = 0;
+  bool _seeded = false;
+  late _AmbientBody _oval;
+  late _AmbientBody _cookie;
+
+  @override
+  void initState() {
+    super.initState();
+    _ticker.start();
+  }
+
+  void _handleTick(Duration elapsed) {
+    final Duration? lastTick = _lastTick;
+    _lastTick = elapsed;
+    if (!_seeded || _sceneSize.isEmpty || !mounted) {
+      return;
+    }
+
+    final int elapsedMicros =
+        lastTick == null ? 16667 : (elapsed - lastTick).inMicroseconds;
+    final double dt = (elapsedMicros / Duration.microsecondsPerSecond)
+        .clamp(1 / 120, 1 / 24)
+        .toDouble();
+
+    _phase += dt;
+    _stepSimulation(dt);
+    setState(() {});
+  }
+
+  void _ensureSimulation(Size size) {
+    if (_seeded && _sceneSize == size) {
+      return;
+    }
+    _sceneSize = size;
+    _seedSimulation();
+  }
+
+  void _seedSimulation() {
+    if (_sceneSize.isEmpty) {
+      return;
+    }
+
+    _oval = _AmbientBody(
+      position: Offset(
+        _sceneSize.width * 0.46,
+        _sceneSize.height * 0.90,
+      ),
+      velocity: const Offset(4, -2),
+      mass: 0.92,
+    );
+    _cookie = _AmbientBody(
+      position: Offset(
+        _sceneSize.width * 0.56,
+        _sceneSize.height * 0.15,
+      ),
+      velocity: const Offset(-1, 1),
+      mass: 1.0,
+    );
+    _phase = 0;
+    _impactEnergy = 0;
+    _ovalBounceLift = 0;
+    _cookieBounceLift = 0;
+    _seeded = true;
+  }
+
+  void _stepSimulation(double dt) {
+    final _AmbientSceneMetrics metrics = _AmbientSceneMetrics.fromSize(
+      _sceneSize,
+    );
+    final Offset ovalTarget = Offset(
+      (_sceneSize.width * 0.57) + (math.sin(_phase * 0.12) * 7),
+      (_sceneSize.height * 0.84) + (math.cos(_phase * 0.10) * 4),
+    );
+    final Offset cookieAnchor = Offset(
+      (_sceneSize.width * 0.53) + (math.sin(_phase * 0.43) * 22),
+      _sceneSize.height * 0.14,
+    );
+
+    _applySpring(
+      body: _oval,
+      target: ovalTarget,
+      attraction: 0.42,
+      damping: 2.25,
+      dt: dt,
+    );
+    _applyOvalBounceLift(dt: dt);
+    _applyCookieGravity(
+      anchor: cookieAnchor,
+      dt: dt,
+    );
+
+    _oval.position += _oval.velocity * dt;
+    _cookie.position += _cookie.velocity * dt;
+
+    _containBodies(metrics);
+    _resolveCollision(metrics: metrics, dt: dt);
+
+    final double ovalDrag = math.pow(0.993, dt * 60).toDouble();
+    final double cookieDrag = math.pow(0.948, dt * 60).toDouble();
+    _oval.velocity *= ovalDrag;
+    _cookie.velocity *= cookieDrag;
+    _ovalBounceLift = math.max(0.0, _ovalBounceLift - (dt * 420)).toDouble();
+    _cookieBounceLift =
+        math.max(0.0, _cookieBounceLift - (dt * 540)).toDouble();
+    _impactEnergy = math.max(0.0, _impactEnergy - (dt * 1.9)).toDouble();
+  }
+
+  void _applySpring({
+    required _AmbientBody body,
+    required Offset target,
+    required double attraction,
+    required double damping,
+    required double dt,
+  }) {
+    final Offset delta = target - body.position;
+    final Offset acceleration =
+        (delta * attraction) - (body.velocity * damping);
+    body.velocity += acceleration * dt;
+  }
+
+  void _applyOvalBounceLift({
+    required double dt,
+  }) {
+    final double lift = _ovalBounceLift;
+    if (lift <= 0) {
+      return;
+    }
+    final Offset acceleration = Offset(
+      0,
+      -lift - (_oval.velocity.dy * 0.1),
+    );
+    _oval.velocity += acceleration * dt;
+  }
+
+  void _applyCookieGravity({
+    required Offset anchor,
+    required double dt,
+  }) {
+    final double dx = anchor.dx - _cookie.position.dx;
+    final double horizontalPull = dx * 0.75;
+    final double downwardPull = 110;
+    final double topLift = _cookie.position.dy < anchor.dy
+        ? (anchor.dy - _cookie.position.dy) * 0.35
+        : 0;
+    final double bounceLift = _cookieBounceLift;
+    final Offset acceleration = Offset(
+      horizontalPull - (_cookie.velocity.dx * 3.2),
+      downwardPull + topLift - bounceLift - (_cookie.velocity.dy * 0.44),
+    );
+    _cookie.velocity += (acceleration / _cookie.mass) * dt;
+  }
+
+  void _containBodies(_AmbientSceneMetrics metrics) {
+    final double cookieMinX = -metrics.cookieRadius * 0.12;
+    final double cookieMaxX = _sceneSize.width + (metrics.cookieRadius * 0.12);
+    if (_cookie.position.dx < cookieMinX) {
+      _cookie.position = Offset(cookieMinX, _cookie.position.dy);
+      _cookie.velocity =
+          Offset(_cookie.velocity.dx.abs() * 0.72, _cookie.velocity.dy);
+    } else if (_cookie.position.dx > cookieMaxX) {
+      _cookie.position = Offset(cookieMaxX, _cookie.position.dy);
+      _cookie.velocity =
+          Offset(-_cookie.velocity.dx.abs() * 0.72, _cookie.velocity.dy);
+    }
+
+    final double cookieMinY = metrics.cookieRadius * 0.35;
+    if (_cookie.position.dy < cookieMinY) {
+      _cookie.position = Offset(_cookie.position.dx, cookieMinY);
+      _cookie.velocity =
+          Offset(_cookie.velocity.dx, _cookie.velocity.dy.abs() * 0.35);
+    }
+
+    final double ovalMinX = _sceneSize.width * 0.28;
+    final double ovalMaxX = _sceneSize.width * 0.72;
+    if (_oval.position.dx < ovalMinX) {
+      _oval.position = Offset(ovalMinX, _oval.position.dy);
+      _oval.velocity = Offset(_oval.velocity.dx.abs() * 0.4, _oval.velocity.dy);
+    } else if (_oval.position.dx > ovalMaxX) {
+      _oval.position = Offset(ovalMaxX, _oval.position.dy);
+      _oval.velocity =
+          Offset(-_oval.velocity.dx.abs() * 0.4, _oval.velocity.dy);
+    }
+  }
+
+  void _resolveCollision({
+    required _AmbientSceneMetrics metrics,
+    required double dt,
+  }) {
+    final _ShapeCollisionInfo? collision = _measureCollision(metrics);
+    if (collision == null) {
+      return;
+    }
+
+    final Offset normal = collision.normal;
+    final double penetration = collision.penetration;
+    final double correction = penetration * 0.52;
+    final double totalMass = _oval.mass + _cookie.mass;
+    final double ovalCorrectionShare = _cookie.mass / totalMass;
+    final double cookieCorrectionShare = _oval.mass / totalMass;
+
+    _oval.position -= normal * (correction * ovalCorrectionShare);
+    _cookie.position += normal * (correction * cookieCorrectionShare);
+
+    final double relativeVelocity = _dot(
+      _cookie.velocity - _oval.velocity,
+      normal,
+    );
+    if (relativeVelocity < 0) {
+      const double restitution = 0.96;
+      final double impulse = (-(1 + restitution) * relativeVelocity) /
+          ((1 / _oval.mass) + (1 / _cookie.mass));
+      _oval.velocity -= normal * (impulse / _oval.mass);
+      _cookie.velocity += normal * (impulse / _cookie.mass);
+      if (normal.dy < -0.18) {
+        _oval.velocity += Offset(0, -68 - (penetration * 2.2));
+        _ovalBounceLift = math
+            .max(
+              _ovalBounceLift,
+              300 + (penetration * 11),
+            )
+            .toDouble();
+        _cookie.velocity += Offset(0, -185 - (penetration * 4.8));
+        _cookieBounceLift = math
+            .max(
+              _cookieBounceLift,
+              980 + (penetration * 26),
+            )
+            .toDouble();
+      }
+      _impactEnergy = math
+          .min(
+            1.0,
+            _impactEnergy + ((-relativeVelocity) / 200) + (penetration / 24),
+          )
+          .toDouble();
+    }
+
+    final double reboundBoost = 86 + (penetration * 6.5);
+    _oval.velocity -= normal * ((reboundBoost / _oval.mass) * dt);
+    _cookie.velocity += normal * ((reboundBoost / _cookie.mass) * dt);
+  }
+
+  double _dot(Offset a, Offset b) => (a.dx * b.dx) + (a.dy * b.dy);
+
+  _ShapeCollisionInfo? _measureCollision(_AmbientSceneMetrics metrics) {
+    const double contactThreshold = 3.4;
+
+    final List<Offset> ovalPoints = _ambientOvalProfile.transformedPoints(
+      center: _oval.position,
+      width: metrics.ovalWidth,
+      height: metrics.ovalHeight,
+      rotation: _ambientOvalRotation(_phase),
+    );
+    final List<Offset> cookiePoints = _ambientCookieProfile.transformedPoints(
+      center: _cookie.position,
+      width: metrics.cookieRadius * 2,
+      height: metrics.cookieRadius * 2,
+      rotation: _ambientCookieRotation(_phase),
+    );
+
+    Offset bestOvalPoint = ovalPoints.first;
+    Offset bestCookiePoint = cookiePoints.first;
+    double minDistanceSquared = double.infinity;
+
+    for (final Offset ovalPoint in ovalPoints) {
+      for (final Offset cookiePoint in cookiePoints) {
+        final Offset delta = cookiePoint - ovalPoint;
+        final double distanceSquared = delta.distanceSquared;
+        if (distanceSquared < minDistanceSquared) {
+          minDistanceSquared = distanceSquared;
+          bestOvalPoint = ovalPoint;
+          bestCookiePoint = cookiePoint;
+        }
+      }
+    }
+
+    if (minDistanceSquared > contactThreshold * contactThreshold) {
+      return null;
+    }
+
+    final double distance = math.sqrt(minDistanceSquared);
+    Offset delta = bestCookiePoint - bestOvalPoint;
+    if (distance <= 0.000001) {
+      delta = _cookie.position - _oval.position;
+    }
+    if (delta.distanceSquared <= 0.000001) {
+      delta = const Offset(0, -1);
+    }
+
+    final Offset normal = delta / delta.distance;
+    return _ShapeCollisionInfo(
+      normal: normal,
+      penetration: contactThreshold - distance,
+    );
+  }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _ticker.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, _) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        _ensureSimulation(constraints.biggest);
+        if (!_seeded) {
+          return const SizedBox.expand();
+        }
         return CustomPaint(
+          isComplex: true,
+          willChange: true,
           painter: _AmbientOutlinePainter(
-            progress: _controller.value,
+            phase: _phase,
+            impactEnergy: _impactEnergy,
+            ovalCenter: _oval.position,
+            cookieCenter: _cookie.position,
             outlineColor: widget.outlineColor,
             accentColor: widget.accentColor,
           ),
@@ -312,78 +626,54 @@ class _AmbientOutlineBackgroundState extends State<_AmbientOutlineBackground>
 
 class _AmbientOutlinePainter extends CustomPainter {
   const _AmbientOutlinePainter({
-    required this.progress,
+    required this.phase,
+    required this.impactEnergy,
+    required this.ovalCenter,
+    required this.cookieCenter,
     required this.outlineColor,
     required this.accentColor,
   });
 
-  final double progress;
+  final double phase;
+  final double impactEnergy;
+  final Offset ovalCenter;
+  final Offset cookieCenter;
   final Color outlineColor;
   final Color accentColor;
 
   @override
   void paint(Canvas canvas, Size size) {
+    final _AmbientSceneMetrics metrics = _AmbientSceneMetrics.fromSize(size);
+    final double impact =
+        Curves.easeOut.transform(impactEnergy.clamp(0.0, 1.0).toDouble());
     final ovalPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.55
       ..color = outlineColor.withValues(alpha: 0.18);
     final accentPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.15
-      ..color = accentColor.withValues(alpha: 0.22);
+      ..strokeWidth = 1.15 + (impact * 0.55)
+      ..color = accentColor.withValues(alpha: 0.22 + (impact * 0.08));
     final cookieMaskPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 4.8
+      ..strokeWidth = 4.8 + (impact * 1.8)
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..color = const Color(0xFF000000).withValues(alpha: 0.92);
 
-    final double phase = progress * math.pi * 2;
-    final double sharedDriftX = _loopNoise(
-      phase,
-      frequencies: const [1, 2, 3],
-      amplitudes: const [6, 3, 1.5],
-      phases: const [0.0, 1.1, -0.35],
-    );
-    final double sharedDriftY = _loopNoise(
-      phase,
-      frequencies: const [1, 2],
-      amplitudes: const [4, 2],
-      phases: const [0.7, -1.4],
-      cosine: true,
-    );
-    final Offset ovalCenter = Offset(
-      size.width * 0.31 + sharedDriftX,
-      size.height * 0.77 + sharedDriftY,
-    );
-    final double ovalWidth = size.width * 2.25;
-    final double ovalHeight = ovalWidth * 0.64;
-
     final Path ovalPath = _buildOfficialOvalPath(
       center: ovalCenter,
-      width: ovalWidth,
+      width: metrics.ovalWidth,
+      height: metrics.ovalHeight,
+      rotation: _ambientOvalRotation(phase),
     );
     canvas.drawPath(ovalPath, ovalPaint);
 
-    final double cookieRadius = math.min(size.width, size.height) * 0.42;
-    final double anchorT =
-        (-0.18 * math.pi) + (math.sin((phase * 1.4) + 0.8) * 0.035);
-    final Offset anchorPoint = _pointOnOfficialOval(
-      center: ovalCenter,
-      width: ovalWidth,
-      height: ovalHeight,
-      t: anchorT,
-    );
-    final Offset outwardNormal = _outwardNormalOnOfficialOval(
-      width: ovalWidth,
-      height: ovalHeight,
-      t: anchorT,
-    );
-    final double compression = ((math.sin((phase * 2.0) - 0.7) + 1) / 2) * 3;
-    final double cookieDistance = (cookieRadius * 0.79) - compression;
+    final double cookieSpin = _ambientCookieRotation(phase);
     final Path cookiePath = _buildOfficialCookie12Path(
-      center: anchorPoint + (outwardNormal * cookieDistance),
-      radius: cookieRadius,
+      center: cookieCenter,
+      radius: metrics.cookieRadius * (1 + (impact * 0.02)),
+      rotation: cookieSpin,
     );
     canvas.drawPath(cookiePath, cookieMaskPaint);
     canvas.drawPath(cookiePath, accentPaint);
@@ -396,6 +686,7 @@ class _AmbientOutlinePainter extends CustomPainter {
   Path _buildOfficialCookie12Path({
     required Offset center,
     required double radius,
+    double rotation = 0,
   }) {
     final Path normalized = MaterialShapes.cookie12Sided.toPath();
     return _fitNormalizedPath(
@@ -403,6 +694,7 @@ class _AmbientOutlinePainter extends CustomPainter {
       center: center,
       width: radius * 2,
       height: radius * 2,
+      rotation: rotation,
     );
   }
 
@@ -410,13 +702,16 @@ class _AmbientOutlinePainter extends CustomPainter {
   Path _buildOfficialOvalPath({
     required Offset center,
     required double width,
+    required double height,
+    double rotation = 0,
   }) {
     final Path normalized = MaterialShapes.oval.toPath();
     return _fitNormalizedPath(
       normalized,
       center: center,
       width: width,
-      height: width * 0.64,
+      height: height,
+      rotation: rotation,
     );
   }
 
@@ -425,84 +720,165 @@ class _AmbientOutlinePainter extends CustomPainter {
     required Offset center,
     required double width,
     required double height,
+    double rotation = 0,
   }) {
     final Rect bounds = source.getBounds();
     final Matrix4 transform = Matrix4.identity()
       ..translateByDouble(center.dx, center.dy, 0, 1)
-      ..scaleByDouble(
-        width / bounds.width,
-        height / bounds.height,
-        1,
-        1,
-      )
+      ..rotateZ(rotation)
+      ..scaleByDouble(width / bounds.width, height / bounds.height, 1, 1)
       ..translateByDouble(
-        -(bounds.left + bounds.width / 2),
-        -(bounds.top + bounds.height / 2),
+        -(bounds.left + (bounds.width / 2)),
+        -(bounds.top + (bounds.height / 2)),
         0,
         1,
       );
     return source.transform(transform.storage);
   }
 
-  double _loopNoise(
-    double phase, {
-    required List<int> frequencies,
-    required List<double> amplitudes,
-    required List<double> phases,
-    bool cosine = false,
-  }) {
-    double total = 0;
-    for (int i = 0; i < frequencies.length; i++) {
-      final double angle = (phase * frequencies[i]) + phases[i];
-      total += (cosine ? math.cos(angle) : math.sin(angle)) * amplitudes[i];
-    }
-    return total;
-  }
-
-  Offset _pointOnOfficialOval({
-    required Offset center,
-    required double width,
-    required double height,
-    required double t,
-  }) {
-    final double a = width / 2;
-    final double b = height / 2;
-    final Offset local = Offset(a * math.cos(t), b * math.sin(t));
-    final Offset rotated = _rotate(local, -math.pi / 4);
-    return center + rotated;
-  }
-
-  Offset _outwardNormalOnOfficialOval({
-    required double width,
-    required double height,
-    required double t,
-  }) {
-    final double a = width / 2;
-    final double b = height / 2;
-    final Offset localNormal = Offset(math.cos(t) / a, math.sin(t) / b);
-    final Offset rotatedNormal = _rotate(localNormal, -math.pi / 4);
-    final double length = rotatedNormal.distance;
-    if (length == 0) {
-      return const Offset(0, -1);
-    }
-    return rotatedNormal / length;
-  }
-
-  Offset _rotate(Offset point, double radians) {
-    final double c = math.cos(radians);
-    final double s = math.sin(radians);
-    return Offset(
-      (point.dx * c) - (point.dy * s),
-      (point.dx * s) + (point.dy * c),
-    );
-  }
-
   @override
   bool shouldRepaint(covariant _AmbientOutlinePainter oldDelegate) {
-    return oldDelegate.progress != progress ||
+    return oldDelegate.phase != phase ||
+        oldDelegate.impactEnergy != impactEnergy ||
+        oldDelegate.ovalCenter != ovalCenter ||
+        oldDelegate.cookieCenter != cookieCenter ||
         oldDelegate.outlineColor != outlineColor ||
         oldDelegate.accentColor != accentColor;
   }
+}
+
+class _AmbientBody {
+  _AmbientBody({
+    required this.position,
+    required this.velocity,
+    required this.mass,
+  });
+
+  Offset position;
+  Offset velocity;
+  final double mass;
+}
+
+class _ShapeProfile {
+  const _ShapeProfile(this.normalizedPoints);
+
+  factory _ShapeProfile.fromPath(Path path, {int sampleCount = 180}) {
+    final Rect bounds = path.getBounds();
+    final Offset center = bounds.center;
+    final metrics = path.computeMetrics(forceClosed: true).toList();
+    final double totalLength = metrics.fold<double>(
+      0,
+      (sum, metric) => sum + metric.length,
+    );
+    final List<Offset> normalizedPoints = <Offset>[];
+
+    for (final metric in metrics) {
+      final int steps = math.max(
+        24,
+        ((sampleCount * metric.length) / math.max(totalLength, 1)).round(),
+      );
+      for (int index = 0; index < steps; index++) {
+        final tangent = metric.getTangentForOffset(
+          (metric.length * index) / steps,
+        );
+        if (tangent == null) {
+          continue;
+        }
+        normalizedPoints.add(
+          Offset(
+            (tangent.position.dx - center.dx) / bounds.width,
+            (tangent.position.dy - center.dy) / bounds.height,
+          ),
+        );
+      }
+    }
+
+    return _ShapeProfile(normalizedPoints);
+  }
+
+  final List<Offset> normalizedPoints;
+
+  List<Offset> transformedPoints({
+    required Offset center,
+    required double width,
+    required double height,
+    required double rotation,
+  }) {
+    return normalizedPoints
+        .map(
+          (point) =>
+              center +
+              _rotateOffset(
+                Offset(point.dx * width, point.dy * height),
+                rotation,
+              ),
+        )
+        .toList(growable: false);
+  }
+}
+
+class _ShapeCollisionInfo {
+  const _ShapeCollisionInfo({
+    required this.normal,
+    required this.penetration,
+  });
+
+  final Offset normal;
+  final double penetration;
+}
+
+class _AmbientSceneMetrics {
+  const _AmbientSceneMetrics({
+    required this.ovalWidth,
+    required this.ovalHeight,
+    required this.ovalCollisionRadius,
+    required this.cookieRadius,
+    required this.cookieCollisionRadius,
+    required this.contactDistance,
+  });
+
+  factory _AmbientSceneMetrics.fromSize(Size size) {
+    final double ovalWidth = size.width * 1.86;
+    final double ovalHeight = ovalWidth * 0.56;
+    final double ovalCollisionRadius = ovalWidth * 0.29;
+    final double cookieRadius = math.min(size.width, size.height) * 0.37;
+    final double cookieCollisionRadius = cookieRadius * 0.92;
+    final double contactDistance =
+        ovalCollisionRadius + cookieCollisionRadius - 4;
+
+    return _AmbientSceneMetrics(
+      ovalWidth: ovalWidth,
+      ovalHeight: ovalHeight,
+      ovalCollisionRadius: ovalCollisionRadius,
+      cookieRadius: cookieRadius,
+      cookieCollisionRadius: cookieCollisionRadius,
+      contactDistance: contactDistance,
+    );
+  }
+
+  final double ovalWidth;
+  final double ovalHeight;
+  final double ovalCollisionRadius;
+  final double cookieRadius;
+  final double cookieCollisionRadius;
+  final double contactDistance;
+}
+
+double _ambientOvalRotation(double phase) {
+  return (-0.34) + (math.sin(phase * 0.22) * 0.05);
+}
+
+double _ambientCookieRotation(double phase) {
+  return (phase * 0.74) + (math.sin((phase * 0.92) + 0.6) * 0.18);
+}
+
+Offset _rotateOffset(Offset point, double radians) {
+  final double c = math.cos(radians);
+  final double s = math.sin(radians);
+  return Offset(
+    (point.dx * c) - (point.dy * s),
+    (point.dx * s) + (point.dy * c),
+  );
 }
 
 class _WelcomeSelectionRow extends StatelessWidget {
