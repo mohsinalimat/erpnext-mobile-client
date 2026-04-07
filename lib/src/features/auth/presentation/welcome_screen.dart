@@ -287,32 +287,74 @@ class _CyclingWelcomeHeadline extends StatefulWidget {
       _CyclingWelcomeHeadlineState();
 }
 
-class _CyclingWelcomeHeadlineState extends State<_CyclingWelcomeHeadline> {
+class _CyclingWelcomeHeadlineState extends State<_CyclingWelcomeHeadline>
+    with SingleTickerProviderStateMixin {
   static const List<Locale> _headlineLocales = <Locale>[
     Locale('uz'),
     Locale('en'),
     Locale('ru'),
   ];
 
+  late final AnimationController _controller = AnimationController(vsync: this)
+    ..addStatusListener(_handleAnimationStatus);
   Timer? _timer;
   int _index = 0;
+  _HeadlineMotionPhase _phase = _HeadlineMotionPhase.idle;
 
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (!mounted) {
-        return;
-      }
+    _scheduleNextCycle();
+  }
+
+  void _scheduleNextCycle() {
+    _timer?.cancel();
+    _timer = Timer(const Duration(seconds: 5), _startExit);
+  }
+
+  void _startExit() {
+    if (!mounted || _phase != _HeadlineMotionPhase.idle) {
+      return;
+    }
+    setState(() {
+      _phase = _HeadlineMotionPhase.exiting;
+    });
+    _controller.duration = const Duration(milliseconds: 300);
+    _controller.forward(from: 0);
+  }
+
+  void _handleAnimationStatus(AnimationStatus status) {
+    if (status != AnimationStatus.completed || !mounted) {
+      return;
+    }
+
+    if (_phase == _HeadlineMotionPhase.exiting) {
       setState(() {
         _index = (_index + 1) % _headlineLocales.length;
+        _phase = _HeadlineMotionPhase.entering;
       });
-    });
+      Future<void>.delayed(const Duration(milliseconds: 70), () {
+        if (!mounted || _phase != _HeadlineMotionPhase.entering) {
+          return;
+        }
+        _controller.duration = const Duration(milliseconds: 420);
+        _controller.forward(from: 0);
+      });
+      return;
+    }
+
+    if (_phase == _HeadlineMotionPhase.entering) {
+      setState(() {
+        _phase = _HeadlineMotionPhase.idle;
+      });
+      _scheduleNextCycle();
+    }
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -326,118 +368,78 @@ class _CyclingWelcomeHeadlineState extends State<_CyclingWelcomeHeadline> {
 
     return SizedBox(
       height: headlineHeight,
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 880),
-        reverseDuration: const Duration(milliseconds: 680),
-        switchInCurve: Curves.easeOutQuart,
-        switchOutCurve: Curves.easeInOutCubic,
-        layoutBuilder: (currentChild, previousChildren) {
-          return Stack(
-            alignment: Alignment.topLeft,
-            clipBehavior: Clip.none,
-            children: <Widget>[
-              ...previousChildren,
-              if (currentChild != null) currentChild,
-            ],
-          );
-        },
-        transitionBuilder: (child, animation) {
-          final Animation<double> fade = CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOutCubic,
-            reverseCurve: Curves.easeInCubic,
-          );
-          return FadeTransition(
-            opacity: fade,
-            child: _SplitBlurTransition(
-              animation: animation,
-              child: child,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          return _HeadlineMotionText(
+            phase: _phase,
+            progress: _controller.value,
+            child: Text(
+              headline,
+              key: ValueKey<String>('${locale.languageCode}-${_phase.name}'),
+              maxLines: 3,
+              softWrap: true,
+              style: widget.textStyle,
             ),
           );
         },
-        child: Text(
-          headline,
-          key: ValueKey<String>(locale.languageCode),
-          maxLines: 3,
-          softWrap: true,
-          style: widget.textStyle,
+      ),
+    );
+  }
+}
+
+class _HeadlineMotionText extends StatelessWidget {
+  const _HeadlineMotionText({
+    required this.phase,
+    required this.progress,
+    required this.child,
+  });
+
+  final _HeadlineMotionPhase phase;
+  final double progress;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final double t = Curves.easeOutCubic.transform(progress);
+    final bool isExiting = phase == _HeadlineMotionPhase.exiting;
+    final bool isEntering = phase == _HeadlineMotionPhase.entering;
+    final double opacity = phase == _HeadlineMotionPhase.idle
+        ? 1
+        : isExiting
+            ? 1 - t
+            : t;
+    final double dx = isExiting
+        ? 24 * t
+        : isEntering
+            ? -24 * (1 - t)
+            : 0;
+    final double sigma = phase == _HeadlineMotionPhase.idle
+        ? 0.01
+        : isExiting
+            ? 2.8 * t
+            : 2.8 * (1 - t);
+
+    return Opacity(
+      opacity: opacity.clamp(0.0, 1.0),
+      child: Transform.translate(
+        offset: Offset(dx, 0),
+        child: ImageFiltered(
+          imageFilter: ui.ImageFilter.blur(
+            sigmaX: sigma,
+            sigmaY: sigma * 0.2,
+          ),
+          child: child,
         ),
       ),
     );
   }
 }
 
-class _SplitBlurTransition extends StatelessWidget {
-  const _SplitBlurTransition({
-    required this.animation,
-    required this.child,
-  });
-
-  final Animation<double> animation;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: animation,
-      child: child,
-      builder: (context, childWidget) {
-        final double t = Curves.easeOutQuart.transform(animation.value);
-        final double travel = 1 - t;
-        final double sigma = 0.01 + (travel * 5.5);
-        final double lift = travel * 8;
-        final double split = travel * 7;
-        final double scale = 0.992 + (0.008 * t);
-        final double ghostOpacity = 0.12 * travel;
-
-        return Transform.translate(
-          offset: Offset(0, lift),
-          child: Transform.scale(
-            scale: scale,
-            alignment: Alignment.centerLeft,
-            child: Stack(
-              alignment: Alignment.topLeft,
-              children: <Widget>[
-                Opacity(
-                  opacity: ghostOpacity,
-                  child: Transform.translate(
-                    offset: Offset(-split, 0),
-                    child: ImageFiltered(
-                      imageFilter: ui.ImageFilter.blur(
-                        sigmaX: sigma,
-                        sigmaY: sigma * 0.35,
-                      ),
-                      child: childWidget,
-                    ),
-                  ),
-                ),
-                Opacity(
-                  opacity: ghostOpacity,
-                  child: Transform.translate(
-                    offset: Offset(split, 0),
-                    child: ImageFiltered(
-                      imageFilter: ui.ImageFilter.blur(
-                        sigmaX: sigma,
-                        sigmaY: sigma * 0.35,
-                      ),
-                      child: childWidget,
-                    ),
-                  ),
-                ),
-                ImageFiltered(
-                  imageFilter: ui.ImageFilter.blur(
-                    sigmaX: sigma * 0.42,
-                    sigmaY: sigma * 0.18,
-                  ),
-                  child: childWidget,
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+enum _HeadlineMotionPhase {
+  idle,
+  exiting,
+  entering,
 }
 
 class _AmbientOutlineBackground extends StatefulWidget {
