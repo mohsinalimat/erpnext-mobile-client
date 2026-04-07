@@ -299,7 +299,7 @@ class _CyclingWelcomeHeadlineState extends State<_CyclingWelcomeHeadline> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 2), (_) {
+    _timer = Timer.periodic(const Duration(milliseconds: 2600), (_) {
       if (!mounted) {
         return;
       }
@@ -321,10 +321,10 @@ class _CyclingWelcomeHeadlineState extends State<_CyclingWelcomeHeadline> {
     final String headline = AppLocalizations(locale).welcomeToAccord;
 
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 520),
-      reverseDuration: const Duration(milliseconds: 420),
-      switchInCurve: Curves.easeOutCubic,
-      switchOutCurve: Curves.easeInCubic,
+      duration: const Duration(milliseconds: 880),
+      reverseDuration: const Duration(milliseconds: 680),
+      switchInCurve: Curves.easeOutQuart,
+      switchOutCurve: Curves.easeInOutCubic,
       layoutBuilder: (currentChild, previousChildren) {
         return Stack(
           alignment: Alignment.topLeft,
@@ -335,14 +335,45 @@ class _CyclingWelcomeHeadlineState extends State<_CyclingWelcomeHeadline> {
         );
       },
       transitionBuilder: (child, animation) {
-        final Animation<Offset> slide = Tween<Offset>(
-          begin: const Offset(0, 0.08),
-          end: Offset.zero,
-        ).animate(animation);
+        final Animation<double> fade = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        );
+        final Animation<double> lift = Tween<double>(
+          begin: 8,
+          end: 0,
+        ).animate(
+          CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutQuart,
+            reverseCurve: Curves.easeInOutCubic,
+          ),
+        );
+        final Animation<double> scale = Tween<double>(
+          begin: 0.985,
+          end: 1,
+        ).animate(
+          CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutQuart,
+            reverseCurve: Curves.easeInOutCubic,
+          ),
+        );
         return FadeTransition(
-          opacity: animation,
-          child: SlideTransition(
-            position: slide,
+          opacity: fade,
+          child: AnimatedBuilder(
+            animation: animation,
+            builder: (context, childWidget) {
+              return Transform.translate(
+                offset: Offset(0, lift.value),
+                child: Transform.scale(
+                  scale: scale.value,
+                  alignment: Alignment.centerLeft,
+                  child: childWidget,
+                ),
+              );
+            },
             child: child,
           ),
         );
