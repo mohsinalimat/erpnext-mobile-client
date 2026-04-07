@@ -300,7 +300,7 @@ class _CyclingWelcomeHeadlineState extends State<_CyclingWelcomeHeadline> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(milliseconds: 4200), (_) {
+    _timer = Timer.periodic(const Duration(seconds: 3), (_) {
       if (!mounted) {
         return;
       }
